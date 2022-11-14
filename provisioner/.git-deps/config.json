@@ -1,0 +1,32 @@
+{
+  "dependencies": {
+    "repos": [
+      {
+        "name": "shell_scripts_lib",
+        "url": "git@github.com:ZachiNachshon/shell-scripts-lib.git",
+        "branch": "master",
+        "revision": "706f0af5239b5deb13485e0c915f852c3cc704be",
+        "includes": ["runner*/", "runner/base*", "runner/poetry*", "runner/ansible*"],
+        "excludes": ["*_test*", "*/"]
+      },
+      {
+        "name": "ansible_playbooks",
+        "url": "git@github.com:ZachiNachshon/ansible-playbooks.git",
+        "branch": "master",
+        "revision": "a9d3cea042a05fb44dea957fa5f14fe71bbc0720"
+      }
+    ]
+  },
+  "devDependencies": {
+    "repos": [
+      {
+        "name": "shell_scripts_lib",
+        "localPath": "/Users/zachin/codebase/github/shell-scripts-lib"
+      },
+      {
+        "name": "ansible_playbooks",
+        "localPath": "/Users/zachin/codebase/github/ansible-playbooks"
+      }
+    ]
+  }
+}
