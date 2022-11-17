@@ -11,7 +11,8 @@ main() {
 
   log_info "Build a tarball package with local Python distribution"
   # poetry build -f sdist -vvv || exit
-  poetry build -f sdist || exit
+  # poetry build -f sdist || exit
+  poetry build-project -f sdist || exit
 
   local binary_path="${HOME}/.local/bin/provisioner"
   local pip_pkg_folder_path="${HOME}/.config/provisioner/.pip-pkg"

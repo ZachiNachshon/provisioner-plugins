@@ -3,10 +3,24 @@ name = "python_features_lib"
 version = "0.1.0"
 description = "Python Features Library"
 authors = ["Zachi Nachshon <zachi.nachshon@gmail.com>"]
-exclude = ["**/*_test*", "**/*_fake*"]
-packages = [
-    { include = "python_features_lib" },
-]
+exclude = [
+    "**/*_test*", 
+    "**/*_fake*", 
+    "dist", 
+    "htmlcov", 
+    "poetry.lock", 
+    "pytest", 
+    "Makefile", 
+    "runners", 
+    ".gitignore",
+    ".coverage",
+    ".coveragerc",
+    ".git-deps",
+    ".pytest_cache"]
+
+# packages = [
+#     { include = "python_features_lib" },
+# ]
 
 [tool.isort]
 profile = "black"

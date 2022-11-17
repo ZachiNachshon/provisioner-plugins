@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import json
+import pathlib
 from typing import List, Optional
 
 from loguru import logger
@@ -10,8 +10,7 @@ from ...infra.context import Context
 from ...utils.io_utils import IOUtils
 from ...utils.process import Process
 
-ANSIBLE_SHELL_RUNNER_PATH = "external/shell_scripts_lib/runner/ansible/ansible.sh"
-
+ANSIBLE_SHELL_RUNNER_PATH = f"{pathlib.Path(__file__).parent.parent.parent.parent}/external/shell_scripts_lib/runner/ansible/ansible.sh"
 
 class HostIpPair:
     host: str
@@ -121,7 +120,7 @@ class AnsibleRunner:
 
         run_cmd = [
             "bash",
-            f"./{self._ansible_shell_runner_path}",
+            f"{self._ansible_shell_runner_path}",
             f"working_dir: {working_dir}",
             f"username: {username}",
             auth_param,

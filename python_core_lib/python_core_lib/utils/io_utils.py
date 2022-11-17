@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import os
+import pathlib
 import stat
 import tempfile
 from pathlib import Path
@@ -21,15 +22,29 @@ class IOUtils:
         logger.debug(f"Creating IO utils...")
         return IOUtils(ctx)
 
-    def _get_home_directory(self):
+    def _get_home_directory(self) -> str:
         # Python 3.5+
         return str(Path.home())
 
-    def _get_current_directory(self):
+    def _get_current_directory(self) -> str:
         # Python 3.5+
         return str(Path.cwd())
 
-    def _relative_path_to_abs_path(self, relative_path: str):
+    def _get_project_root_path(self, file) -> str:
+        """
+        Return the root folder path of the current project, requires a __file__ parameter
+        for the starting anchor will be the actual Python file and not from this IO utility file
+        """
+        parent_path = pathlib.Path(file).parent
+        while(True):
+            basename = os.path.basename(parent_path)
+            if self.file_exists_fn(f"{parent_path}/pyproject.toml") or self.file_exists_fn(f"{parent_path}/setup.py"):
+                return parent_path
+            elif basename == "/" or len(basename) == 0:
+                return None
+            parent_path = parent_path.parent
+
+    def _relative_path_to_abs_path(self, relative_path: str) -> str:
         curr_file_path = os.path.dirname(os.path.realpath("__file__"))
         file_name = os.path.join(curr_file_path, relative_path)
         return os.path.abspath(os.path.realpath(file_name))
@@ -113,6 +128,7 @@ class IOUtils:
 
     get_home_directory_fn = _get_home_directory
     get_current_directory_fn = _get_current_directory
+    get_project_root_path_fn = _get_project_root_path
     relative_path_to_abs_path_fn = _relative_path_to_abs_path
     create_directory_fn = _create_directory
     copy_file_or_dir_fn = _copy_file_or_dir

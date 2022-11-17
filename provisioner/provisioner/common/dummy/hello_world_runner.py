@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 
+import os
+import pathlib
+import sys
 from loguru import logger
 from python_core_lib.infra.context import Context
 from python_core_lib.runner.ansible.ansible import AnsibleRunner, HostIpPair
@@ -14,6 +17,8 @@ from python_features_lib.remote.remote_connector import RemoteCliArgs, SSHConnec
 
 HelloWorldAnsiblePlaybookPath = "provisioner/example/dummy/playbooks/hello_world.yaml"
 
+# def resolve_project_root_path() -> str:
+#     return f"{pathlib.Path(__file__).parent.parent.parent.parent}"
 
 class HelloWorldRunnerArgs:
 
@@ -62,9 +67,11 @@ class HelloWorldRunner:
 
         collaborators.printer.new_line_fn()
 
+        working_dir = collaborators.io.get_project_root_path_fn(__file__)
+
         output = collaborators.printer.progress_indicator.status.long_running_process_fn(
             call=lambda: collaborators.ansible_runner.run_fn(
-                working_dir=collaborators.io.get_current_directory_fn(),
+                working_dir=working_dir,
                 username=ssh_conn_info.username,
                 password=ssh_conn_info.password,
                 ssh_private_key_file_path=ssh_conn_info.ssh_private_key_file_path,

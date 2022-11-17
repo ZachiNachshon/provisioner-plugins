@@ -3,29 +3,33 @@ name = "provisioner"
 version = "0.1.0"
 description = "Provision anything on any remote machine"
 authors = ["Zachi Nachshon <zachi.nachshon@gmail.com>"]
-exclude = ["**/*_test*", "**/*_fake*"]
-packages = [
-    # { include = ".git-deps" },
-    # { include = "provisioner" },
-    # { include = "external" },
-    # { include = "provisioner/common" },
-    # { include = "provisioner/config" },
-    # { include = "provisioner/example" },
-    # { include = "provisioner/rpi" },
-    { include = "provisioner" },
-    # { include = "python_core_lib" },
-    # { include = "python_features_lib" }
-]
 
-    # packages = [
-    #     # { include = ".git-deps" },
-    #     # { include = "provisioner" },
-    #     # { include = "external" },
-    #     { include = "provisioner/common" },
-    #     { include = "provisioner/config" },
-    #     { include = "provisioner/example" },
-    #     { include = "provisioner/rpi" },
-    # ]
+# Until multi-project is supported natively with Poetry, use a plugins that bundles
+# declared dependencies within the parent project. In this case we'll have to exclude
+# Poetry package related files from being part of the tar.gz
+# https://github.com/DavidVujic/poetry-multiproject-plugin
+exclude = [
+    "**/.venv",
+    "**/*_test*", 
+    "**/*_fake*", 
+    "**/dist*", 
+    "**/htmlcov", 
+    "**/poetry.lock", 
+    "**/pytest", 
+    "**/Makefile", 
+    "**/runners", 
+    "**/.gitignore",
+    "**/.coverage",
+    "**/.coveragerc",
+    "**/.git-deps",
+    "**/.pytest_cache"]
+
+packages = [
+    { include = "provisioner" },
+    # { include = "external", from="../python_core_lib" },
+    { include = "python_core_lib", from="../python_core_lib" },
+    { include = "python_features_lib", from="../python_features_lib" },
+]
 
 # # A list of patterns that will be included in the final package.
 # # If no format is specified, it will default to include both sdist and wheel
@@ -35,8 +39,7 @@ include = [
     { path = "provisioner/main.py" },
     { path = "resources/version.txt" },
     { path = "provisioner/config.yaml" },
-    { path = "python_core_lib/*" },
-    { path = "python_features_lib/*" },
+    { path = "external" },
 ]
 
 [tool.poetry.scripts]
@@ -93,6 +96,7 @@ mypy = "^0.971"
 coverage = "^6.4.4"
 diagrams = "^0.22.0"
 isort = "^5.10.1"
+poetry-multiproject-plugin = "1.0.5"
 python_core_lib = { path = "../python_core_lib", develop = true }
 python_features_lib = { path = "../python_features_lib", develop = true }
 
