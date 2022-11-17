@@ -1,8 +1,5 @@
 #!/usr/bin/env python3
 
-import os
-import pathlib
-import sys
 from loguru import logger
 from python_core_lib.infra.context import Context
 from python_core_lib.runner.ansible.ansible import AnsibleRunner, HostIpPair
@@ -15,20 +12,16 @@ from python_core_lib.utils.prompter import Prompter
 
 from python_features_lib.remote.remote_connector import RemoteCliArgs, SSHConnectionInfo
 
-HelloWorldAnsiblePlaybookPath = "provisioner/example/dummy/playbooks/hello_world.yaml"
-
-# def resolve_project_root_path() -> str:
-#     return f"{pathlib.Path(__file__).parent.parent.parent.parent}"
-
 class HelloWorldRunnerArgs:
 
     username: str
     remote_args: RemoteCliArgs
+    ansible_playbook_relative_path_from_root: str
 
-    def __init__(self, username: str, remote_args: RemoteCliArgs) -> None:
-
+    def __init__(self, username: str, remote_args: RemoteCliArgs, ansible_playbook_relative_path_from_root: str) -> None:
         self.username = username
         self.remote_args = remote_args
+        self.ansible_playbook_relative_path_from_root = ansible_playbook_relative_path_from_root
 
 
 class RunnerCollaborators:
@@ -75,7 +68,7 @@ class HelloWorldRunner:
                 username=ssh_conn_info.username,
                 password=ssh_conn_info.password,
                 ssh_private_key_file_path=ssh_conn_info.ssh_private_key_file_path,
-                playbook_path=HelloWorldAnsiblePlaybookPath,
+                playbook_path=args.ansible_playbook_relative_path_from_root,
                 ansible_vars=ansible_vars,
                 ansible_tags=["hello"],
                 selected_hosts=ssh_conn_info.host_ip_pairs,

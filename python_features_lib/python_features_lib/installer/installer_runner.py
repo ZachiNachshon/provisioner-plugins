@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import pathlib
 from typing import List, Optional
 
 from loguru import logger
@@ -18,20 +19,19 @@ from python_core_lib.utils.progress_indicator import ProgressIndicator
 from python_core_lib.utils.prompter import Prompter
 from python_core_lib.utils.summary import Summary
 
-from provisioner.common.anchor.anchor_runner import (
+from ..anchor.anchor_runner import (
     AnchorCmdRunner,
     AnchorCmdRunnerCollaborators,
     AnchorRunnerCmdArgs,
     RunEnvironment,
 )
-from python_features_lib.remote.remote_connector import (
+from ..remote.remote_connector import (
     RemoteCliArgs,
     RemoteMachineConnector,
     SSHConnectionInfo,
 )
 
-InstallablesJsonFilePath = "common/installer/installables.json"
-
+InstallablesJsonFilePath = f"{pathlib.Path(__file__).parent}/installables.json"
 
 class Installables(SerializationBase):
     class InstallableUtility:

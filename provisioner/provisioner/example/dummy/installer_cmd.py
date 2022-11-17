@@ -6,8 +6,8 @@ from loguru import logger
 from python_core_lib.infra.context import Context
 from python_core_lib.runner.ansible.ansible import HostIpPair
 
-from provisioner.common.anchor.anchor_runner import RunEnvironment
-from provisioner.common.installer.installer_runner import (
+from python_features_lib.anchor.anchor_runner import RunEnvironment
+from python_features_lib.installer.installer_runner import (
     UtilityInstallerCmdRunner,
     UtilityInstallerCmdRunnerCollaborators,
     UtilityInstallerRunnerCmdArgs,

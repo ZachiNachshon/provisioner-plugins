@@ -12,7 +12,7 @@ from python_core_lib.utils.network import NetworkUtil
 from python_core_lib.utils.printer import Printer
 from python_core_lib.utils.prompter import Prompter
 
-from .config import RemoteConfig
+from .domain.config import RemoteConfig
 
 
 class NetworkDeviceSelectionMethod(str, Enum):

@@ -5,7 +5,7 @@ from typing import Optional
 from loguru import logger
 from python_core_lib.infra.context import Context
 
-from provisioner.common.anchor.anchor_runner import (
+from python_features_lib.anchor.anchor_runner import (
     AnchorCmdRunner,
     AnchorCmdRunnerCollaborators,
     AnchorRunnerCmdArgs,

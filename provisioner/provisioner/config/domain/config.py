@@ -1,39 +1,8 @@
 #!/usr/bin/env python3
 
 from python_core_lib.domain.serialize import SerializationBase
-from python_features_lib.remote.config import RemoteConfig
-
-# class RemoteConfig:
-#     class Host:
-#         name: str
-#         address: str
-
-#         def __init__(self, name: str, address: str) -> None:
-#             self.name = name
-#             self.address = address
-
-#     class LanScan:
-#         ip_discovery_range: str = None
-
-#     class Auth:
-#         node_username: str = None
-#         node_password: str = None
-#         ssh_private_key_file_path: str = None
-
-#     lan_scan: LanScan = LanScan()
-#     auth: Auth = Auth()
-#     hosts: dict[str, Host] = None
-
-
-class AnchorConfig:
-    class GitHubConfig:
-        organization: str = None
-        repository: str = None
-        branch: str = None
-        github_access_token: str = None
-
-    github: GitHubConfig = GitHubConfig()
-
+from python_features_lib.remote.domain.config import RemoteConfig
+from python_features_lib.anchor.domain.config import AnchorConfig
 
 class DummyConfig:
     class HelloWorldConfig:

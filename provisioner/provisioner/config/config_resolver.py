@@ -8,9 +8,9 @@ from python_core_lib.config.config_reader import ConfigReader
 from python_core_lib.infra.context import Context
 from python_core_lib.utils.io_utils import IOUtils
 from python_core_lib.utils.yaml_util import YamlUtil
+from python_features_lib.remote.typer_remote_opts import TyperRemoteOpts
 
 from provisioner.config.domain.config import ProvisionerConfig
-from provisioner.config.typer_remote_opts import TyperRemoteOpts
 
 ENV_VAR_ENABLE_CONFIG_DEBUG = "PROVISIONER_PRE_RUN_DEBUG"
 CONFIG_USER_PATH = os.path.expanduser("~/.config/provisioner/config.yaml")
@@ -60,5 +60,5 @@ class ConfigResolver:
     def get_config() -> ProvisionerConfig:
         if not ConfigResolver.config:
             ConfigResolver.resolve(CONFIG_INTERNAL_PATH, CONFIG_USER_PATH)
-            TyperRemoteOpts.load(ConfigResolver.config)
+            TyperRemoteOpts.load(ConfigResolver.config.remote)
         return ConfigResolver.config

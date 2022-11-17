@@ -13,7 +13,7 @@ from python_core_lib.infra.context import CliContextManager
 from python_features_lib.remote.remote_connector import RemoteCliArgs
 
 from provisioner.config.config_resolver import ConfigResolver
-from provisioner.config.typer_remote_opts import TyperRemoteOpts
+from python_features_lib.remote.typer_remote_opts import TyperRemoteOpts
 from provisioner.rpi.os.burn_image_cmd import RPiOsBurnImageCmd, RPiOsBurnImageCmdArgs
 from provisioner.rpi.os.configure_cmd import RPiOsConfigureCmd, RPiOsConfigureCmdArgs
 from provisioner.rpi.os.network_cmd import (
@@ -87,12 +87,12 @@ def network(
         None, show_default=False, help="Static IP address to set as the remote host IP address", envvar="RPI_STATIC_IP"
     ),
     gw_ip_address: Optional[str] = typer.Option(
-        TyperRemoteOpts.config.rpi.network.gw_ip_address,
+        ConfigResolver.get_config().rpi.network.gw_ip_address,
         help="Internet gateway address / home router address",
         envvar="GATEWAY_ADDRESS",
     ),
     dns_ip_address: Optional[str] = typer.Option(
-        TyperRemoteOpts.config.rpi.network.dns_ip_address,
+        ConfigResolver.get_config().rpi.network.dns_ip_address,
         help="Domain name server address / home router address",
         envvar="DNS_ADDRESS",
     ),

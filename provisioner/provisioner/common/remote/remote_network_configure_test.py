@@ -14,7 +14,7 @@ from python_core_lib.utils.printer_fakes import FakePrinter
 from python_core_lib.utils.process_fakes import FakeProcess
 from python_core_lib.utils.prompter_fakes import FakePrompter
 
-from provisioner.common.remote.remote_network_configure import (
+from python_features_lib.remote.remote_network_configure import (
     Collaborators,
     RemoteMachineNetworkConfigureArgs,
     RemoteMachineNetworkConfigureRunner,

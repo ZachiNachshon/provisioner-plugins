@@ -14,6 +14,8 @@ from provisioner.common.dummy.hello_world_runner import (
 from python_features_lib.remote.remote_connector import RemoteCliArgs
 
 
+HelloWorldAnsiblePlaybookRelativePathFromRoot = f"provisioner/example/dummy/playbooks/hello_world.yaml"
+
 class HelloWorldCmdArgs:
 
     username: str
@@ -49,6 +51,7 @@ class HelloWorldCmd:
             args=HelloWorldRunnerArgs(
                 username=args.username,
                 remote_args=args.remote_args,
+                ansible_playbook_relative_path_from_root=HelloWorldAnsiblePlaybookRelativePathFromRoot,
             ),
             collaborators=HelloWorldRunnerCollaborators(ctx),
         )

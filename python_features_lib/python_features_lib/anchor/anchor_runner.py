@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from enum import Enum
+import pathlib
 from typing import List, Optional
 
 from loguru import logger
@@ -12,10 +13,9 @@ from python_core_lib.utils.printer import Printer
 from python_core_lib.utils.process import Process
 from python_core_lib.utils.progress_indicator import ProgressIndicator
 
-from python_features_lib.remote.remote_connector import RemoteCliArgs, SSHConnectionInfo
+from ..remote.remote_connector import RemoteCliArgs, SSHConnectionInfo
 
-AnchorRunAnsiblePlaybookPath = "provisioner/common/anchor/playbooks/anchor_run.yaml"
-
+AnchorRunAnsiblePlaybookPath = f"{pathlib.Path(__file__).parent}/playbooks/anchor_run.yaml"
 
 class RunEnvironment(str, Enum):
     Local = "Local"
