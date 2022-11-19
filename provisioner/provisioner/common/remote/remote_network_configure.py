@@ -28,7 +28,7 @@ class RemoteMachineNetworkConfigureArgs:
     gw_ip_address: str
     dns_ip_address: str
     static_ip_address: str
-    ansible_playbook_path_configure_network: str
+    ansible_playbook_relative_path_from_root: str
     remote_args: RemoteCliArgs
 
     def __init__(
@@ -37,13 +37,13 @@ class RemoteMachineNetworkConfigureArgs:
         gw_ip_address: str,
         dns_ip_address: str,
         static_ip_address: str,
-        ansible_playbook_path_configure_network: str,
+        ansible_playbook_relative_path_from_root: str,
     ) -> None:
         self.remote_args = remote_args
         self.gw_ip_address = gw_ip_address
         self.dns_ip_address = dns_ip_address
         self.static_ip_address = static_ip_address
-        self.ansible_playbook_path_configure_network = ansible_playbook_path_configure_network
+        self.ansible_playbook_relative_path_from_root = ansible_playbook_relative_path_from_root
 
 
 class Collaborators:
@@ -121,7 +121,7 @@ class RemoteMachineNetworkConfigureRunner:
                 username=ssh_conn_info.username,
                 password=ssh_conn_info.password,
                 ssh_private_key_file_path=ssh_conn_info.ssh_private_key_file_path,
-                playbook_path=args.ansible_playbook_path_configure_network,
+                playbook_path=args.ansible_playbook_relative_path_from_root,
                 ansible_vars=ansible_vars,
                 ansible_tags=["configure_rpi_network", "define_static_ip", "reboot"],
                 selected_hosts=ssh_conn_info.host_ip_pairs,

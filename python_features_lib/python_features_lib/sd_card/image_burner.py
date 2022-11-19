@@ -60,7 +60,6 @@ class ImageBurnerCmdRunner:
             collaborators.process,
             collaborators.prompter,
             collaborators.printer,
-            collaborators.summary,
         )
         collaborators.summary.add_value("block_device_name", block_device_name)
 

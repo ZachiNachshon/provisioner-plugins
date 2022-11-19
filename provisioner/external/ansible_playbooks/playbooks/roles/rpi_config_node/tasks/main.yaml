@@ -8,7 +8,7 @@
   tags: ['configure_remote_node']
   include_role:
     # TODO: This is a relative path of the playbook directory, not optimal, should be handled ASAP
-    name: ../../../external/ansible_playbooks/playbooks/roles/shell_scripts_lib
+    name: ../../../../../external/ansible_playbooks/playbooks/roles/shell_scripts_lib
 
 - name: 'Configure RPi node hardware and system'
   tags: ['configure_remote_node']

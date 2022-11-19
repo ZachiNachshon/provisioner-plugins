@@ -23,12 +23,12 @@ from python_features_lib.remote.remote_connector import (
 
 class RemoteMachineOsConfigureArgs:
 
-    ansible_playbook_path_configure_os: str
+    ansible_playbook_relative_path_from_root: str
     remote_args: RemoteCliArgs
 
-    def __init__(self, remote_args: RemoteCliArgs, ansible_playbook_path_configure_os: str) -> None:
+    def __init__(self, remote_args: RemoteCliArgs, ansible_playbook_relative_path_from_root: str) -> None:
         self.remote_args = remote_args
-        self.ansible_playbook_path_configure_os = ansible_playbook_path_configure_os
+        self.ansible_playbook_relative_path_from_root = ansible_playbook_relative_path_from_root
 
 
 class Collaborators:
@@ -89,7 +89,7 @@ class RemoteMachineOsConfigureRunner:
                 username=ssh_conn_info.username,
                 password=ssh_conn_info.password,
                 ssh_private_key_file_path=ssh_conn_info.ssh_private_key_file_path,
-                playbook_path=args.ansible_playbook_path_configure_os,
+                playbook_path=args.ansible_playbook_relative_path_from_root,
                 ansible_vars=ansible_vars,
                 ansible_tags=["configure_remote_node", "reboot"],
                 selected_hosts=ssh_conn_info.host_ip_pairs,

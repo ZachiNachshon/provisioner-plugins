@@ -117,8 +117,7 @@ poetry_create_virtual_environment() {
   run_poetry env use "$(pyenv which python3)" # Don't want to force using pyenv
   run_poetry update "${no_dev_deps_flag}"
   run_poetry install "${no_dev_deps_flag}"
-  # run_poetry build
-  run_poetry build-project
+  run_poetry build
 }
 
 poetry_is_active_venv() {
@@ -130,7 +129,7 @@ poetry_is_active_venv() {
 create_virtual_env_if_missing() {
   local virtualenvs_path=$(poetry_get_virtualenvs_path)
 
-  if is_directory_exist "${virtualenvs_path}" || poetry_is_active_venv; then
+  if is_directory_exist "${virtualenvs_path}" && poetry_is_active_venv; then
     log_debug "${COLOR_GREEN}Poetry virtual environment is active and ready. venv: ${virtualenvs_path}${COLOR_NONE}"
   else
     log_error "${COLOR_RED}Poetry virtual environment is not active${COLOR_NONE}"

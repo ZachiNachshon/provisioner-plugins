@@ -1,0 +1,22 @@
+{
+  "dependencies": {
+    "repos": [
+      {
+        "name": "shell_scripts_lib",
+        "url": "git@github.com:ZachiNachshon/shell-scripts-lib.git",
+        "branch": "master",
+        "revision": "4709ce6f0c3ab1f84fe953a15e7c7225190425ae",
+        "includes": ["runner*/", "runner/base*", "runner/poetry*", "runner/ansible*"],
+        "excludes": ["*_test*", "*/"]
+      }
+    ]
+  },
+  "devDependencies": {
+    "repos": [
+      {
+        "name": "shell_scripts_lib",
+        "localPath": "/Users/zachin/codebase/github/shell-scripts-lib"
+      }
+    ]
+  }
+}
