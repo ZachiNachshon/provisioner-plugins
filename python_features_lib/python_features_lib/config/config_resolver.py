@@ -1,21 +1,20 @@
 #!/usr/bin/env python3
 
 import os
-import pathlib
+from typing import Any
 
 from loguru import logger
 from python_core_lib.config.config_reader import ConfigReader
+from python_core_lib.domain.serialize import SerializationBase
 from python_core_lib.infra.context import Context
 from python_core_lib.utils.io_utils import IOUtils
 from python_core_lib.utils.yaml_util import YamlUtil
-from python_features_lib.remote.typer_remote_opts import TyperRemoteOpts
 
-from provisioner.config.domain.config import ProvisionerConfig
+from python_features_lib.remote.typer_remote_opts import TyperRemoteOpts
+from python_features_lib.anchor.typer_anchor_opts import TyperAnchorOpts
+
 
 ENV_VAR_ENABLE_CONFIG_DEBUG = "PROVISIONER_PRE_RUN_DEBUG"
-CONFIG_USER_PATH = os.path.expanduser("~/.config/provisioner/config.yaml")
-CONFIG_INTERNAL_PATH = f"{pathlib.Path(__file__).parent}/config.yaml"
-
 
 class ConfigResolver:
 
@@ -24,7 +23,7 @@ class ConfigResolver:
     _user_path: str
 
     # Static variable
-    config: ProvisionerConfig = None
+    config: SerializationBase = None
 
     def __init__(self, ctx: Context, internal_path: str, user_path: str) -> None:
         self._internal_path = internal_path
@@ -40,10 +39,10 @@ class ConfigResolver:
         return resolver
 
     @staticmethod
-    def resolve(internal_path: str, user_path: str) -> None:
+    def load(internal_path: str, user_path: str, class_name: SerializationBase) -> None:
         """
-        Logger is being set-up after Typer is initialized and we have the --dry-run, --verbose
-        flags are avaialble.
+        The --dry-run and --verbose flags aren't avaialble at this stage since logger 
+        is being set-up after Typer is initialized.
         I've added pre Typer run env var to contorl if configuraiton load debug logs
         should be visible.
         """
@@ -54,11 +53,10 @@ class ConfigResolver:
         empty_ctx = Context.create()
         resolver = ConfigResolver._create(empty_ctx, internal_path, user_path)
         ConfigResolver.config = resolver.config_reader.read_config_fn(
-            internal_path=internal_path, class_name=ProvisionerConfig, user_path=user_path
+            internal_path=internal_path, class_name=class_name, user_path=user_path
         )
-
-    def get_config() -> ProvisionerConfig:
-        if not ConfigResolver.config:
-            ConfigResolver.resolve(CONFIG_INTERNAL_PATH, CONFIG_USER_PATH)
-            TyperRemoteOpts.load(ConfigResolver.config.remote)
+        TyperRemoteOpts.load(ConfigResolver.config.remote)
+        TyperAnchorOpts.load(ConfigResolver.config.anchor)
+        
+    def get_config() -> Any:
         return ConfigResolver.config

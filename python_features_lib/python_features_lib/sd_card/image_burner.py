@@ -64,7 +64,7 @@ class ImageBurnerCmdRunner:
         collaborators.summary.add_value("block_device_name", block_device_name)
 
         collaborators.printer.new_line_fn()
-        image_file_path = Evaluator.eval_step_failure_throws(
+        image_file_path = Evaluator.eval_step_return_failure_throws(
             call=lambda: self._download_image(
                 args.image_download_url, args.image_download_path, collaborators.http_client
             ),
@@ -75,7 +75,7 @@ class ImageBurnerCmdRunner:
 
         logger.debug(f"Burn image candidate is located at path: {image_file_path}")
 
-        Evaluator.eval_step_failure_throws(
+        Evaluator.eval_step_return_failure_throws(
             call=lambda: self._burn_image(
                 ctx,
                 block_device_name,
@@ -94,7 +94,7 @@ class ImageBurnerCmdRunner:
         printer.print_fn("Please select a block device:")
         printer.new_line_fn()
 
-        block_devices = Evaluator.eval_step_failure_throws(
+        block_devices = Evaluator.eval_step_return_failure_throws(
             call=lambda: self.read_block_devices(ctx=ctx, process=process),
             ctx=ctx,
             err_msg="Cannot read block devices",
@@ -103,13 +103,13 @@ class ImageBurnerCmdRunner:
         logger.debug("Printing available block devices")
         printer.print_fn(block_devices)
 
-        block_device_name = Evaluator.eval_step_failure_throws(
+        block_device_name = Evaluator.eval_step_return_failure_throws(
             call=lambda: self.select_block_device(prompter=prompter),
             ctx=ctx,
             err_msg="Block device was not selected, aborting",
         )
 
-        Evaluator.eval_step_failure_throws(
+        Evaluator.eval_step_return_failure_throws(
             call=lambda: self.verify_block_device_name(
                 block_devices=block_devices, selected_block_device=block_device_name
             ),
@@ -147,7 +147,7 @@ class ImageBurnerCmdRunner:
 
         if ctx.os_arch.is_linux():
             self._run_pre_burn_approval_flow(ctx, block_device_name, prompter, summary)
-            Evaluator.eval_step_failure_throws(
+            Evaluator.eval_step_return_failure_throws(
                 call=lambda: self._burn_image_linux(
                     block_device_name, burn_image_file_path, process, prompter, printer
                 ),
@@ -157,7 +157,7 @@ class ImageBurnerCmdRunner:
 
         elif ctx.os_arch.is_darwin():
             self._run_pre_burn_approval_flow(ctx, block_device_name, prompter, summary)
-            Evaluator.eval_step_failure_throws(
+            Evaluator.eval_step_return_failure_throws(
                 call=lambda: self._burn_image_darwin(
                     block_device_name, burn_image_file_path, process, prompter, printer
                 ),
@@ -174,7 +174,7 @@ class ImageBurnerCmdRunner:
 
     def _run_pre_burn_approval_flow(self, ctx: Context, block_device_name: str, prompter: Prompter, summary: Summary):
         summary.show_summary_and_prompt_for_enter(f"Burning image to {block_device_name}")
-        Evaluator.eval_step_failure_throws(
+        Evaluator.eval_step_return_failure_throws(
             call=lambda: self.ask_to_verify_block_device(block_device_name=block_device_name, prompter=prompter),
             ctx=ctx,
             err_msg="Aborted upon user request",

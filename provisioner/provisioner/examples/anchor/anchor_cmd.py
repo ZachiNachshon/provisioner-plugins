@@ -10,16 +10,16 @@ from python_features_lib.anchor.anchor_runner import (
     AnchorCmdRunnerCollaborators,
     AnchorRunnerCmdArgs,
 )
-from python_features_lib.remote.remote_connector import RemoteCliArgs
+from python_features_lib.remote.typer_remote_opts import CliRemoteOpts
 
-
-class AnchorCmdArgs(RemoteCliArgs):
+class AnchorCmdArgs:
 
     anchor_run_command: str
     github_organization: str
     repository_name: str
     branch_name: str
     github_access_token: str
+    remote_opts: CliRemoteOpts
 
     def __init__(
         self,
@@ -28,20 +28,19 @@ class AnchorCmdArgs(RemoteCliArgs):
         repository_name: str,
         branch_name: str,
         github_access_token: str,
-        node_username: Optional[str] = None,
-        node_password: Optional[str] = None,
-        ip_discovery_range: Optional[str] = None,
     ) -> None:
 
-        super().__init__(node_username, node_password, ip_discovery_range)
         self.anchor_run_command = anchor_run_command
         self.github_organization = github_organization
         self.repository_name = repository_name
         self.branch_name = branch_name
         self.github_access_token = github_access_token
+        self.remote_opts = CliRemoteOpts.maybe_get()
 
     def print(self) -> None:
-        super().print()
+        if self.remote_opts:
+            self.remote_opts.print()
+
         logger.debug(
             f"AnchorCmdArgs: \n"
             + f"  anchor_run_command: {self.node_username}\n"
@@ -59,14 +58,12 @@ class AnchorCmd:
         AnchorCmdRunner().run(
             ctx=ctx,
             args=AnchorRunnerCmdArgs(
-                node_username=args.node_username,
-                node_password=args.node_password,
-                ip_discovery_range=args.ip_discovery_range,
                 anchor_run_command=args.anchor_run_command,
                 github_organization=args.github_organization,
                 repository_name=args.repository_name,
                 branch_name=args.branch_name,
                 github_access_token=args.github_access_token,
+                remote_opts=args.remote_opts,
             ),
             collaborators=AnchorCmdRunnerCollaborators(ctx),
         )

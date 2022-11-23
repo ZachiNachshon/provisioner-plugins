@@ -15,19 +15,19 @@ from python_core_lib.utils.prompter import Prompter
 from python_core_lib.utils.summary import Summary
 
 from python_features_lib.remote.remote_connector import (
-    RemoteCliArgs,
     RemoteMachineConnector,
     SSHConnectionInfo,
 )
+from python_features_lib.remote.typer_remote_opts import CliRemoteOpts
 
 
 class RemoteMachineOsConfigureArgs:
 
     ansible_playbook_relative_path_from_root: str
-    remote_args: RemoteCliArgs
+    remote_opts: CliRemoteOpts
 
-    def __init__(self, remote_args: RemoteCliArgs, ansible_playbook_relative_path_from_root: str) -> None:
-        self.remote_args = remote_args
+    def __init__(self, remote_opts: CliRemoteOpts, ansible_playbook_relative_path_from_root: str) -> None:
+        self.remote_opts = remote_opts
         self.ansible_playbook_relative_path_from_root = ansible_playbook_relative_path_from_root
 
 
@@ -67,9 +67,9 @@ class RemoteMachineOsConfigureRunner:
             collaborators.checks, collaborators.printer, collaborators.prompter, collaborators.network_util
         )
 
-        ssh_conn_info = Evaluator.eval_step_failure_throws(
+        ssh_conn_info = Evaluator.eval_step_return_failure_throws(
             call=lambda: remote_connector.collect_ssh_connection_info(
-                ctx, args.remote_args, force_single_conn_info=True
+                ctx, args.remote_opts, force_single_conn_info=True
             ),
             ctx=ctx,
             err_msg="Could not resolve SSH connection info",

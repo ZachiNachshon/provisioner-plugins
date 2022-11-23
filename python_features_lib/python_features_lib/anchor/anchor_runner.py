@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-from enum import Enum
-import pathlib
 from typing import List, Optional
 
 from loguru import logger
@@ -12,14 +10,10 @@ from python_core_lib.utils.io_utils import IOUtils
 from python_core_lib.utils.printer import Printer
 from python_core_lib.utils.process import Process
 from python_core_lib.utils.progress_indicator import ProgressIndicator
+from python_features_lib.remote.domain.config import RunEnvironment
+from python_features_lib.remote.typer_remote_opts import CliRemoteOpts
 
-from ..remote.remote_connector import RemoteCliArgs, SSHConnectionInfo
-
-AnchorRunAnsiblePlaybookPath = f"{pathlib.Path(__file__).parent}/playbooks/anchor_run.yaml"
-
-class RunEnvironment(str, Enum):
-    Local = "Local"
-    Remote = "Remote"
+from ..remote.remote_connector import SSHConnectionInfo
 
 
 class AnchorRunnerCmdArgs:
@@ -29,7 +23,7 @@ class AnchorRunnerCmdArgs:
     repository_name: str
     branch_name: str
     github_access_token: str
-    remote_args: RemoteCliArgs
+    remote_opts: CliRemoteOpts
 
     def __init__(
         self,
@@ -38,14 +32,14 @@ class AnchorRunnerCmdArgs:
         repository_name: str,
         branch_name: str,
         github_access_token: str,
-        remote_args: Optional[RemoteCliArgs] = None,
+        remote_opts: Optional[CliRemoteOpts] = None,
     ) -> None:
         self.anchor_run_command = anchor_run_command
         self.github_organization = github_organization
         self.repository_name = repository_name
         self.branch_name = branch_name
         self.github_access_token = github_access_token
-        self.remote_args = remote_args
+        self.remote_opts = remote_opts
 
 
 class Collaborators:
@@ -100,14 +94,17 @@ class AnchorCmdRunner:
         ]
 
         collaborators.printer.new_line_fn()
+        working_dir = collaborators.io.get_project_root_path_fn(__file__)
+
+        anchor_run_ansible_playbook_path="python_features_lib/anchor/playbooks/anchor_run.yaml"
 
         output = collaborators.printer.progress_indicator.status.long_running_process_fn(
             call=lambda: collaborators.ansible_runner.run_fn(
-                working_dir=collaborators.io.get_current_directory_fn(),
+                working_dir=working_dir,
                 username=ssh_conn_info.username,
                 password=ssh_conn_info.password,
                 ssh_private_key_file_path=ssh_conn_info.ssh_private_key_file_path,
-                playbook_path=AnchorRunAnsiblePlaybookPath,
+                playbook_path=anchor_run_ansible_playbook_path,
                 ansible_vars=ansible_vars,
                 ansible_tags=["ansible_run"],
                 selected_hosts=ssh_conn_info.host_ip_pairs,

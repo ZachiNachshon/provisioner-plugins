@@ -1,37 +1,25 @@
 #!/usr/bin/env python3
 
-from typing import List, Optional
 
 from loguru import logger
 from python_core_lib.infra.context import Context
-from python_core_lib.runner.ansible.ansible import HostIpPair
-from python_features_lib.remote.remote_connector import RemoteCliArgs
 
 from provisioner.common.remote.remote_os_configure import (
     RemoteMachineOsConfigureArgs,
     RemoteMachineOsConfigureCollaborators,
     RemoteMachineOsConfigureRunner,
 )
+from python_features_lib.remote.typer_remote_opts import CliRemoteOpts
 
 RpiConfigureOsAnsiblePlaybookRelativePathFromRoot = "provisioner/single_board/raspberry_pi/node/playbooks/configure_os.yaml"
 
 
 class RPiOsConfigureCmdArgs:
 
-    remote_args: RemoteCliArgs
+    remote_args: CliRemoteOpts
 
-    def __init__(
-        self,
-        node_username: Optional[str] = None,
-        node_password: Optional[str] = None,
-        ssh_private_key_file_path: Optional[str] = None,
-        ip_discovery_range: Optional[str] = None,
-        host_ip_pairs: List[HostIpPair] = None,
-    ) -> None:
-
-        self.remote_args = RemoteCliArgs(
-            node_username, node_password, ip_discovery_range, host_ip_pairs, ssh_private_key_file_path
-        )
+    def __init__(self) -> None:
+        self.remote_args = CliRemoteOpts.maybe_get()
 
     def print(self) -> None:
         if self.remote_args:
@@ -46,7 +34,7 @@ class RPiOsConfigureCmd:
         RemoteMachineOsConfigureRunner().run(
             ctx=ctx,
             args=RemoteMachineOsConfigureArgs(
-                remote_args=args.remote_args,
+                remote_opts=args.remote_args,
                 ansible_playbook_relative_path_from_root=RpiConfigureOsAnsiblePlaybookRelativePathFromRoot,
             ),
             collaborators=RemoteMachineOsConfigureCollaborators(ctx),

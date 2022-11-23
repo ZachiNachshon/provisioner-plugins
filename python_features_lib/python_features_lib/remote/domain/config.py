@@ -1,5 +1,12 @@
 #!/usr/bin/env python3
 
+from enum import Enum
+
+
+class RunEnvironment(str, Enum):
+    Local = "Local"
+    Remote = "Remote"
+
 class RemoteConfig:
     """
     Configuration structure - 

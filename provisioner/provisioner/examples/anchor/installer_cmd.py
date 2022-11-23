@@ -1,18 +1,17 @@
 #!/usr/bin/env python3
 
-from typing import List, Optional
+from typing import List
 
 from loguru import logger
 from python_core_lib.infra.context import Context
-from python_core_lib.runner.ansible.ansible import HostIpPair
+from python_features_lib.remote.domain.config import RunEnvironment
 
-from python_features_lib.anchor.anchor_runner import RunEnvironment
-from python_features_lib.installer.installer_runner import (
+from python_installer_lib.installer.installer_runner import (
     UtilityInstallerCmdRunner,
     UtilityInstallerCmdRunnerCollaborators,
     UtilityInstallerRunnerCmdArgs,
 )
-from python_features_lib.remote.remote_connector import RemoteCliArgs
+from python_features_lib.remote.typer_remote_opts import CliRemoteOpts
 
 
 class UtilityInstallerCmdArgs:
@@ -20,30 +19,23 @@ class UtilityInstallerCmdArgs:
     utilities: List[str]
     environment: RunEnvironment
     github_access_token: str
-    remote_args: RemoteCliArgs
+    remote_opts: CliRemoteOpts
 
     def __init__(
         self,
         utilities: List[str],
         environment: RunEnvironment,
         github_access_token: str,
-        node_username: Optional[str] = None,
-        node_password: Optional[str] = None,
-        ssh_private_key_file_path: Optional[str] = None,
-        ip_discovery_range: Optional[str] = None,
-        host_ip_pairs: List[HostIpPair] = None,
     ) -> None:
 
-        self.remote_args = RemoteCliArgs(
-            node_username, node_password, ip_discovery_range, host_ip_pairs, ssh_private_key_file_path
-        )
         self.utilities = utilities
         self.environment = environment
         self.github_access_token = github_access_token
+        self.remote_opts = CliRemoteOpts.maybe_get()
 
     def print(self) -> None:
-        if self.remote_args:
-            self.remote_args.print()
+        if self.remote_opts:
+            self.remote_opts.print()
         logger.debug(
             f"InstallerCmdArgs: \n"
             + f"  utilities: {str(self.utilities)}\n"
@@ -59,7 +51,7 @@ class UtilityInstallerCmd:
         UtilityInstallerCmdRunner().run(
             ctx=ctx,
             args=UtilityInstallerRunnerCmdArgs(
-                utilities=args.utilities, github_access_token=args.github_access_token, remote_args=args.remote_args
+                utilities=args.utilities, github_access_token=args.github_access_token, remote_args=args.remote_opts
             ),
             collaborators=UtilityInstallerCmdRunnerCollaborators(ctx),
             run_env=args.environment,

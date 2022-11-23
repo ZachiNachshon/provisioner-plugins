@@ -7,7 +7,7 @@ import typer
 from ..cli.state import CliGlobalArgs
 from ..infra.log import LoggerManager
 
-STATIC_VERISON_FILE_PATH = None
+STATIC_VERSION_FILE_PATH = None
 
 def main_runner(
     verbose: Optional[bool] = typer.Option(False, "--verbose", "-v", help="Run command with DEBUG verbosity"),
@@ -44,7 +44,7 @@ def main_runner(
 def try_read_version() -> str:
     content = "no version"
     try:
-        with open(STATIC_VERISON_FILE_PATH, "r+") as opened_file:
+        with open(STATIC_VERSION_FILE_PATH, "r+") as opened_file:
             content = opened_file.read()
             opened_file.close()
     except Exception as error:
@@ -56,13 +56,17 @@ class EntryPoint:
     @staticmethod
     def create_typer(
         title: str, 
-        config_resolver_fn: Callable, 
+        config_resolver_fn: Optional[Callable] = None, 
         version_file_path: Optional[str] = "resources/version.txt") -> typer.Typer:
 
-        global STATIC_VERISON_FILE_PATH
-        STATIC_VERISON_FILE_PATH = version_file_path
+        global STATIC_VERSION_FILE_PATH
+        STATIC_VERSION_FILE_PATH = version_file_path
 
-        config_resolver_fn()
+        if config_resolver_fn:
+            config_resolver_fn()
+
+        # Use invoke_without_command=True to allow usage of --version flags which are NoOp commands
+        # Use also no_args_is_help=True to print the help menu is no arguments were supplied
         return typer.Typer(
             help=title,
             callback=main_runner, 

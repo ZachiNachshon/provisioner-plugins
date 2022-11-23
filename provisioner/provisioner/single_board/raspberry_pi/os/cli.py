@@ -11,7 +11,7 @@ from python_core_lib.errors.cli_errors import (
 )
 from python_core_lib.infra.context import CliContextManager
 
-from provisioner.config.config_resolver import ConfigResolver
+from python_features_lib.config.config_resolver import ConfigResolver
 from provisioner.single_board.raspberry_pi.os.burn_image_cmd import RPiOsBurnImageCmd, RPiOsBurnImageCmdArgs
 
 rpi_os_cli_app = typer.Typer()

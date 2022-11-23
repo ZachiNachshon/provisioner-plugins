@@ -11,7 +11,7 @@ from provisioner.common.dummy.hello_world_runner import (
     HelloWorldRunnerArgs,
     HelloWorldRunnerCollaborators,
 )
-from python_features_lib.remote.remote_connector import RemoteCliArgs
+from python_features_lib.remote.typer_remote_opts import CliRemoteOpts
 
 
 HelloWorldAnsiblePlaybookRelativePathFromRoot = "provisioner/examples/ansible/playbooks/hello_world.yaml"
@@ -19,26 +19,15 @@ HelloWorldAnsiblePlaybookRelativePathFromRoot = "provisioner/examples/ansible/pl
 class HelloWorldCmdArgs:
 
     username: str
-    remote_args: RemoteCliArgs
+    remote_opts: CliRemoteOpts
 
-    def __init__(
-        self,
-        username: str = None,
-        node_username: Optional[str] = None,
-        node_password: Optional[str] = None,
-        ssh_private_key_file_path: Optional[str] = None,
-        ip_discovery_range: Optional[str] = None,
-        host_ip_pairs: List[HostIpPair] = None,
-    ) -> None:
-
-        self.remote_args = RemoteCliArgs(
-            node_username, node_password, ip_discovery_range, host_ip_pairs, ssh_private_key_file_path
-        )
+    def __init__(self, username: str = None) -> None:
         self.username = username
+        self.remote_opts = CliRemoteOpts.maybe_get()
 
     def print(self) -> None:
-        if self.remote_args:
-            self.remote_args.print()
+        if self.remote_opts:
+            self.remote_opts.print()
         logger.debug(f"HelloWorldCmdArgs: \n" + f"  username: {self.username}\n")
 
 
@@ -50,7 +39,7 @@ class HelloWorldCmd:
             ctx=ctx,
             args=HelloWorldRunnerArgs(
                 username=args.username,
-                remote_args=args.remote_args,
+                remote_opts=args.remote_opts,
                 ansible_playbook_relative_path_from_root=HelloWorldAnsiblePlaybookRelativePathFromRoot,
             ),
             collaborators=HelloWorldRunnerCollaborators(ctx),

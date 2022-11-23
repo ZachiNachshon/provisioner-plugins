@@ -10,19 +10,19 @@ from python_core_lib.utils.process import Process
 from python_core_lib.utils.progress_indicator import ProgressIndicator
 from python_core_lib.utils.prompter import Prompter
 
-from python_features_lib.remote.remote_connector import RemoteCliArgs, SSHConnectionInfo
+from python_features_lib.remote.remote_connector import SSHConnectionInfo
+from python_features_lib.remote.typer_remote_opts import CliRemoteOpts
 
 class HelloWorldRunnerArgs:
 
     username: str
-    remote_args: RemoteCliArgs
     ansible_playbook_relative_path_from_root: str
+    remote_opts: CliRemoteOpts
 
-    def __init__(self, username: str, remote_args: RemoteCliArgs, ansible_playbook_relative_path_from_root: str) -> None:
+    def __init__(self, username: str, ansible_playbook_relative_path_from_root: str, remote_opts: CliRemoteOpts) -> None:
         self.username = username
-        self.remote_args = remote_args
         self.ansible_playbook_relative_path_from_root = ansible_playbook_relative_path_from_root
-
+        self.remote_opts = remote_opts
 
 class RunnerCollaborators:
     io: IOUtils

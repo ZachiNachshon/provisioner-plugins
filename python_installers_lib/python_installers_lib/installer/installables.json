@@ -1,0 +1,27 @@
+{
+    "utilities": [
+        {
+            "name": "k3s-server",
+            "owner": "k3s-io",
+            "repo": "k3s",
+            "version": "k3s"
+        },
+        {
+            "name": "k3s-agent",
+            "owner": "k3s-io",
+            "repo": "k3s",
+            "version": "k3s"
+        },
+        {
+            "name": "docker"
+        }
+    ],
+    "kubernetes": [
+        {
+            "name": "k3s"
+        },
+        {
+            "name": "docker"
+        }
+    ]
+}

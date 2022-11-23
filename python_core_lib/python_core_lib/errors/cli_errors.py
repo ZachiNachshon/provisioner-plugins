@@ -48,5 +48,8 @@ class InvalidAnsibleHostPair(Exception):
 class StepEvaluationFailure(Exception):
     pass
 
+class CliEntrypointFailure(Exception):
+    pass
+
 class InstallerUtilityNotSupported(Exception):
     pass

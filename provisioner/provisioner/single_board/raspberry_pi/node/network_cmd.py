@@ -1,16 +1,15 @@
 #!/usr/bin/env python3
 
-from typing import List, Optional
+from typing import Optional
 
 from loguru import logger
 from python_core_lib.infra.context import Context
-from python_core_lib.runner.ansible.ansible import HostIpPair
-from python_features_lib.remote.remote_connector import RemoteCliArgs
 from provisioner.common.remote.remote_network_configure import (
     RemoteMachineNetworkConfigureArgs,
     RemoteMachineNetworkConfigureCollaborators,
     RemoteMachineNetworkConfigureRunner,
 )
+from python_features_lib.remote.typer_remote_opts import CliRemoteOpts
 
 RpiNetworkConfigureAnsiblePlaybookRelativePathFromRoot = "provisioner/single_board/raspberry_pi/node/playbooks/configure_network.yaml"
 
@@ -20,29 +19,22 @@ class RPiNetworkConfigureCmdArgs:
     gw_ip_address: str
     dns_ip_address: str
     static_ip_address: str
-    remote_args: RemoteCliArgs
+    remote_opts: CliRemoteOpts
 
     def __init__(
         self,
         gw_ip_address: Optional[str] = None,
         dns_ip_address: Optional[str] = None,
-        static_ip_address: Optional[str] = None,
-        node_username: Optional[str] = None,
-        node_password: Optional[str] = None,
-        ssh_private_key_file_path: Optional[str] = None,
-        ip_discovery_range: Optional[str] = None,
-        host_ip_pairs: List[HostIpPair] = None,
+        static_ip_address: Optional[str] = None
     ) -> None:
-        self.remote_args = RemoteCliArgs(
-            node_username, node_password, ip_discovery_range, host_ip_pairs, ssh_private_key_file_path
-        )
         self.gw_ip_address = gw_ip_address
         self.dns_ip_address = dns_ip_address
         self.static_ip_address = static_ip_address
+        self.remote_opts = CliRemoteOpts.maybe_get()
 
     def print(self) -> None:
-        if self.remote_args:
-            self.remote_args.print()
+        if self.remote_opts:
+            self.remote_opts.print()
         logger.debug(
             f"RPiNetworkConfigureCmdArgs: \n"
             + f"  gw_ip_address: {self.gw_ip_address}\n"
@@ -58,7 +50,7 @@ class RPiNetworkConfigureCmd:
         RemoteMachineNetworkConfigureRunner().run(
             ctx=ctx,
             args=RemoteMachineNetworkConfigureArgs(
-                remote_args=args.remote_args,
+                remote_args=args.remote_opts,
                 gw_ip_address=args.gw_ip_address,
                 dns_ip_address=args.dns_ip_address,
                 static_ip_address=args.static_ip_address,

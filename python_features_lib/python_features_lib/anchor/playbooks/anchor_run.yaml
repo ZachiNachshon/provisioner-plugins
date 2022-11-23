@@ -8,5 +8,5 @@
     # SILENT: True
 
   roles:
-    - role: ../../../external/ansible_playbooks/playbooks/roles/anchor
+    - role: external/ansible_playbooks/playbooks/roles/anchor
       tags: ['anchor_run']

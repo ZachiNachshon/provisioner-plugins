@@ -11,57 +11,12 @@ from python_core_lib.utils.checks import Checks
 from python_core_lib.utils.network import NetworkUtil
 from python_core_lib.utils.printer import Printer
 from python_core_lib.utils.prompter import Prompter
-
-from .domain.config import RemoteConfig
-
+from python_features_lib.remote.typer_remote_opts import CliRemoteOpts
 
 class NetworkDeviceSelectionMethod(str, Enum):
     ScanLAN = "Scan LAN"
     UserConfig = "User Config"
     UserPrompt = "User Prompt"
-
-
-class RemoteCliArgs:
-    node_username: str
-    node_password: str
-    ip_discovery_range: str
-    host_ip_pairs: List[HostIpPair]
-    ssh_private_key_file_path: str
-
-    def __init__(
-        self,
-        node_username: Optional[str] = None,
-        node_password: Optional[str] = None,
-        ip_discovery_range: Optional[str] = None,
-        host_ip_pairs: Optional[List[HostIpPair]] = None,
-        ssh_private_key_file_path: Optional[str] = None,
-    ) -> None:
-
-        self.node_username = node_username
-        self.node_password = node_password
-        self.ip_discovery_range = ip_discovery_range
-        self.host_ip_pairs = host_ip_pairs
-        self.ssh_private_key_file_path = ssh_private_key_file_path
-
-    @staticmethod
-    def to_host_ip_pairs(hosts: dict[str, RemoteConfig.Host]) -> List[HostIpPair]:
-        if not hosts:
-            return None
-        result: List[HostIpPair] = []
-        for key, value in hosts.items():
-            result.append(HostIpPair(value.name, value.address))
-        return result
-
-    def print(self) -> None:
-        logger.debug(
-            f"RemoteCliArgs: \n"
-            + f"  node_username: {self.node_username}\n"
-            + f"  node_password: {self.node_password}\n"
-            + f"  ip_discovery_range: {self.ip_discovery_range}\n"
-            + f"  host_ip_pairs: {'supplied via CLI arguments or user config' if self.host_ip_pairs is not None else None}\n"
-            + f"  ssh_private_key_file_path: {self.ssh_private_key_file_path}\n"
-        )
-
 
 class SSHConnectionInfo:
     username: str
@@ -110,7 +65,7 @@ class RemoteMachineConnector:
     def collect_ssh_connection_info(
         self,
         ctx: Context,
-        remote_args: Optional[RemoteCliArgs] = None,
+        remote_opts: Optional[CliRemoteOpts] = None,
         force_single_conn_info: Optional[bool] = False,
     ) -> SSHConnectionInfo:
 
@@ -133,23 +88,23 @@ class RemoteMachineConnector:
         network_device_selection_method = self._ask_for_network_device_selection_method()
 
         if network_device_selection_method == NetworkDeviceSelectionMethod.UserConfig:
-            selected_host_ip_pairs = Evaluator.eval_step_failure_throws(
-                call=lambda: remote_args
-                and self._select_from_existing_host_ip_pairs(remote_args.host_ip_pairs, force_single_conn_info),
+            selected_host_ip_pairs = Evaluator.eval_step_return_failure_throws(
+                call=lambda: remote_opts
+                and self._select_from_existing_host_ip_pairs(remote_opts.host_ip_pairs, force_single_conn_info),
                 ctx=ctx,
                 err_msg="Failed to read host IP address from user configuration",
             )
 
         elif network_device_selection_method == NetworkDeviceSelectionMethod.ScanLAN:
-            selected_host_ip_pairs = Evaluator.eval_step_failure_throws(
-                call=lambda: remote_args
-                and self._run_host_ip_address_scan(remote_args.ip_discovery_range, force_single_conn_info),
+            selected_host_ip_pairs = Evaluator.eval_step_return_failure_throws(
+                call=lambda: remote_opts
+                and self._run_host_ip_address_scan(remote_opts.ip_discovery_range, force_single_conn_info),
                 ctx=ctx,
                 err_msg="Failed to read host IP address from LAN scan",
             )
 
         elif network_device_selection_method == NetworkDeviceSelectionMethod.UserPrompt:
-            selected_host_ip_pairs = Evaluator.eval_step_failure_throws(
+            selected_host_ip_pairs = Evaluator.eval_step_return_failure_throws(
                 call=lambda: self._run_single_host_ip_selection_flow(),
                 ctx=ctx,
                 err_msg="Failed to read a host IP address from user prompt",
@@ -157,7 +112,7 @@ class RemoteMachineConnector:
         else:
             return None
 
-        return self._get_ssh_connection_info(ctx, remote_args, selected_host_ip_pairs)
+        return self._get_ssh_connection_info(ctx, remote_opts, selected_host_ip_pairs)
 
     def collect_dhcpcd_configuration_info(
         self, ctx: Context, host_ip_pairs: str, arg_static_ip: str, arg_gw_address: str, arg_dns_address: str
@@ -169,7 +124,7 @@ class RemoteMachineConnector:
             )
         )
 
-        selected_static_ip = Evaluator.eval_step_failure_throws(
+        selected_static_ip = Evaluator.eval_step_return_failure_throws(
             call=lambda: self.prompter.prompt_user_input_fn(
                 message="Enter a desired remote static IP address (example: 192.168.1.2XX)",
                 default=arg_static_ip,
@@ -179,7 +134,7 @@ class RemoteMachineConnector:
             err_msg="Failed to read static IP address",
         )
 
-        selected_gw_address = Evaluator.eval_step_failure_throws(
+        selected_gw_address = Evaluator.eval_step_return_failure_throws(
             call=lambda: self.prompter.prompt_user_input_fn(
                 message="Enter the gateway address",
                 default=arg_gw_address,
@@ -189,7 +144,7 @@ class RemoteMachineConnector:
             err_msg="Failed to read gateway IP address",
         )
 
-        selected_dns_resolver_address = Evaluator.eval_step_failure_throws(
+        selected_dns_resolver_address = Evaluator.eval_step_return_failure_throws(
             call=lambda: self.prompter.prompt_user_input_fn(
                 message="Enter the DNS resolver address",
                 default=arg_dns_address,
@@ -237,7 +192,7 @@ class RemoteMachineConnector:
     def _get_ssh_connection_info(
         self,
         ctx: Context,
-        remote_args: RemoteCliArgs,
+        remote_opts: CliRemoteOpts,
         selected_host_ip_pairs: List[HostIpPair],
     ) -> SSHConnectionInfo:
 
@@ -245,31 +200,31 @@ class RemoteMachineConnector:
             generate_instructions_connect_via_ssh(host_ip_pairs=selected_host_ip_pairs)
         )
 
-        username = Evaluator.eval_step_failure_throws(
+        username = Evaluator.eval_step_return_failure_throws(
             call=lambda: self.prompter.prompt_user_input_fn(
                 message="Enter remote node user",
-                default=remote_args.node_username,
+                default=remote_opts.node_username,
                 post_user_input_message="Selected remote user :: ",
             ),
             ctx=ctx,
             err_msg="Failed to read username",
         )
 
-        if remote_args.ssh_private_key_file_path and len(remote_args.ssh_private_key_file_path) > 0:
+        if remote_opts.ssh_private_key_file_path and len(remote_opts.ssh_private_key_file_path) > 0:
             self.printer.new_line_fn()
             self.printer.print_fn("Identified SSH private key path in user configuration, skipping password prompt.")
             return SSHConnectionInfo(
                 username=username,
-                ssh_private_key_file_path=remote_args.ssh_private_key_file_path,
+                ssh_private_key_file_path=remote_opts.ssh_private_key_file_path,
                 host_ip_pairs=selected_host_ip_pairs,
             )
 
             # TODO: might want to avoid from prompting for auth method since Ansible SSH key in keychain is used by default
         else:
-            password = Evaluator.eval_step_failure_throws(
+            password = Evaluator.eval_step_return_failure_throws(
                 call=lambda: self.prompter.prompt_user_input_fn(
                     message="Enter remote node password",
-                    default=remote_args.node_password,
+                    default=remote_opts.node_password,
                     post_user_input_message="Selected remote password :: ",
                     redact_default=True,
                 ),

@@ -8,7 +8,7 @@
     # SILENT: True
 
   roles:
-    - role: ../../../../../external/ansible_playbooks/playbooks/roles/hello_world
+    - role: external/ansible_playbooks/playbooks/roles/hello_world
       tags: ['hello']
 
   # tasks:
