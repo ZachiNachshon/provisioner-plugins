@@ -1,12 +1,10 @@
 #!/usr/bin/env python3
 
 
+from python_core_lib.infra.evaluator import Evaluator
 import typer
 from loguru import logger
-from python_core_lib.cli.state import CliGlobalArgs
-from python_core_lib.errors.cli_errors import StepEvaluationFailure
 from python_core_lib.infra.context import CliContextManager
-
 
 from python_features_lib.config.config_resolver import ConfigResolver
 from provisioner.examples.anchor.anchor_cmd import AnchorCmd, AnchorCmdArgs
@@ -37,20 +35,17 @@ def run_command(
     """
     Run a dummy anchor run scenario locally or on remote machine via Ansible playbook
     """
-    try:
-        args = AnchorCmdArgs(
-            anchor_run_command=anchor_run_command,
-            github_organization=github_organization,
-            repository_name=repository_name,
-            branch_name=branch_name,
-            github_access_token=git_access_token,
-        )
-        args.print()
-        AnchorCmd().run(ctx=CliContextManager.create(), args=args)
-    except StepEvaluationFailure as sef:
-        logger.critical("Failed to run anchor command. ex: {}, message: {}", sef.__class__.__name__, str(sef))
-    except Exception as e:
-        logger.critical("Failed to run anchor command. ex: {}, message: {}", e.__class__.__name__, str(e))
-        if CliGlobalArgs.is_verbose():
-            raise e
-
+    Evaluator.eval_cli_entrypoint_step(
+        ctx=CliContextManager.create(),
+        err_msg="Failed to run anchor command",
+        call=lambda: AnchorCmd().run(
+            ctx=CliContextManager.create(), 
+            args=AnchorCmdArgs(
+                anchor_run_command=anchor_run_command,
+                github_organization=github_organization,
+                repository_name=repository_name,
+                branch_name=branch_name,
+                github_access_token=git_access_token,
+        ))
+    )
+    

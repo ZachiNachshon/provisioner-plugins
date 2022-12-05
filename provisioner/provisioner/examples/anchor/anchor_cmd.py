@@ -40,10 +40,9 @@ class AnchorCmdArgs:
     def print(self) -> None:
         if self.remote_opts:
             self.remote_opts.print()
-
         logger.debug(
             f"AnchorCmdArgs: \n"
-            + f"  anchor_run_command: {self.node_username}\n"
+            + f"  anchor_run_command: {self.anchor_run_command}\n"
             + f"  github_organization: {self.github_organization}\n"
             + f"  repository_name: {self.repository_name}\n"
             + f"  branch_name: {self.branch_name}\n"
@@ -54,6 +53,7 @@ class AnchorCmdArgs:
 class AnchorCmd:
     def run(self, ctx: Context, args: AnchorCmdArgs) -> None:
         logger.debug("Inside AnchorCmd run()")
+        args.print()
 
         AnchorCmdRunner().run(
             ctx=ctx,

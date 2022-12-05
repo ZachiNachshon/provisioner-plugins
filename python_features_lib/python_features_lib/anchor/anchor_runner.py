@@ -3,7 +3,9 @@
 from typing import List, Optional
 
 from loguru import logger
+from python_core_lib.errors.cli_errors import MissingCliArgument
 from python_core_lib.infra.context import Context
+from python_core_lib.infra.evaluator import Evaluator
 from python_core_lib.runner.ansible.ansible import AnsibleRunner, HostIpPair
 from python_core_lib.utils.checks import Checks
 from python_core_lib.utils.io_utils import IOUtils
@@ -13,7 +15,7 @@ from python_core_lib.utils.progress_indicator import ProgressIndicator
 from python_features_lib.remote.domain.config import RunEnvironment
 from python_features_lib.remote.typer_remote_opts import CliRemoteOpts
 
-from ..remote.remote_connector import SSHConnectionInfo
+from python_features_lib.remote.remote_connector import RemoteMachineConnector
 
 
 class AnchorRunnerCmdArgs:
@@ -65,24 +67,33 @@ class AnchorCmdRunner:
         ctx: Context,
         args: AnchorRunnerCmdArgs,
         collaborators: Collaborators,
-        run_env: RunEnvironment,
-        ssh_conn_info: SSHConnectionInfo,
     ) -> None:
 
         logger.debug("Inside AnchorCmdRunner run()")
 
         self.prerequisites(ctx=ctx, checks=collaborators.checks)
 
-        if run_env == RunEnvironment.Local:
+        if args.remote_opts.environment == RunEnvironment.Local:
             self._start_local_run_command_flow(ctx, args, collaborators)
-        elif run_env == RunEnvironment.Remote:
-            self._start_remote_run_command_flow(ctx, args, collaborators, ssh_conn_info)
+        elif args.remote_opts.environment == RunEnvironment.Remote:
+            self._start_remote_run_command_flow(ctx, args, collaborators)
         else:
-            return
+            raise MissingCliArgument("Missing Cli argument. name: environment")
 
     def _start_remote_run_command_flow(
-        self, ctx: Context, args: AnchorRunnerCmdArgs, collaborators: Collaborators, ssh_conn_info: SSHConnectionInfo
-    ):
+        self, ctx: Context, args: AnchorRunnerCmdArgs, collaborators: Collaborators):
+        
+        remote_connector = None
+        ssh_conn_info = None
+        remote_connector = RemoteMachineConnector(
+            collaborators.checks, collaborators.printer, collaborators.prompter, collaborators.network_util
+        )
+        ssh_conn_info = Evaluator.eval_step_return_failure_throws(
+            call=lambda: remote_connector.collect_ssh_connection_info(ctx, args.remote_opts),
+            ctx=ctx,
+            err_msg="Could not resolve SSH connection info",
+        )
+        collaborators.summary.add_values("ssh_conn_info", ssh_conn_info)
 
         ansible_vars = [
             "anchor_command=Run",
@@ -94,13 +105,12 @@ class AnchorCmdRunner:
         ]
 
         collaborators.printer.new_line_fn()
-        working_dir = collaborators.io.get_project_root_path_fn(__file__)
 
         anchor_run_ansible_playbook_path="python_features_lib/anchor/playbooks/anchor_run.yaml"
 
         output = collaborators.printer.progress_indicator.status.long_running_process_fn(
             call=lambda: collaborators.ansible_runner.run_fn(
-                working_dir=working_dir,
+                working_dir=collaborators.io.get_path_from_exec_module_root_fn(),
                 username=ssh_conn_info.username,
                 password=ssh_conn_info.password,
                 ssh_private_key_file_path=ssh_conn_info.ssh_private_key_file_path,
@@ -123,7 +133,6 @@ class AnchorCmdRunner:
         )
 
     def _start_local_run_command_flow(self, ctx: Context, args: AnchorRunnerCmdArgs, collaborators: Collaborators):
-
         collaborators.process.run_fn([f"anchor {args.anchor_run_command}"], allow_single_shell_command_str=True)
 
     def prerequisites(self, ctx: Context, checks: Checks) -> None:

@@ -25,7 +25,7 @@ def get_pkg_target_path():
     )
 
 def launch(pkg_path: str):
-    # Add the custom installation directory to PYTHONPATH so the modules are found.
+    # Add the custom installation directory to PYTHONPATH so the modules are found
     sys.path = [pkg_path] + sys.path
     cwd = os.getcwd()
     try:
@@ -36,7 +36,7 @@ def launch(pkg_path: str):
     except ModuleNotFoundError:
         print("The 'provisioner' package could not be found. "
               "Please refer to the docs for installation instructions and troubleshooting")
-        print("https://github.com/<org>/<repo>/docs-site/provisioner")
+        print("https://github.com/ZachiNachsohn/provisioner-oss/docs-site/provisioner")
 
         os.chdir(cwd)
         exit(2)

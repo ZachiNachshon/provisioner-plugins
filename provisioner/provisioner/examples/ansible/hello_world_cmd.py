@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
 
-from typing import List, Optional
 
 from loguru import logger
 from python_core_lib.infra.context import Context
-from python_core_lib.runner.ansible.ansible import HostIpPair
 
 from provisioner.common.dummy.hello_world_runner import (
     HelloWorldRunner,
@@ -14,6 +12,7 @@ from provisioner.common.dummy.hello_world_runner import (
 from python_features_lib.remote.typer_remote_opts import CliRemoteOpts
 
 
+# When reading static files from within `provisioner` module, it is safe to read as is directly from root
 HelloWorldAnsiblePlaybookRelativePathFromRoot = "provisioner/examples/ansible/playbooks/hello_world.yaml"
 
 class HelloWorldCmdArgs:

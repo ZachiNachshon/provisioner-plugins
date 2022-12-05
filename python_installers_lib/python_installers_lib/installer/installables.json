@@ -4,7 +4,14 @@
             "name": "k3s-server",
             "owner": "k3s-io",
             "repo": "k3s",
-            "version": "k3s"
+            "version": "k3s",
+            "binaries": {
+                "linux": {
+                    "amd64": "[name]_intell_64bit.tar.gz",
+                    "arm32": "[name]_intell_64bit.tar.gz",
+                    "arm64": "[name]_intell_64bit.tar.gz"
+                }
+            }
         },
         {
             "name": "k3s-agent",

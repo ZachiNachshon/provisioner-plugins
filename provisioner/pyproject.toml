@@ -40,6 +40,8 @@ include = [
     { path = "resources/version.txt" },
     { path = "provisioner/config.yaml" },
     { path = "external" },
+    { path = "python_features_lib" },
+    { path = "python_installers_lib" },
 ]
 
 [tool.poetry.scripts]

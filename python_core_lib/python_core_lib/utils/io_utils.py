@@ -3,7 +3,10 @@
 import os
 import pathlib
 import stat
+import sys
 import tempfile
+import pkgutil
+
 from pathlib import Path
 from shutil import copy2
 from typing import Optional
@@ -30,19 +33,51 @@ class IOUtils:
         # Python 3.5+
         return str(Path.cwd())
 
-    def _get_project_root_path(self, file) -> str:
+    def _get_path_from_exec_module_root(self, relative_path: Optional[str] = None) -> str:
         """
-        Return the root folder path of the current project, requires a __file__ parameter
-        for the starting anchor will be the actual Python file and not from this IO utility file
+        Return the root folder path of the current executing project, requires a __file__ parameter
+        so the starting CWD will be the actual Python file within the virtual env or pip-pkg 
+        and not from this IO utility file
         """
-        parent_path = pathlib.Path(file).parent
+        exec_path = self._get_exec_main_path()
+        return self._calculate_static_file_path_from_project(exec_path, relative_path)
+
+    def _get_path_abs_to_module_root(self, package_name, relative_path: Optional[str] = None) -> str:
+        """
+        Package is the __name_ variable so the path resolution would be from the
+        calling imported file package
+        """
+        # path = pkgutil.get_data(package_name, relative_path)
+        path = os.path.dirname(sys.modules[package_name].__file__)
+        return self._calculate_static_file_path_from_project(path, relative_path)
+
+    def _get_path_relative_from_module_root(self, package_name, relative_path: Optional[str] = None) -> str:
+        """
+        Package is the __name_ variable so the path resolution would be from the
+        calling imported file package
+        """
+        # path = pkgutil.get_data(package_name, relative_path)
+        path = os.path.dirname(sys.modules[package_name].__file__)
+        module_root = self._calculate_static_file_path_from_project(path)
+        module_name = os.path.basename(module_root)
+        return f"{module_name}/{relative_path}"
+
+    def _calculate_static_file_path_from_project(self, file_path, relative_path: Optional[str] = None) -> str:
+        result_path = None
+        parent_path = pathlib.Path(file_path).parent
         while(True):
             basename = os.path.basename(parent_path)
             if self.file_exists_fn(f"{parent_path}/pyproject.toml") or self.file_exists_fn(f"{parent_path}/setup.py"):
-                return parent_path
+                result_path = parent_path
+                break
             elif basename == "/" or len(basename) == 0:
-                return None
+                break
             parent_path = parent_path.parent
+
+        if result_path and relative_path:
+            return f"{result_path}/{relative_path}"
+        
+        return result_path
 
     def _relative_path_to_abs_path(self, relative_path: str) -> str:
         curr_file_path = os.path.dirname(os.path.realpath("__file__"))
@@ -126,9 +161,21 @@ class IOUtils:
     def _is_symlink(self, file_path):
         return os.path.islink(file_path)
 
+    def _get_exec_main_path(self):
+        """
+        This is an internal method, not exposed from this utility class
+        """
+        try:
+            sFile = os.path.abspath(sys.modules['__main__'].__file__)
+        except:
+            sFile = sys.executable
+        return os.path.dirname(sFile)
+
     get_home_directory_fn = _get_home_directory
     get_current_directory_fn = _get_current_directory
-    get_project_root_path_fn = _get_project_root_path
+    get_path_from_exec_module_root_fn = _get_path_from_exec_module_root
+    get_path_abs_to_module_root_fn = _get_path_abs_to_module_root
+    get_path_relative_from_module_root_fn = _get_path_relative_from_module_root
     relative_path_to_abs_path_fn = _relative_path_to_abs_path
     create_directory_fn = _create_directory
     copy_file_or_dir_fn = _copy_file_or_dir

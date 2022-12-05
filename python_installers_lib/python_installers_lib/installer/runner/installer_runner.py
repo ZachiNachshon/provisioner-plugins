@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import pathlib
 from typing import List, Optional
 
 from loguru import logger
@@ -25,7 +24,12 @@ from python_features_lib.remote.remote_connector import (
 )
 from python_features_lib.remote.typer_remote_opts import CliRemoteOpts
 
-InstallablesJsonFilePath = f"{pathlib.Path(__file__).parent.parent}/installables.json"
+
+# When reading static files from outside the `provisioner` module, we must use pathlib
+# since Ansible can be executed within a Docker container so we need to use the absolute path 
+# as a mounted volume.
+InstallablesJsonFileRelativePath = "python_installers_lib/installer/installables.json"
+ProvisionerRunAnsiblePlaybookRelativePath = "python_installers_lib/installer/playbooks/provisioner_run.yaml"
 
 class Installables(SerializationBase):
     class InstallableUtility:
@@ -104,9 +108,9 @@ class UtilityInstallerCmdRunner:
     ) -> None:
 
         logger.debug("Inside UtilityInstallerCmdRunner run()")
-
+        
         utilities_to_install = Evaluator.eval_size_else_throws(
-            call=lambda: self._resolve_utilities_metadata(collaborators.json_util, collaborators.prompter, args),
+            call=lambda: self._resolve_utilities_metadata(collaborators.io, collaborators.json_util, collaborators.prompter, args),
             ctx=ctx,
             err_msg="No utilities were resolved",
         )
@@ -139,7 +143,7 @@ class UtilityInstallerCmdRunner:
         collaborators: Collaborators):
 
         for utility in utilities:
-            self._print_pre_install_summary(utility.name, ctx.is_auto_prompt(), collaborators.printer, collaborators.prompter, collaborators.summay)
+            self._print_pre_install_summary(utility.name, ctx.is_auto_prompt(), collaborators.printer, collaborators.prompter, collaborators.summary)
 
     def _run_remote_installation(self,
         ctx: Context,
@@ -160,45 +164,45 @@ class UtilityInstallerCmdRunner:
         collaborators.summary.add_values("ssh_conn_info", ssh_conn_info)
 
         for utility in utilities:
-            self._print_pre_install_summary(utility.name, ctx.is_auto_prompt(), collaborators.printer, collaborators.prompter, collaborators.summay)
+            self._print_pre_install_summary(utility.name, ctx.is_auto_prompt(), collaborators.printer, collaborators.prompter, collaborators.summary)
 
-            ansible_vars = [f"\"provision_command='{args.username}'\""]
+            ansible_vars = [f"\"provisioner_command='provisioner install cli --environment=Local {utility.name}'\""]
 
             collaborators.printer.new_line_fn()
 
-            working_dir = collaborators.io.get_project_root_path_fn(__file__)
-
             output = collaborators.printer.progress_indicator.status.long_running_process_fn(
                 call=lambda: collaborators.ansible_runner.run_fn(
-                    working_dir=working_dir,
+                    working_dir=collaborators.io.get_path_from_exec_module_root_fn(),
                     username=ssh_conn_info.username,
                     password=ssh_conn_info.password,
                     ssh_private_key_file_path=ssh_conn_info.ssh_private_key_file_path,
-                    playbook_path=args.ansible_playbook_relative_path_from_root,
+                    playbook_path=collaborators.io.get_path_relative_from_module_root_fn(__name__, ProvisionerRunAnsiblePlaybookRelativePath),
+                    extra_modules_paths=[collaborators.io.get_path_abs_to_module_root_fn(__name__)],
                     ansible_vars=ansible_vars,
-                    ansible_tags=["hello"],
+                    ansible_tags=["provisioner_run"],
                     selected_hosts=ssh_conn_info.host_ip_pairs,
                 ),
-                desc_run="Running Ansible playbook (Hello World)",
-                desc_end="Ansible playbook finished (Hello World).",
+                desc_run="Running Ansible playbook (Provisioner Run)",
+                desc_end="Ansible playbook finished (Provisioner Run).",
             )
 
             collaborators.printer.new_line_fn()
             collaborators.printer.print_fn(output)
 
     def _resolve_utilities_metadata(
-        self, json_util: JsonUtil, prompter: Prompter, args: UtilityInstallerRunnerCmdArgs
+        self, io_utiles: IOUtils, json_util: JsonUtil, prompter: Prompter, args: UtilityInstallerRunnerCmdArgs
     ) -> List[Installables.InstallableUtility]:
         """
         Verify the installable CLI utilities are supported.
         """
-        installables = self.read_installables(json_util)
+        installables_json_path = io_utiles.get_path_abs_to_module_root_fn(__name__, InstallablesJsonFileRelativePath)
+        installables = self._read_installables(installables_json_path, json_util)
         if args.utilities and len(args.utilities) > 0:
             return self._verify_utilities_choice(installables, args.utilities)
         return None
 
-    def read_installables(self, json_util: JsonUtil) -> Installables:
-        return json_util.read_file_fn(file_path=InstallablesJsonFilePath, class_name=Installables)
+    def _read_installables(self, installables_json_path: str, json_util: JsonUtil) -> Installables:
+        return json_util.read_file_fn(file_path=installables_json_path, class_name=Installables)
 
     def _verify_utilities_choice(
         self, installables: Installables, utilities_names: List[str]

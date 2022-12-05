@@ -60,7 +60,7 @@ class HelloWorldRunner:
 
         collaborators.printer.new_line_fn()
 
-        working_dir = collaborators.io.get_project_root_path_fn(__file__)
+        working_dir = collaborators.io.get_path_from_exec_module_root_fn()
 
         output = collaborators.printer.progress_indicator.status.long_running_process_fn(
             call=lambda: collaborators.ansible_runner.run_fn(

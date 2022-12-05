@@ -85,7 +85,7 @@ class RemoteMachineOsConfigureRunner:
 
         output = collaborators.printer.progress_indicator.status.long_running_process_fn(
             call=lambda: collaborators.ansible_runner.run_fn(
-                working_dir=collaborators.io.get_current_directory_fn(),
+                working_dir=collaborators.io.get_path_from_exec_module_root_fn(),
                 username=ssh_conn_info.username,
                 password=ssh_conn_info.password,
                 ssh_private_key_file_path=ssh_conn_info.ssh_private_key_file_path,

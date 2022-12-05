@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import pathlib
 from typing import List, Optional
 
 from loguru import logger
@@ -10,7 +9,7 @@ from ...infra.context import Context
 from ...utils.io_utils import IOUtils
 from ...utils.process import Process
 
-ANSIBLE_SHELL_RUNNER_PATH = f"{pathlib.Path(__file__).parent.parent.parent.parent}/external/shell_scripts_lib/runner/ansible/ansible.sh"
+ANSIBLE_SHELL_RUNNER_PATH = "external/shell_scripts_lib/runner/ansible/ansible.sh"
 
 class HostIpPair:
     host: str
@@ -95,6 +94,7 @@ class AnsibleRunner:
         ssh_private_key_file_path: Optional[str] = None,
         ansible_vars: Optional[List[str]] = None,
         ansible_tags: Optional[List[str]] = None,
+        extra_modules_paths: Optional[List[str]] = None,
         force_dockerized: Optional[bool] = False,
     ) -> str:
 
@@ -111,6 +111,7 @@ class AnsibleRunner:
         selected_hosts_items_list = self._generate_call_parameter_list("selected_host", ansible_hosts_list)
         ansible_vars_items_list = self._generate_call_parameter_list("ansible_var", ansible_vars)
         ansible_tags_items_list = self._generate_call_parameter_list("ansible_tag", ansible_tags)
+        extra_modules_paths_items_list = self._generate_call_parameter_list("extra_module_path", extra_modules_paths)
 
         auth_param = ""
         if password:
@@ -133,6 +134,8 @@ class AnsibleRunner:
             run_cmd += ansible_vars_items_list
         if len(ansible_tags_items_list) > 0:
             run_cmd += ansible_tags_items_list
+        if len(extra_modules_paths_items_list) > 0:
+            run_cmd += extra_modules_paths_items_list
 
         if force_dockerized:
             run_cmd.append("--force-dockerized")
