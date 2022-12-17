@@ -5,6 +5,7 @@
             "owner": "k3s-io",
             "repo": "k3s",
             "version": "k3s",
+            "install_cmd": "curl -sfL https://get.k3s.io | sh - ",
             "binaries": {
                 "linux": {
                     "amd64": "[name]_intell_64bit.tar.gz",

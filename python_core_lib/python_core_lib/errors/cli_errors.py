@@ -59,3 +59,11 @@ class InstallerUtilityNotSupported(Exception):
 
 class MissingCliArgument(Exception):
     pass
+
+
+class FailedToResolveLatestVersionFromGitHub(Exception):
+    pass
+
+
+class OsArchNotSupported(Exception):
+    pass

@@ -32,6 +32,7 @@ class ErrorResponse:
 class HttpResponse:
     raw_res: requests.Response
     error: Optional[ErrorResponse] = None
+    content: str = None
 
     def __init__(
         self,
@@ -71,7 +72,6 @@ class HttpClient:
         return client
 
     def __init__(self, io_utils: IOUtils, printer: Printer, dry_run: bool, verbose: bool) -> None:
-
         self._dry_run = dry_run
         self._verbose = verbose
         self.io = io_utils
@@ -123,6 +123,9 @@ class HttpClient:
 
         return response
 
+    def _head(self, url: str, timeout: int = 30, headers: Optional[dict[str, str]] = None) -> HttpResponse:
+        return self._base_request("HEAD", url=url, timeout=timeout, headers=headers)
+
     def _get(self, url: str, timeout: int = 30, headers: Optional[dict[str, str]] = None) -> HttpResponse:
         return self._base_request("GET", url=url, timeout=timeout, headers=headers)
 
@@ -140,9 +143,16 @@ class HttpClient:
         if self._dry_run:
             return "DRY_RUN_DOWNLOAD_FILE_PATH"
 
-        download_folder = download_folder if download_folder else tempfile.mkdtemp(prefix="http-client-")
+        download_folder_resolved = ""
+        if download_folder:
+            # Create a directory if does not exist
+            self.io.create_directory_fn(download_folder)
+            download_folder_resolved = download_folder
+        else:
+            download_folder_resolved = tempfile.mkdtemp(prefix="http-client-")
+
         filename = url.rsplit("/")[-1]
-        file_path = os.path.join(download_folder, filename)
+        file_path = os.path.join(download_folder_resolved, filename)
 
         if verify_already_downloaded and self.io.file_exists_fn(file_path):
             logger.debug("Found previously downloaded file. path: {}", file_path)
@@ -155,7 +165,7 @@ class HttpClient:
 
         if progress_bar:
             self.printer.progress_indicator.progress_bar.download_file_fn(
-                response=resp, download_folder=download_folder
+                response=resp, download_folder=download_folder_resolved
             )
         else:
             self.printer.print_fn(f"Downloading file {filename}...")
@@ -165,5 +175,6 @@ class HttpClient:
         return file_path
 
     get_fn = _get
+    head_fn = _head
     post_fn = _post
     download_file_fn = _download_file

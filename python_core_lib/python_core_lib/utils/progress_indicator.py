@@ -156,9 +156,17 @@ class ProgressIndicator:
 
         def _inc_based_download_file_progress_bar(self, response: Response, download_folder: str) -> Any:
 
+            def _read_base_url_if_redirect(resp: Response) -> str:
+                if resp.history:
+                    for resp in resp.history:
+                        if resp.status_code == 302:
+                            return resp.url
+                return resp.url
+
             """Copy data from a url to a local file."""
             with self._get_rich_download_progress_bar() as pbar:
-                filename = response.url.split("/")[-1]
+                url = _read_base_url_if_redirect(response)
+                filename = url.split("/")[-1]
                 self._io_utils.create_directory_fn(download_folder)
                 download_file_path = os.path.join(download_folder, filename)
 
@@ -179,7 +187,6 @@ class ProgressIndicator:
                 pbar.console.log(f"Downloaded {download_file_path}")
 
         def _download_file(self, response: Response, download_folder: str) -> Any:
-
             if self._dry_run:
                 logger.debug("Skipping progress bar on dry-run mode.")
                 return ""
