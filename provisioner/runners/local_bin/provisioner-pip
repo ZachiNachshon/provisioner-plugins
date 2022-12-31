@@ -9,7 +9,7 @@ def launch():
     except ModuleNotFoundError:
         print("The 'provisioner' package could not be found. "
               "Please refer to the docs for installation instructions and troubleshooting")
-        print("https://github.com/<org>/<repo>/docs-site/provisioner")
+        print("https://github.com/ZachiNachsohn/provisioner-oss/docs-site/provisioner")
 
         exit(2)
 

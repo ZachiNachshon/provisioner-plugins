@@ -96,6 +96,7 @@ python_features_lib = { path = "../python_features_lib", develop = true }
 # below `extras`. They can be opted into by apps.
 python_test_lib = { path = "../python_test_lib", develop = true, optional = true }
 python_installers_lib = { path = "../python_installers_lib", develop = true, optional = true }
+poetry-multiproject-plugin = "^1.1.4"
 
 [tool.poetry.extras]
 python_test_lib = ["python_test_lib"] # poetry install --extras "test_lib" / poetry install -E test_lib
@@ -104,11 +105,11 @@ python_installers_lib = ["python_installers_lib"] # poetry install --extras "tes
 [tool.poetry.dev-dependencies]
 black = "^22.8.0"
 pytest = "^7.1.3"
-mypy = "^0.971"
+mypy = "^0.991"
 coverage = "^6.4.4"
 diagrams = "^0.22.0"
 isort = "^5.10.1"
-poetry-multiproject-plugin = "1.0.5"
+poetry-multiproject-plugin = "^1.1.4"
 python_core_lib = { path = "../python_core_lib", develop = true }
 python_features_lib = { path = "../python_features_lib", develop = true }
 python_test_lib = { path = "../python_test_lib", develop = true, optional = true }
