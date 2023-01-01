@@ -42,15 +42,12 @@ include = [
     { path = "external" },
     { path = "python_features_lib" },
     { path = "python_installers_lib" },
+    { path = "python_examples_lib" },
+    { path = "python_single_board_lib" },
 ]
 
 [tool.poetry.scripts]
-# tools = "external.python_scripts_lib.provisioner.main:app"
-# tools = "tools.main:app"
 provisioner = "provisioner.main:app"
-# example = "provisioner.examples.main:app"
-# rpi = "provisioner.rpi.main:app"
-# k3s = "provisioner.k3s.main:app"
 # rpi_diagrams = "rpi.os.diagrams.install_diag:main"
 
 [tool.isort]
@@ -96,11 +93,15 @@ python_features_lib = { path = "../python_features_lib", develop = true }
 # below `extras`. They can be opted into by apps.
 python_test_lib = { path = "../python_test_lib", develop = true, optional = true }
 python_installers_lib = { path = "../python_installers_lib", develop = true, optional = true }
+python_examples_lib = { path = "../python_examples_lib", develop = true, optional = true }
+python_single_board_lib = { path = "../python_single_board_lib", develop = true, optional = true }
 poetry-multiproject-plugin = "^1.1.4"
 
 [tool.poetry.extras]
-python_test_lib = ["python_test_lib"] # poetry install --extras "test_lib" / poetry install -E test_lib
-python_installers_lib = ["python_installers_lib"] # poetry install --extras "test_lib" / poetry install -E test_lib
+python_test_lib = ["python_test_lib"] # poetry install --extras "python_test_lib" / poetry install -E python_test_lib
+python_installers_lib = ["python_installers_lib"] # poetry install --extras "python_installers_lib" / poetry install -E python_installers_lib
+python_examples_lib = ["python_examples_lib"] # poetry install --extras "python_examples_lib" / poetry install -E python_examples_lib
+python_single_board_lib = ["python_single_board_lib"] # poetry install --extras "python_single_board_lib" / poetry install -E python_single_board_lib
 
 [tool.poetry.dev-dependencies]
 black = "^22.8.0"
@@ -114,6 +115,8 @@ python_core_lib = { path = "../python_core_lib", develop = true }
 python_features_lib = { path = "../python_features_lib", develop = true }
 python_test_lib = { path = "../python_test_lib", develop = true, optional = true }
 python_installers_lib = { path = "../python_installers_lib", develop = true, optional = true }
+python_examples_lib = { path = "../python_examples_lib", develop = true, optional = true }
+python_single_board_lib = { path = "../python_single_board_lib", develop = true, optional = true }
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

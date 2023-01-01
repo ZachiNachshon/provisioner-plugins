@@ -12,5 +12,5 @@ def append_installers(app: typer.Typer):
     register_cli_commands(app=installers_cli, callback_remote_args=remote_args_callback)
 
     from python_installers_lib.kubernetes.cli import register_kubernetes_commands
-    register_kubernetes_commands(installers_cli)
+    register_kubernetes_commands(app=installers_cli)
     

@@ -9,6 +9,8 @@ from python_core_lib.runner.ansible.ansible import HostIpPair
 from python_core_lib.cli.typer_callbacks import exclusivity_callback
 from python_features_lib.remote.domain.config import RemoteConfig, RunEnvironment
 
+REMOTE_ONLY_HELP_TITLE="Remote Only"
+
 class TyperRemoteOpts:
     """
     Load method MUST be called to populate the config object after values were
@@ -35,17 +37,19 @@ class TyperRemoteOpts:
     def node_username():
         return typer.Option(
             TyperRemoteOpts.remote_config.auth.node_username,
-            help="(Remote only) Remote node username",
+            help="Remote node username",
             envvar="NODE_USERNAME",
+            rich_help_panel=REMOTE_ONLY_HELP_TITLE
         )
 
     @staticmethod
     def node_password():
         return typer.Option(
             TyperRemoteOpts.remote_config.auth.node_password,
-            help="(Remote only) Remote node password",
+            help="Remote node password",
             envvar="NODE_PASSWORD",
             callback=exclusivity_callback,
+            rich_help_panel=REMOTE_ONLY_HELP_TITLE
         )
 
     @staticmethod
@@ -53,18 +57,19 @@ class TyperRemoteOpts:
         return typer.Option(
             TyperRemoteOpts.remote_config.auth.ssh_private_key_file_path,
             show_default=False,
-            help="(Remote only) Local file path for a remote SSH private key",
+            help="Private SSH key local file path",
             envvar="SSH_PRIVATE_KEY_FILE_PATH",
             callback=exclusivity_callback,
+            rich_help_panel=REMOTE_ONLY_HELP_TITLE
         )
 
     @staticmethod
     def ip_discovery_range():
         return typer.Option(
             TyperRemoteOpts.remote_config.lan_scan.ip_discovery_range,
-            help="(Remote only) LAN network IP discovery range",
+            help="LAN network IP discovery range",
             envvar="IP_DISCOVERY_RANGE",
-            rich_help_panel="Optional"
+            rich_help_panel=REMOTE_ONLY_HELP_TITLE
         )
 
 class TyperResolvedRemoteOpts:

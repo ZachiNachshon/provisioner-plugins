@@ -6,15 +6,11 @@ from loguru import logger
 from python_core_lib.errors.cli_errors import MissingCliArgument
 from python_core_lib.infra.context import Context
 from python_core_lib.infra.evaluator import Evaluator
-from python_core_lib.runner.ansible.ansible import AnsibleRunner, HostIpPair
+from python_core_lib.runner.ansible.ansible import HostIpPair
+from python_core_lib.shared.collaborators import CoreCollaborators
 from python_core_lib.utils.checks import Checks
-from python_core_lib.utils.io_utils import IOUtils
-from python_core_lib.utils.printer import Printer
-from python_core_lib.utils.process import Process
-from python_core_lib.utils.progress_indicator import ProgressIndicator
 from python_features_lib.remote.domain.config import RunEnvironment
 from python_features_lib.remote.typer_remote_opts import CliRemoteOpts
-
 from python_features_lib.remote.remote_connector import RemoteMachineConnector
 
 
@@ -44,29 +40,12 @@ class AnchorRunnerCmdArgs:
         self.remote_opts = remote_opts
 
 
-class Collaborators:
-    io: IOUtils
-    checks: Checks
-    process: Process
-    printer: Printer
-    ansible_runner: AnsibleRunner
-
-
-class AnchorCmdRunnerCollaborators(Collaborators):
-    def __init__(self, ctx: Context) -> None:
-        self.io = IOUtils.create(ctx)
-        self.checks = Checks.create(ctx)
-        self.process = Process.create(ctx)
-        self.printer = Printer.create(ctx, ProgressIndicator.create(ctx, self.io))
-        self.ansible_runner = AnsibleRunner.create(ctx, self.io, self.process)
-
-
 class AnchorCmdRunner:
     def run(
         self,
         ctx: Context,
         args: AnchorRunnerCmdArgs,
-        collaborators: Collaborators,
+        collaborators: CoreCollaborators,
     ) -> None:
 
         logger.debug("Inside AnchorCmdRunner run()")
@@ -81,7 +60,7 @@ class AnchorCmdRunner:
             raise MissingCliArgument("Missing Cli argument. name: environment")
 
     def _start_remote_run_command_flow(
-        self, ctx: Context, args: AnchorRunnerCmdArgs, collaborators: Collaborators):
+        self, ctx: Context, args: AnchorRunnerCmdArgs, collaborators: CoreCollaborators):
         
         remote_connector = None
         ssh_conn_info = None
@@ -132,7 +111,7 @@ class AnchorCmdRunner:
             )
         )
 
-    def _start_local_run_command_flow(self, ctx: Context, args: AnchorRunnerCmdArgs, collaborators: Collaborators):
+    def _start_local_run_command_flow(self, ctx: Context, args: AnchorRunnerCmdArgs, collaborators: CoreCollaborators):
         collaborators.process.run_fn([f"anchor {args.anchor_run_command}"], allow_single_shell_command_str=True)
 
     def prerequisites(self, ctx: Context, checks: Checks) -> None:

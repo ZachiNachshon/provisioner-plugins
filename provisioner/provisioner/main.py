@@ -14,17 +14,35 @@ ConfigResolver.load(CONFIG_INTERNAL_PATH, CONFIG_USER_PATH, class_name=Provision
 
 app = EntryPoint.create_typer(title="Provision Everything Anywhere")    
 
-from provisioner.single_board.cli import single_board_cli_app
-app.add_typer(single_board_cli_app, name="single-board", invoke_without_command=True, no_args_is_help=True)
-
-from provisioner.examples.cli import examples_cli_app
-app.add_typer(examples_cli_app, name="examples", invoke_without_command=True, no_args_is_help=True)
-
+# ======================
+#  LIBRARY: INSTALLERS
+# ======================
 try:
     from python_installers_lib.main import append_installers
     append_installers(app)
 except Exception as ex:
-    print(f"Failed to load python installers. ex: {ex}")
+    print(f"Failed to load python installers commands. ex: {ex}")
 
+# ========================
+#  LIBRARY: SINGLE BOARD
+# ========================
+try:
+    from python_single_board_lib.main import append_single_boards
+    append_single_boards(app)
+except Exception as ex:
+    print(f"Failed to load single board commands. ex: {ex}")
+
+# ====================
+#  LIBRARY: EXAMPLES
+# ====================
+try:
+    from python_examples_lib.main import append_examples
+    append_examples(app)
+except Exception as ex:
+    print(f"Failed to load python example commands. ex: {ex}")
+
+# ==============
+#  ENTRY POINT
+# ==============
 def main():
     app()

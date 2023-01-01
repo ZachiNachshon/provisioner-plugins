@@ -22,11 +22,11 @@ def k3s_server(
     )
 
 def k3s_agent(
-    server_address: str = typer.Option(..., show_default=False, 
+    server_token: str = typer.Option(..., show_default=False, 
         help="K3s server node token (NODE_TOKEN)", envvar="K3S_SERVER_NODE_TOKEN"
     ),
-    server_token: str = typer.Option(..., show_default=False, 
-        help="K3s server address (Ip & Port)", envvar="K3S_SERVER_ADDRESS"
+    server_address: str = typer.Option(..., show_default=False, 
+        help="K3s server address (<ip>:<port>)", envvar="K3S_SERVER_ADDRESS"
     ),
 ) -> None:
     """

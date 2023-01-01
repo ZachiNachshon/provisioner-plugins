@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-
-
 import typer
 
 from python_installers_lib.cli.k3s.cli import k3s_server, k3s_agent
