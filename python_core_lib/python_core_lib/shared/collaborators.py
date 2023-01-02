@@ -18,60 +18,63 @@ from python_core_lib.utils.prompter import Prompter
 from python_core_lib.utils.summary import Summary
 
 class CoreCollaborators:
-    io: IOUtils
-    checks: Checks
-    json_util: JsonUtil
-    summary: Summary
-    prompter: Prompter
-    printer: Printer
-    process: Process
-    ansible_runner: AnsibleRunner
-    network_util: NetworkUtil
-    github: GitHub
-    hosts_file: HostsFile
+    __io: IOUtils
+    __checks: Checks
+    __json_util: JsonUtil
+    __summary: Summary
+    __prompter: Prompter
+    __printer: Printer
+    __process: Process
+    __ansible_runner: AnsibleRunner
+    __network_util: NetworkUtil
+    __github: GitHub
+    __hosts_file: HostsFile
+    __http_client: HttpClient
 
-    ctx: Context = None
+    __ctx: Context = None
 
     def __init__(self, ctx: Context) -> None:
-        self._lock = threading.Lock()
-        self.ctx = ctx
+        self.__lock = threading.Lock()
+        self.__ctx = ctx
 
     def _lock_and_get(self, item: Any, callback: Callable) -> Any:
         if not item:
-            with self._lock:
+            with self.__lock:
                 return callback()
         return item
 
-    def get_io_utils(self) -> IOUtils:
-        return self._lock_and_get(self.io, IOUtils.create(self.ctx))
+    def io_utils(self) -> IOUtils:
+        return self._lock_and_get(self.__io, IOUtils.create(self.__ctx))
 
-    def get_checks(self) -> Checks:
-        return self._lock_and_get(self.checks, Checks.create(self.ctx))
+    def checks(self) -> Checks:
+        return self._lock_and_get(self.__checks, Checks.create(self.__ctx))
 
-    def get_json_util(self) -> JsonUtil:
-        return self._lock_and_get(self.json_util, JsonUtil.create(self.ctx, self.get_io_utils()))
+    def json_util(self) -> JsonUtil:
+        return self._lock_and_get(self.__json_util, JsonUtil.create(self.__ctx, self.io_utils()))
 
-    def get_process(self) -> Process:
-        return self._lock_and_get(self.process, Process.create(self.ctx))
+    def process(self) -> Process:
+        return self._lock_and_get(self.__process, Process.create(self.__ctx))
 
-    def get_printer(self) -> Printer:
-        return self._lock_and_get(self.printer, Printer.create(self.ctx, ProgressIndicator.create(self.ctx, self.get_io_utils())))
+    def printer(self) -> Printer:
+        return self._lock_and_get(self.__printer, Printer.create(self.__ctx, ProgressIndicator.create(self.__ctx, self.io_utils())))
 
-    def get_prompter(self) -> Prompter:
-        return self._lock_and_get(self.prompter, Prompter.create(self.ctx))
+    def prompter(self) -> Prompter:
+        return self._lock_and_get(self.__prompter, Prompter.create(self.__ctx))
 
-    def get_ansible_runner(self) -> AnsibleRunner:
-        return self._lock_and_get(self.ansible_runner, AnsibleRunner.create(self.ctx, self.get_io_utils(), self.get_process()))
+    def ansible_runner(self) -> AnsibleRunner:
+        return self._lock_and_get(self.__ansible_runner, AnsibleRunner.create(self.__ctx, self.io_utils(), self.process()))
 
-    def get_network_util(self) -> NetworkUtil:
-        return self._lock_and_get(self.network_util, NetworkUtil.create(self.ctx, self.get_printer()))
+    def network_util(self) -> NetworkUtil:
+        return self._lock_and_get(self.__network_util, NetworkUtil.create(self.__ctx, self.printer()))
 
-    def get_github(self) -> GitHub:
-        return self._lock_and_get(self.github, GitHub.create(self.ctx, HttpClient.create(self.ctx, io_utils=self.get_io_utils(), printer=self.get_printer())))
+    def github(self) -> GitHub:
+        return self._lock_and_get(self.__github, GitHub.create(self.__ctx, self.http_client()))
 
-    def get_summary(self) -> Summary:
-        return self._lock_and_get(self.summary, Summary.create(self.ctx, self.get_json_util(), self.get_printer(), self.get_prompter()))
+    def summary(self) -> Summary:
+        return self._lock_and_get(self.__summary, Summary.create(self.__ctx, self.json_util(), self.printer(), self.prompter()))
 
-    def get_hosts_file(self) -> HostsFile:
-        return self._lock_and_get(self.hosts_file, HostsFile.create(self.ctx, self.get_process()))
+    def hosts_file(self) -> HostsFile:
+        return self._lock_and_get(self.__hosts_file, HostsFile.create(self.__ctx, self.process()))
 
+    def http_client(self) -> HttpClient:
+        return self._lock_and_get(self.__http_client, HttpClient.create(self.__ctx, io_utils=self.io_utils(), printer=self.printer()))

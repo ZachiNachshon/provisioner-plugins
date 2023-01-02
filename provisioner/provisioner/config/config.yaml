@@ -9,6 +9,7 @@ provisioner:
     lan_scan:
       ip_discovery_range: 192.168.1.1/24
     auth:
+      # TODO: add auth attribute to every host item
       username: pi
       password: raspberry
       # ssh_private_key_file_path: /path/to/unknown

@@ -2,7 +2,12 @@
 
 import unittest
 from unittest import mock
+from python_core_lib.shared.collaborators import CoreCollaborators
 
+from python_features_lib.sd_card.image_burner import (
+    ImageBurnerArgs,
+    ImageBurnerCmdRunner,
+)
 from python_core_lib.errors.cli_errors import (
     CliApplicationException,
     MissingUtilityException,
@@ -20,21 +25,12 @@ from python_core_lib.utils.process_fakes import FakeProcess
 from python_core_lib.utils.prompter import Prompter, PromptLevel
 from python_core_lib.utils.prompter_fakes import FakePrompter
 
-from provisioner.common.sd_card.image_burner import (
-    Collaborators,
-    ImageBurnerArgs,
-    ImageBurnerCmdRunner,
-)
 
-
-#
-# To run these directly from the terminal use:
-#  poetry run rpi --dry-run --verbose --auto-prompt os install
 #
 # To run as a single test target:
-#  poetry run coverage run -m pytest common/sd_card/image_burner_test.py
+#  poetry run coverage run -m pytest python_features_lib/sd_card/image_burner_test.py
 #
-class FakeCollaborators(Collaborators):
+class FakeCollaborators(CoreCollaborators):
     def __init__(self, ctx: Context) -> None:
         print("Creating Fake collaborators...")
         self.io = FakeIOUtils.create(ctx)

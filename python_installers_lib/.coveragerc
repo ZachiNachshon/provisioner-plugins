@@ -17,7 +17,8 @@ omit =
     *__main__.py
     */templates/*
     *_test.py
-    *python-scripts-lib*
+    *python_core_lib*
+    *python_features_lib*
     
 
 [report]
@@ -29,4 +30,5 @@ omit =
     *__main__.py
     */templates/*
     *_test.py
-    *python-scripts-lib*
+    *python_core_lib*
+    *python_features_lib*

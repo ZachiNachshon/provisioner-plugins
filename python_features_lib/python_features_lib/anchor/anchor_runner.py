@@ -9,9 +9,10 @@ from python_core_lib.infra.evaluator import Evaluator
 from python_core_lib.runner.ansible.ansible import HostIpPair
 from python_core_lib.shared.collaborators import CoreCollaborators
 from python_core_lib.utils.checks import Checks
+
 from python_features_lib.remote.domain.config import RunEnvironment
-from python_features_lib.remote.typer_remote_opts import CliRemoteOpts
 from python_features_lib.remote.remote_connector import RemoteMachineConnector
+from python_features_lib.remote.typer_remote_opts import CliRemoteOpts
 
 
 class AnchorRunnerCmdArgs:
@@ -50,7 +51,7 @@ class AnchorCmdRunner:
 
         logger.debug("Inside AnchorCmdRunner run()")
 
-        self.prerequisites(ctx=ctx, checks=collaborators.checks)
+        self.prerequisites(ctx=ctx, checks=collaborators.__checks)
 
         if args.remote_opts.environment == RunEnvironment.Local:
             self._start_local_run_command_flow(ctx, args, collaborators)
@@ -59,20 +60,19 @@ class AnchorCmdRunner:
         else:
             raise MissingCliArgument("Missing Cli argument. name: environment")
 
-    def _start_remote_run_command_flow(
-        self, ctx: Context, args: AnchorRunnerCmdArgs, collaborators: CoreCollaborators):
-        
+    def _start_remote_run_command_flow(self, ctx: Context, args: AnchorRunnerCmdArgs, collaborators: CoreCollaborators):
+
         remote_connector = None
         ssh_conn_info = None
         remote_connector = RemoteMachineConnector(
-            collaborators.checks, collaborators.printer, collaborators.prompter, collaborators.network_util
+            collaborators.__checks, collaborators.__printer, collaborators.__prompter, collaborators.__network_util
         )
         ssh_conn_info = Evaluator.eval_step_return_failure_throws(
             call=lambda: remote_connector.collect_ssh_connection_info(ctx, args.remote_opts),
             ctx=ctx,
             err_msg="Could not resolve SSH connection info",
         )
-        collaborators.summary.add_values("ssh_conn_info", ssh_conn_info)
+        collaborators.__summary.add_values("ssh_conn_info", ssh_conn_info)
 
         ansible_vars = [
             "anchor_command=Run",
@@ -83,13 +83,13 @@ class AnchorCmdRunner:
             f"github_access_token={args.github_access_token}",
         ]
 
-        collaborators.printer.new_line_fn()
+        collaborators.__printer.new_line_fn()
 
-        anchor_run_ansible_playbook_path="python_features_lib/anchor/playbooks/anchor_run.yaml"
+        anchor_run_ansible_playbook_path = "python_features_lib/anchor/playbooks/anchor_run.yaml"
 
-        output = collaborators.printer.progress_indicator.status.long_running_process_fn(
-            call=lambda: collaborators.ansible_runner.run_fn(
-                working_dir=collaborators.io.get_path_from_exec_module_root_fn(),
+        output = collaborators.__printer.progress_indicator.status.long_running_process_fn(
+            call=lambda: collaborators.__ansible_runner.run_fn(
+                working_dir=collaborators.__io.get_path_from_exec_module_root_fn(),
                 username=ssh_conn_info.username,
                 password=ssh_conn_info.password,
                 ssh_private_key_file_path=ssh_conn_info.ssh_private_key_file_path,
@@ -102,9 +102,9 @@ class AnchorCmdRunner:
             desc_end="Ansible playbook finished (Anchor Run).",
         )
 
-        collaborators.printer.new_line_fn()
-        collaborators.printer.print_fn(output)
-        collaborators.printer.print_with_rich_table_fn(
+        collaborators.__printer.new_line_fn()
+        collaborators.__printer.print_fn(output)
+        collaborators.__printer.print_with_rich_table_fn(
             generate_summary(
                 host_ip_pairs=ssh_conn_info.host_ip_pairs,
                 anchor_cmd=args.anchor_run_command,
@@ -112,7 +112,7 @@ class AnchorCmdRunner:
         )
 
     def _start_local_run_command_flow(self, ctx: Context, args: AnchorRunnerCmdArgs, collaborators: CoreCollaborators):
-        collaborators.process.run_fn([f"anchor {args.anchor_run_command}"], allow_single_shell_command_str=True)
+        collaborators.__process.run_fn([f"anchor {args.anchor_run_command}"], allow_single_shell_command_str=True)
 
     def prerequisites(self, ctx: Context, checks: Checks) -> None:
         if ctx.os_arch.is_linux():

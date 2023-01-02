@@ -3,13 +3,13 @@
 from loguru import logger
 from python_core_lib.infra.context import Context
 from python_core_lib.runner.ansible.ansible import HostIpPair
+from python_core_lib.shared.collaborators import CoreCollaborators
 from python_core_lib.utils.checks import Checks
 from python_core_lib.utils.printer import Printer
 from python_core_lib.utils.prompter import Prompter
-from python_core_lib.shared.collaborators import CoreCollaborators
-
 from python_features_lib.remote.remote_connector import SSHConnectionInfo
 from python_features_lib.remote.typer_remote_opts import CliRemoteOpts
+
 
 class HelloWorldRunnerArgs:
 
@@ -17,17 +17,20 @@ class HelloWorldRunnerArgs:
     ansible_playbook_relative_path_from_root: str
     remote_opts: CliRemoteOpts
 
-    def __init__(self, username: str, ansible_playbook_relative_path_from_root: str, remote_opts: CliRemoteOpts) -> None:
+    def __init__(
+        self, username: str, ansible_playbook_relative_path_from_root: str, remote_opts: CliRemoteOpts
+    ) -> None:
         self.username = username
         self.ansible_playbook_relative_path_from_root = ansible_playbook_relative_path_from_root
         self.remote_opts = remote_opts
+
 
 class HelloWorldRunner:
     def run(self, ctx: Context, args: HelloWorldRunnerArgs, collaborators: CoreCollaborators) -> None:
         logger.debug("Inside HelloWorldRunner run()")
 
-        self.prerequisites(ctx=ctx, checks=collaborators.checks)
-        self._print_pre_run_instructions(collaborators.printer, collaborators.prompter)
+        self.prerequisites(ctx=ctx, checks=collaborators.__checks)
+        self._print_pre_run_instructions(collaborators.__printer, collaborators.__prompter)
 
         ssh_conn_info = SSHConnectionInfo(
             username="pi",
@@ -37,12 +40,12 @@ class HelloWorldRunner:
 
         ansible_vars = [f"\"username='{args.username}'\""]
 
-        collaborators.printer.new_line_fn()
+        collaborators.__printer.new_line_fn()
 
-        working_dir = collaborators.io.get_path_from_exec_module_root_fn()
+        working_dir = collaborators.__io.get_path_from_exec_module_root_fn()
 
-        output = collaborators.printer.progress_indicator.status.long_running_process_fn(
-            call=lambda: collaborators.ansible_runner.run_fn(
+        output = collaborators.__printer.progress_indicator.status.long_running_process_fn(
+            call=lambda: collaborators.__ansible_runner.run_fn(
                 working_dir=working_dir,
                 username=ssh_conn_info.username,
                 password=ssh_conn_info.password,
@@ -56,8 +59,8 @@ class HelloWorldRunner:
             desc_end="Ansible playbook finished (Hello World).",
         )
 
-        collaborators.printer.new_line_fn()
-        collaborators.printer.print_fn(output)
+        collaborators.__printer.new_line_fn()
+        collaborators.__printer.print_fn(output)
 
     def _print_pre_run_instructions(self, printer: Printer, prompter: Prompter):
         printer.print_horizontal_line_fn(message="Running 'Hello World' via Ansible local connection")

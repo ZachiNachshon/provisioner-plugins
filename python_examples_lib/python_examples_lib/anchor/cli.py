@@ -1,23 +1,27 @@
 #!/usr/bin/env python3
 
 
-from python_core_lib.infra.evaluator import Evaluator
 import typer
 from loguru import logger
 from python_core_lib.infra.context import CliContextManager
-
+from python_core_lib.infra.evaluator import Evaluator
 from python_features_lib.config.config_resolver import ConfigResolver
+
 from python_examples_lib.anchor.anchor_cmd import AnchorCmd, AnchorCmdArgs
+
 
 def register_anchor_commands(app: typer.Typer, callback_remote_args):
     app.add_typer(
-        example_anchor_cli_app, 
-        name="anchor", 
-        invoke_without_command=True, 
-        no_args_is_help=True, 
-        callback=callback_remote_args)
+        example_anchor_cli_app,
+        name="anchor",
+        invoke_without_command=True,
+        no_args_is_help=True,
+        callback=callback_remote_args,
+    )
+
 
 example_anchor_cli_app = typer.Typer()
+
 
 @example_anchor_cli_app.command(name="run-command")
 @logger.catch(reraise=True)
@@ -46,13 +50,13 @@ def run_anchor_command(
         ctx=CliContextManager.create(),
         err_msg="Failed to run anchor command",
         call=lambda: AnchorCmd().run(
-            ctx=CliContextManager.create(), 
+            ctx=CliContextManager.create(),
             args=AnchorCmdArgs(
                 anchor_run_command=anchor_run_command,
                 github_organization=github_organization,
                 repository_name=repository_name,
                 branch_name=branch_name,
                 github_access_token=git_access_token,
-        ))
+            ),
+        ),
     )
-    

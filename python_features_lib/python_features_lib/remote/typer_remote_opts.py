@@ -1,15 +1,16 @@
-
 #!/usr/bin/env python3
 
-import typer
 from typing import List, Optional
-from loguru import logger
 
-from python_core_lib.runner.ansible.ansible import HostIpPair
+import typer
+from loguru import logger
 from python_core_lib.cli.typer_callbacks import exclusivity_callback
+from python_core_lib.runner.ansible.ansible import HostIpPair
+
 from python_features_lib.remote.domain.config import RemoteConfig, RunEnvironment
 
-REMOTE_ONLY_HELP_TITLE="Remote Only"
+REMOTE_ONLY_HELP_TITLE = "Remote Only"
+
 
 class TyperRemoteOpts:
     """
@@ -32,14 +33,14 @@ class TyperRemoteOpts:
             help="Specify an environment or select from a list if none supplied",
             envvar="RUN_ENVIRONMENT",
         )
-        
+
     @staticmethod
     def node_username():
         return typer.Option(
             TyperRemoteOpts.remote_config.auth.node_username,
             help="Remote node username",
             envvar="NODE_USERNAME",
-            rich_help_panel=REMOTE_ONLY_HELP_TITLE
+            rich_help_panel=REMOTE_ONLY_HELP_TITLE,
         )
 
     @staticmethod
@@ -49,7 +50,7 @@ class TyperRemoteOpts:
             help="Remote node password",
             envvar="NODE_PASSWORD",
             callback=exclusivity_callback,
-            rich_help_panel=REMOTE_ONLY_HELP_TITLE
+            rich_help_panel=REMOTE_ONLY_HELP_TITLE,
         )
 
     @staticmethod
@@ -60,7 +61,7 @@ class TyperRemoteOpts:
             help="Private SSH key local file path",
             envvar="SSH_PRIVATE_KEY_FILE_PATH",
             callback=exclusivity_callback,
-            rich_help_panel=REMOTE_ONLY_HELP_TITLE
+            rich_help_panel=REMOTE_ONLY_HELP_TITLE,
         )
 
     @staticmethod
@@ -69,8 +70,9 @@ class TyperRemoteOpts:
             TyperRemoteOpts.remote_config.lan_scan.ip_discovery_range,
             help="LAN network IP discovery range",
             envvar="IP_DISCOVERY_RANGE",
-            rich_help_panel=REMOTE_ONLY_HELP_TITLE
+            rich_help_panel=REMOTE_ONLY_HELP_TITLE,
         )
+
 
 class TyperResolvedRemoteOpts:
 
@@ -81,14 +83,16 @@ class TyperResolvedRemoteOpts:
     ip_discovery_range: Optional[str]
     remote_hosts: Optional[dict[str, RemoteConfig.Host]]
 
-    def __init__(self, 
+    def __init__(
+        self,
         environment: RunEnvironment,
         node_username: Optional[str],
         node_password: Optional[str],
         ssh_private_key_file_path: Optional[str],
         ip_discovery_range: Optional[str],
-        remote_hosts: dict[str, RemoteConfig.Host] = None) -> None:
-        
+        remote_hosts: dict[str, RemoteConfig.Host] = None,
+    ) -> None:
+
         self.environment = environment
         self.node_username = node_username
         self.node_password = node_password
@@ -98,23 +102,19 @@ class TyperResolvedRemoteOpts:
 
     @staticmethod
     def create(
-        environment: Optional[RunEnvironment] = None, 
+        environment: Optional[RunEnvironment] = None,
         node_username: Optional[str] = None,
         node_password: Optional[str] = None,
         ssh_private_key_file_path: Optional[str] = None,
         ip_discovery_range: Optional[str] = None,
-        remote_hosts: dict[str, RemoteConfig.Host] = None
+        remote_hosts: dict[str, RemoteConfig.Host] = None,
     ) -> None:
 
         try:
             global typer_cli_remote_opts
             typer_cli_remote_opts = TyperResolvedRemoteOpts(
-                environment, 
-                node_username,
-                node_password,
-                ssh_private_key_file_path,
-                ip_discovery_range,
-                remote_hosts)
+                environment, node_username, node_password, ssh_private_key_file_path, ip_discovery_range, remote_hosts
+            )
 
         except Exception as e:
             e_name = e.__class__.__name__
@@ -144,7 +144,9 @@ class TyperResolvedRemoteOpts:
     def remote_hosts() -> Optional[str]:
         return typer_cli_remote_opts.remote_hosts
 
+
 typer_cli_remote_opts: TyperResolvedRemoteOpts = None
+
 
 class CliRemoteOpts:
     environment: Optional[RunEnvironment]

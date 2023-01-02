@@ -11,12 +11,15 @@ from python_core_lib.utils.checks import Checks
 from python_core_lib.utils.network import NetworkUtil
 from python_core_lib.utils.printer import Printer
 from python_core_lib.utils.prompter import Prompter
+
 from python_features_lib.remote.typer_remote_opts import CliRemoteOpts
+
 
 class NetworkDeviceSelectionMethod(str, Enum):
     ScanLAN = "Scan LAN"
     UserConfig = "User Config"
     UserPrompt = "User Prompt"
+
 
 class SSHConnectionInfo:
     username: str

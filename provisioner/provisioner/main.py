@@ -11,9 +11,10 @@ from provisioner.config.domain.config import ProvisionerConfig
 CONFIG_USER_PATH = os.path.expanduser("~/.config/provisioner/config.yaml")
 CONFIG_INTERNAL_PATH = f"{pathlib.Path(__file__).parent}/config/config.yaml"
 
-ConfigResolver.load(CONFIG_INTERNAL_PATH, CONFIG_USER_PATH, class_name=ProvisionerConfig)
-
-app = EntryPoint.create_typer(title="Provision Everything Anywhere")
+app = EntryPoint.create_typer(
+    title="Provision Everything Anywhere (install plugins from https://zachinachshon.com/provisioner)",
+    config_resolver_fn=lambda: ConfigResolver.load(CONFIG_INTERNAL_PATH, CONFIG_USER_PATH, class_name=ProvisionerConfig)
+)
 
 # ======================
 #  LIBRARY: INSTALLERS

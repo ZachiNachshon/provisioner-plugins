@@ -1,11 +1,12 @@
-    
 #!/usr/bin/env python3
 
-import typer
 from typing import Optional
+
+import typer
 from loguru import logger
 
 from python_features_lib.anchor.domain.config import AnchorConfig
+
 
 class TyperAnchorOpts:
     """
@@ -28,8 +29,9 @@ class TyperAnchorOpts:
             envvar="GITHUB_ACCESS_TOKEN",
         )
 
+
 class TyperResolvedAnchorOpts:
-    
+
     github_access_token: Optional[str]
 
     def __init__(self, github_access_token: Optional[str]) -> None:
@@ -52,7 +54,9 @@ class TyperResolvedAnchorOpts:
     def github_access_token() -> Optional[str]:
         return typer_cli_anchor_opts.github_access_token
 
+
 typer_cli_anchor_opts: TyperResolvedAnchorOpts = None
+
 
 class CliAnchorOpts:
     github_access_token: Optional[str]
@@ -67,7 +71,4 @@ class CliAnchorOpts:
         return None
 
     def print(self) -> None:
-        logger.debug(
-            f"CliAnchorOpts: \n"
-            + f"  github_access_token: {self.github_access_token}\n"
-        )
+        logger.debug(f"CliAnchorOpts: \n" + f"  github_access_token: {self.github_access_token}\n")

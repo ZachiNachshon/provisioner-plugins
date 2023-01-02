@@ -41,11 +41,11 @@ class RemoteMachineNetworkConfigureRunner:
     def run(self, ctx: Context, args: RemoteMachineNetworkConfigureArgs, collaborators: CoreCollaborators) -> None:
         logger.debug("Inside RemoteMachineNetworkConfigureRunner run()")
 
-        self.prerequisites(ctx=ctx, checks=collaborators.checks)
-        self._print_pre_run_instructions(collaborators.printer, collaborators.prompter)
+        self.prerequisites(ctx=ctx, checks=collaborators.__checks)
+        self._print_pre_run_instructions(collaborators.__printer, collaborators.__prompter)
 
         remote_connector = RemoteMachineConnector(
-            collaborators.checks, collaborators.printer, collaborators.prompter, collaborators.network_util
+            collaborators.__checks, collaborators.__printer, collaborators.__prompter, collaborators.__network_util
         )
 
         ssh_conn_info = Evaluator.eval_step_return_failure_throws(
@@ -55,7 +55,7 @@ class RemoteMachineNetworkConfigureRunner:
             ctx=ctx,
             err_msg="Could not resolve SSH connection info",
         )
-        collaborators.summary.add_values("ssh_conn_info", ssh_conn_info)
+        collaborators.__summary.add_values("ssh_conn_info", ssh_conn_info)
 
         dhcpcd_configure_info = Evaluator.eval_step_return_failure_throws(
             call=lambda: remote_connector.collect_dhcpcd_configuration_info(
@@ -64,7 +64,7 @@ class RemoteMachineNetworkConfigureRunner:
             ctx=ctx,
             err_msg="Could not resolve SSH connection info",
         )
-        collaborators.summary.add_values("dhcpcd_configure_info", dhcpcd_configure_info)
+        collaborators.__summary.add_values("dhcpcd_configure_info", dhcpcd_configure_info)
 
         hostname_ip_tuple = self._extract_host_ip_tuple(ctx, ssh_conn_info)
         ssh_hostname = hostname_ip_tuple[0]
@@ -77,11 +77,11 @@ class RemoteMachineNetworkConfigureRunner:
             f"dns_address={dhcpcd_configure_info.dns_ip_address}",
         ]
 
-        collaborators.summary.show_summary_and_prompt_for_enter("Configure Network")
+        collaborators.__summary.show_summary_and_prompt_for_enter("Configure Network")
 
-        output = collaborators.printer.progress_indicator.status.long_running_process_fn(
-            call=lambda: collaborators.ansible_runner.run_fn(
-                working_dir=collaborators.io.get_path_from_exec_module_root_fn(),
+        output = collaborators.__printer.progress_indicator.status.long_running_process_fn(
+            call=lambda: collaborators.__ansible_runner.run_fn(
+                working_dir=collaborators.__io.get_path_from_exec_module_root_fn(),
                 username=ssh_conn_info.username,
                 password=ssh_conn_info.password,
                 ssh_private_key_file_path=ssh_conn_info.ssh_private_key_file_path,
@@ -94,9 +94,9 @@ class RemoteMachineNetworkConfigureRunner:
             desc_end="Ansible playbook finished (Configure Network).",
         )
 
-        collaborators.printer.new_line_fn()
-        collaborators.printer.print_fn(output)
-        collaborators.printer.print_with_rich_table_fn(
+        collaborators.__printer.new_line_fn()
+        collaborators.__printer.print_fn(output)
+        collaborators.__printer.print_with_rich_table_fn(
             generate_instructions_post_network(
                 username=ssh_conn_info.username,
                 hostname=ssh_hostname,
@@ -106,8 +106,8 @@ class RemoteMachineNetworkConfigureRunner:
         )
 
         self._maybe_add_hosts_file_entry(
-            collaborators.prompter,
-            collaborators.hosts_file,
+            collaborators.__prompter,
+            collaborators.__hosts_file,
             ssh_hostname,
             dhcpcd_configure_info.static_ip_address,
         )

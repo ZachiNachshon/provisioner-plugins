@@ -9,4 +9,8 @@ See:
 
 ```bash
 poetry self add poetry-multiproject-plugin
+
+OR
+
+pip install poetry-multiproject-plugin
 ```

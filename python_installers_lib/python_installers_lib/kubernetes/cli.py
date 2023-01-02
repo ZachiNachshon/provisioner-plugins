@@ -2,7 +2,9 @@
 
 
 import typer
+
 # from python_installers_lib.cli.k3s.cli import register_command
+
 
 def register_kubernetes_commands(app: typer.Typer):
     k8s_apps = typer.Typer()

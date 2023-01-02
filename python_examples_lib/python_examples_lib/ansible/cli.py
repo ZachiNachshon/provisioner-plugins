@@ -3,20 +3,24 @@
 
 import typer
 from loguru import logger
-from python_core_lib.infra.evaluator import Evaluator
 from python_core_lib.infra.context import CliContextManager
+from python_core_lib.infra.evaluator import Evaluator
 
 from python_examples_lib.ansible.hello_world_cmd import HelloWorldCmd, HelloWorldCmdArgs
 
+
 def register_ansible_commands(app: typer.Typer, callback_remote_args):
     app.add_typer(
-        example_ansible_cli_app, 
-        name="ansible", 
-        invoke_without_command=True, 
-        no_args_is_help=True, 
-        callback=callback_remote_args)
+        example_ansible_cli_app,
+        name="ansible",
+        invoke_without_command=True,
+        no_args_is_help=True,
+        callback=callback_remote_args,
+    )
+
 
 example_ansible_cli_app = typer.Typer()
+
 
 @example_ansible_cli_app.command(name="hello")
 @logger.catch(reraise=True)
@@ -31,8 +35,5 @@ def ansible_hello(
     Evaluator.eval_cli_entrypoint_step(
         ctx=CliContextManager.create(),
         err_msg="Failed to run hello world command",
-        call=lambda: HelloWorldCmd().run(
-            ctx=CliContextManager.create(), 
-            args=HelloWorldCmdArgs(username=username)
-        )
+        call=lambda: HelloWorldCmd().run(ctx=CliContextManager.create(), args=HelloWorldCmdArgs(username=username)),
     )

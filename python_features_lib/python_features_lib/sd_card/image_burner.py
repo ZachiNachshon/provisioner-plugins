@@ -5,13 +5,11 @@ import os
 from loguru import logger
 from python_core_lib.infra.context import Context
 from python_core_lib.infra.evaluator import Evaluator
+from python_core_lib.shared.collaborators import CoreCollaborators
 from python_core_lib.utils.checks import Checks
 from python_core_lib.utils.httpclient import HttpClient
-from python_core_lib.utils.io_utils import IOUtils
-from python_core_lib.utils.json_util import JsonUtil
 from python_core_lib.utils.printer import Printer
 from python_core_lib.utils.process import Process
-from python_core_lib.utils.progress_indicator import ProgressIndicator
 from python_core_lib.utils.prompter import Prompter, PromptLevel
 from python_core_lib.utils.summary import Summary
 
@@ -25,53 +23,30 @@ class ImageBurnerArgs:
         self.image_download_url = download_url
         self.image_download_path = download_path
 
-
-class Collaborators:
-    io: IOUtils
-    process: Process
-    summary: Summary
-    checks: Checks
-    printer = Printer
-    prompter = Prompter
-    http_client = HttpClient
-
-
-class ImageBurnerCollaborators(Collaborators):
-    def __init__(self, ctx: Context) -> None:
-        self.io = IOUtils.create(ctx)
-        self.process = Process.create(ctx)
-        self.json_util = JsonUtil.create(ctx, self.io)
-        self.checks = Checks.create(ctx)
-        self.printer = Printer.create(ctx, ProgressIndicator.create(ctx, self.io))
-        self.prompter = Prompter.create(ctx)
-        self.http_client = HttpClient.create(ctx, self.io, self.printer)
-        self.summary = Summary.create(ctx, self.json_util, self.printer, self.prompter)
-
-
 class ImageBurnerCmdRunner:
-    def run(self, ctx: Context, args: ImageBurnerArgs, collaborators: Collaborators) -> None:
+    def run(self, ctx: Context, args: ImageBurnerArgs, collaborators: CoreCollaborators) -> None:
         logger.debug("Inside ImageBurner run()")
 
-        self._prerequisites(ctx=ctx, checks=collaborators.checks)
-        self._print_pre_run_instructions(collaborators.printer, collaborators.prompter)
+        self._prerequisites(ctx=ctx, checks=collaborators.checks())
+        self._print_pre_run_instructions(collaborators.printer(), collaborators.prompter())
 
         block_device_name = self._select_block_device(
             ctx,
-            collaborators.process,
-            collaborators.prompter,
-            collaborators.printer,
+            collaborators.process(),
+            collaborators.prompter(),
+            collaborators.printer(),
         )
-        collaborators.summary.add_value("block_device_name", block_device_name)
+        collaborators.__summary.add_value("block_device_name", block_device_name)
 
-        collaborators.printer.new_line_fn()
+        collaborators.__printer.new_line_fn()
         image_file_path = Evaluator.eval_step_return_failure_throws(
             call=lambda: self._download_image(
-                args.image_download_url, args.image_download_path, collaborators.http_client
+                args.image_download_url, args.image_download_path, collaborators.http_client()
             ),
             ctx=ctx,
             err_msg="Failed to download image to burn",
         )
-        collaborators.summary.add_value("image_file_path", image_file_path)
+        collaborators.__summary.add_value("image_file_path", image_file_path)
 
         logger.debug(f"Burn image candidate is located at path: {image_file_path}")
 
@@ -80,10 +55,10 @@ class ImageBurnerCmdRunner:
                 ctx,
                 block_device_name,
                 image_file_path,
-                collaborators.process,
-                collaborators.summary,
-                collaborators.prompter,
-                collaborators.printer,
+                collaborators.process(),
+                collaborators.summary(),
+                collaborators.prompter(),
+                collaborators.printer(),
             ),
             ctx=ctx,
             err_msg="Failed burning an image",

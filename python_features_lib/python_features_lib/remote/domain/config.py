@@ -7,9 +7,10 @@ class RunEnvironment(str, Enum):
     Local = "Local"
     Remote = "Remote"
 
+
 class RemoteConfig:
     """
-    Configuration structure - 
+    Configuration structure -
 
     remote:
         hosts:
@@ -20,12 +21,13 @@ class RemoteConfig:
 
         lan_scan:
             ip_discovery_range: 192.168.1.1/24
-              
+
         auth:
             username: pi
             password: raspberry
             ssh_private_key_file_path: /path/to/unknown
     """
+
     class Host:
         name: str
         address: str
