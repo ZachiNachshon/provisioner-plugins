@@ -36,7 +36,7 @@ class CoreCollaborators:
         self._lock = threading.Lock()
         self.ctx = ctx
 
-    def _lock_and_get(self, item: Any, callback: Callable):
+    def _lock_and_get(self, item: Any, callback: Callable) -> Any:
         if not item:
             with self._lock:
                 return callback()
@@ -45,33 +45,33 @@ class CoreCollaborators:
     def get_io_utils(self) -> IOUtils:
         return self._lock_and_get(self.io, IOUtils.create(self.ctx))
 
-    def get_checks(self) -> IOUtils:
+    def get_checks(self) -> Checks:
         return self._lock_and_get(self.checks, Checks.create(self.ctx))
 
-    def get_json_util(self) -> IOUtils:
+    def get_json_util(self) -> JsonUtil:
         return self._lock_and_get(self.json_util, JsonUtil.create(self.ctx, self.get_io_utils()))
 
-    def get_process(self) -> IOUtils:
+    def get_process(self) -> Process:
         return self._lock_and_get(self.process, Process.create(self.ctx))
 
-    def get_printer(self) -> IOUtils:
+    def get_printer(self) -> Printer:
         return self._lock_and_get(self.printer, Printer.create(self.ctx, ProgressIndicator.create(self.ctx, self.get_io_utils())))
 
-    def get_prompter(self) -> IOUtils:
+    def get_prompter(self) -> Prompter:
         return self._lock_and_get(self.prompter, Prompter.create(self.ctx))
 
-    def get_ansible_runner(self) -> IOUtils:
+    def get_ansible_runner(self) -> AnsibleRunner:
         return self._lock_and_get(self.ansible_runner, AnsibleRunner.create(self.ctx, self.get_io_utils(), self.get_process()))
 
-    def get_network_util(self) -> IOUtils:
+    def get_network_util(self) -> NetworkUtil:
         return self._lock_and_get(self.network_util, NetworkUtil.create(self.ctx, self.get_printer()))
 
-    def get_github(self) -> IOUtils:
+    def get_github(self) -> GitHub:
         return self._lock_and_get(self.github, GitHub.create(self.ctx, HttpClient.create(self.ctx, io_utils=self.get_io_utils(), printer=self.get_printer())))
 
-    def get_summary(self) -> IOUtils:
+    def get_summary(self) -> Summary:
         return self._lock_and_get(self.summary, Summary.create(self.ctx, self.get_json_util(), self.get_printer(), self.get_prompter()))
 
-    def get_hosts_file(self) -> IOUtils:
+    def get_hosts_file(self) -> HostsFile:
         return self._lock_and_get(self.hosts_file, HostsFile.create(self.ctx, self.get_process()))
 

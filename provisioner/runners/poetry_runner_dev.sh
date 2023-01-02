@@ -11,8 +11,8 @@ main() {
   local verify_venv="--verify-venv"
 
   # Output verbosity (verbose / silent)
-  # local verbose=""
-  local verbose="--verbose"
+  local verbose=""
+  # local verbose="--verbose"
 
   # Run in dry run mode without file system changes
   local dry_run=""

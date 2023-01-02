@@ -7,16 +7,10 @@ from loguru import logger
 from python_core_lib.errors.cli_errors import FailedToResolveLatestVersionFromGitHub, InstallerUtilityNotSupported, OsArchNotSupported
 from python_core_lib.infra.context import Context
 from python_core_lib.infra.evaluator import Evaluator
-from python_core_lib.runner.ansible.ansible import AnsibleRunner
-from python_core_lib.utils.checks import Checks
+from python_core_lib.shared.collaborators import CoreCollaborators
 from python_core_lib.utils.github import GitHub
-from python_core_lib.utils.httpclient import HttpClient
-from python_core_lib.utils.io_utils import IOUtils
-from python_core_lib.utils.json_util import JsonUtil
-from python_core_lib.utils.network import NetworkUtil
 from python_core_lib.utils.printer import Printer
 from python_core_lib.utils.process import Process
-from python_core_lib.utils.progress_indicator import ProgressIndicator
 from python_core_lib.utils.prompter import Prompter
 from python_core_lib.utils.summary import Summary
 from python_features_lib.remote.domain.config import RunEnvironment
@@ -43,39 +37,12 @@ class UtilityInstallerRunnerCmdArgs:
         self.utilities = utilities
         self.remote_opts = remote_opts
 
-
-class Collaborators:
-    io: IOUtils
-    checks: Checks
-    json_util: JsonUtil
-    summary: Summary
-    prompter: Prompter
-    printer: Printer
-    process: Process
-    ansible_runner: AnsibleRunner
-    network_util: NetworkUtil
-    github: GitHub
-
-
-class UtilityInstallerCmdRunnerCollaborators(Collaborators):
-    def __init__(self, ctx: Context) -> None:
-        self.io = IOUtils.create(ctx)
-        self.checks = Checks.create(ctx)
-        self.json_util = JsonUtil.create(ctx, self.io)
-        self.process = Process.create(ctx)
-        self.printer = Printer.create(ctx, ProgressIndicator.create(ctx, self.io))
-        self.prompter = Prompter.create(ctx)
-        self.ansible_runner = AnsibleRunner.create(ctx, self.io, self.process)
-        self.network_util = NetworkUtil.create(ctx, self.printer)
-        self.github = GitHub.create(ctx, HttpClient.create(ctx, io_utils=self.io, printer=self.printer))
-        self.summary = Summary.create(ctx, self.json_util, self.printer, self.prompter)
-
 class UtilityInstallerCmdRunner:
     def run(
         self,
         ctx: Context,
         args: UtilityInstallerRunnerCmdArgs,
-        collaborators: Collaborators,
+        collaborators: CoreCollaborators,
     ) -> None:
 
         logger.debug("Inside UtilityInstallerCmdRunner run()")
@@ -111,7 +78,7 @@ class UtilityInstallerCmdRunner:
     def _run_local_installation(self,
         ctx: Context,
         utilities: List[Installables.InstallableUtility],
-        collaborators: Collaborators):
+        collaborators: CoreCollaborators):
 
         # TODO: resolve OS/Arch
         
@@ -170,7 +137,7 @@ class UtilityInstallerCmdRunner:
     def _run_remote_installation(self,
         ctx: Context,
         utilities: List[Installables.InstallableUtility],
-        collaborators: Collaborators,
+        collaborators: CoreCollaborators,
         remote_opts: CliRemoteOpts):
 
         remote_connector = None

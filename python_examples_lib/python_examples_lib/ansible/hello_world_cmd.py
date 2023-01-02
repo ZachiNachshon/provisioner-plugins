@@ -3,6 +3,7 @@
 
 from loguru import logger
 from python_core_lib.infra.context import Context
+from python_core_lib.shared.collaborators import CoreCollaborators
 
 from python_examples_lib.ansible.hello_world_runner import (
     HelloWorldRunner,
@@ -40,5 +41,5 @@ class HelloWorldCmd:
                 remote_opts=args.remote_opts,
                 ansible_playbook_relative_path_from_root=HelloWorldAnsiblePlaybookRelativePathFromRoot,
             ),
-            collaborators=HelloWorldRunnerCollaborators(ctx),
+            collaborators=CoreCollaborators(ctx),
         )

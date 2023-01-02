@@ -11,8 +11,7 @@ from python_single_board_lib.common.remote.remote_os_configure import (
 )
 from python_features_lib.remote.typer_remote_opts import CliRemoteOpts
 
-RpiConfigureOsAnsiblePlaybookRelativePathFromRoot = "provisioner/single_board/raspberry_pi/node/playbooks/configure_os.yaml"
-
+RpiConfigureOsAnsiblePlaybookRelativePathFromRoot = "python_single_board_lib/raspberry_pi/node/playbooks/configure_os.yaml"
 
 class RPiOsConfigureCmdArgs:
 

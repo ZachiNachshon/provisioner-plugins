@@ -52,12 +52,13 @@ class RemoteMachineOsConfigureRunner:
         collaborators.summary.show_summary_and_prompt_for_enter("Configure OS")
 
         output = collaborators.printer.progress_indicator.status.long_running_process_fn(
-            call=lambda: collaborators.ansible_runner.run_fn(
-                working_dir=collaborators.io.get_path_from_exec_module_root_fn(),
+            call=lambda: collaborators.get_ansible_runner().run_fn(
+                working_dir=collaborators.get_io_utils().get_path_from_exec_module_root_fn(),
                 username=ssh_conn_info.username,
                 password=ssh_conn_info.password,
                 ssh_private_key_file_path=ssh_conn_info.ssh_private_key_file_path,
-                playbook_path=args.ansible_playbook_relative_path_from_root,
+                playbook_path=collaborators.get_io_utils().get_path_relative_from_module_root_fn(__name__, args.ansible_playbook_relative_path_from_root),
+                extra_modules_paths=[collaborators.get_io_utils().get_path_abs_to_module_root_fn(__name__)],
                 ansible_vars=ansible_vars,
                 ansible_tags=["configure_remote_node", "reboot"],
                 selected_hosts=ssh_conn_info.host_ip_pairs,
