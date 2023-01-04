@@ -1,7 +1,7 @@
 [tool.poetry]
-name = "python_test_lib"
+name = "provisioner_installers_plugin"
 version = "0.1.0"
-description = "Python Test Library"
+description = "Python Installers Library"
 authors = ["Zachi Nachshon <zachi.nachshon@gmail.com>"]
 exclude = [
     "**/*_test*", 
@@ -19,8 +19,15 @@ exclude = [
     ".pytest_cache"]
 
 # packages = [
-#     { include = "provisioner_features_lib" },
+#     { include = "provisioner_installers_plugin" },
 # ]
+
+# # A list of patterns that will be included in the final package.
+# # If no format is specified, it will default to include both sdist and wheel
+# # i.e. { path = "tests", format = ["sdist", "wheel"] }
+include = [
+    { path = "provisioner_installers_plugin/installables.json" },
+]
 
 [tool.isort]
 profile = "black"
@@ -53,6 +60,7 @@ PyYAML = "^6.0"
 inquirer = "^2.10.0"
 python-hosts = "^1.0.3"
 python_core_lib = { path = "../python_core_lib", develop = true }
+provisioner_features_lib = { path = "../provisioner_features_lib", develop = true }
 
 [tool.poetry.dev-dependencies]
 black = "^22.8.0"
@@ -62,6 +70,7 @@ coverage = "^6.4.4"
 diagrams = "^0.22.0"
 isort = "^5.10.1"
 python_core_lib = { path = "../python_core_lib", develop = true }
+provisioner_features_lib = { path = "../provisioner_features_lib", develop = true }
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

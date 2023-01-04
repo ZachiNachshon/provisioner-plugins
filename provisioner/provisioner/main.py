@@ -4,7 +4,7 @@ import os
 import pathlib
 
 from python_core_lib.cli.entrypoint import EntryPoint
-from python_features_lib.config.config_resolver import ConfigResolver
+from provisioner_features_lib.config.config_resolver import ConfigResolver
 
 from provisioner.config.domain.config import ProvisionerConfig
 
@@ -20,7 +20,7 @@ app = EntryPoint.create_typer(
 #  LIBRARY: INSTALLERS
 # ======================
 try:
-    from python_installers_lib.main import append_installers
+    from provisioner_installers_plugin.main import append_installers
 
     append_installers(app)
 except Exception as ex:
@@ -30,7 +30,7 @@ except Exception as ex:
 #  LIBRARY: SINGLE BOARD
 # ========================
 try:
-    from python_single_board_lib.main import append_single_boards
+    from provisioner_single_board_plugin.main import append_single_boards
 
     append_single_boards(app)
 except Exception as ex:
@@ -40,7 +40,7 @@ except Exception as ex:
 #  LIBRARY: EXAMPLES
 # ====================
 try:
-    from python_examples_lib.main import append_examples
+    from provisioner_examples_plugin.main import append_examples
 
     append_examples(app)
 except Exception as ex:

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
 from python_core_lib.domain.serialize import SerializationBase
-from python_features_lib.anchor.domain.config import AnchorConfig
-from python_features_lib.remote.domain.config import RemoteConfig
+from provisioner_features_lib.anchor.domain.config import AnchorConfig
+from provisioner_features_lib.remote.domain.config import RemoteConfig
 
 
 class DummyConfig:

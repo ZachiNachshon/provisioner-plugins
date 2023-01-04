@@ -1,7 +1,7 @@
 [tool.poetry]
-name = "python_test_lib"
+name = "provisioner_examples_plugin"
 version = "0.1.0"
-description = "Python Test Library"
+description = "Python Examples Library"
 authors = ["Zachi Nachshon <zachi.nachshon@gmail.com>"]
 exclude = [
     "**/*_test*", 

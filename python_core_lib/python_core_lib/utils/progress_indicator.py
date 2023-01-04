@@ -21,9 +21,9 @@ from rich.progress import (
     TransferSpeedColumn,
 )
 
-from ..colors.color import *
-from ..infra.context import Context
-from .io_utils import IOUtils
+from python_core_lib.colors.color import *
+from python_core_lib.infra.context import Context
+from python_core_lib.utils.io_utils import IOUtils
 
 
 class ProgressIndicator:
