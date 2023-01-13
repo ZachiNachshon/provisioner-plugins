@@ -5,6 +5,9 @@ source = python_core_lib
 # Restrict the scope of investigation during code coverage calculation time
 # include = utils/*.py
 
+source = 
+    python_core_lib
+
 omit = 
     */site-packages/*
     */external/*

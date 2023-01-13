@@ -26,6 +26,7 @@ class AnchorCmdArgs:
         repository_name: str,
         branch_name: str,
         github_access_token: str,
+        remote_opts: CliRemoteOpts = CliRemoteOpts.maybe_get()
     ) -> None:
 
         self.anchor_run_command = anchor_run_command
@@ -33,7 +34,7 @@ class AnchorCmdArgs:
         self.repository_name = repository_name
         self.branch_name = branch_name
         self.github_access_token = github_access_token
-        self.remote_opts = CliRemoteOpts.maybe_get()
+        self.remote_opts = remote_opts
 
     def print(self) -> None:
         if self.remote_opts:

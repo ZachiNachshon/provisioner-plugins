@@ -8,6 +8,9 @@
 # include = utils/*.py
 # exclude = external
 
+source = 
+    provisioner
+
 omit = 
     */site-packages/*
     *external/*

@@ -4,6 +4,7 @@ from typing import Optional
 
 import typer
 from loguru import logger
+from provisioner_features_lib.config.config_resolver import ConfigResolver
 from python_core_lib.cli.state import CliGlobalArgs
 from python_core_lib.errors.cli_errors import (
     CliApplicationException,
@@ -11,8 +12,10 @@ from python_core_lib.errors.cli_errors import (
 )
 from python_core_lib.infra.context import CliContextManager
 
-from provisioner_features_lib.config.config_resolver import ConfigResolver
-from provisioner_single_board_plugin.raspberry_pi.os.burn_image_cmd import RPiOsBurnImageCmd, RPiOsBurnImageCmdArgs
+from provisioner_single_board_plugin.raspberry_pi.os.burn_image_cmd import (
+    RPiOsBurnImageCmd,
+    RPiOsBurnImageCmdArgs,
+)
 
 rpi_os_cli_app = typer.Typer()
 

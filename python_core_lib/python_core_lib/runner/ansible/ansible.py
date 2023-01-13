@@ -4,10 +4,10 @@ from typing import List, Optional
 
 from loguru import logger
 
-from ...errors.cli_errors import ExternalDependencyFileNotFound, InvalidAnsibleHostPair
-from ...infra.context import Context
-from ...utils.io_utils import IOUtils
-from ...utils.process import Process
+from python_core_lib.errors.cli_errors import ExternalDependencyFileNotFound, InvalidAnsibleHostPair
+from python_core_lib.infra.context import Context
+from python_core_lib.utils.io_utils import IOUtils
+from python_core_lib.utils.process import Process
 
 ANSIBLE_SHELL_RUNNER_PATH = "external/shell_scripts_lib/runner/ansible/ansible.sh"
 
@@ -86,8 +86,8 @@ class AnsibleRunner:
 
     def _run(
         self,
-        username: str,
         working_dir: str,
+        username: str,
         selected_hosts: List[HostIpPair],
         playbook_path: str,
         password: Optional[str] = None,
@@ -95,7 +95,7 @@ class AnsibleRunner:
         ansible_vars: Optional[List[str]] = None,
         ansible_tags: Optional[List[str]] = None,
         extra_modules_paths: Optional[List[str]] = None,
-        force_dockerized: Optional[bool] = False,
+        force_dockerized: Optional[bool] = False
     ) -> str:
 
         """

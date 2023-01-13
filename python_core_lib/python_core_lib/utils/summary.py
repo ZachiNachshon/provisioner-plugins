@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
 
-import json
 from typing import Any, List
 
 from loguru import logger
 
-from ..utils.json_util import JsonUtil
-from ..utils.printer import Printer
-from ..utils.prompter import Prompter
-from ..infra.context import Context
+from python_core_lib.utils.json_util import JsonUtil
+from python_core_lib.utils.printer import Printer
+from python_core_lib.utils.prompter import Prompter
+from python_core_lib.infra.context import Context
 
 
 class Summary:
@@ -45,13 +44,10 @@ class Summary:
         logger.debug(f"Creating a summary generator (dry_run: {dry_run}, verbose: {verbose})...")
         return Summary(dry_run, verbose, auto_prompt, json_util, printer, prompter)
 
-    def add_value(self, attribute_name: str, value: Any) -> None:
+    def append(self, attribute_name: str, value: Any) -> None:
         self._summary_dict[attribute_name] = value
 
-    def add_values(self, attribute_name: str, values: List[Any]) -> None:
-        self._summary_dict[attribute_name] = values
-
-    def get_text(self) -> str:
+    def _get_text(self) -> str:
         result_dict = {}
         result_dict["summary"] = self._summary_dict
         return self._json_util.to_json_fn(result_dict)
@@ -59,7 +55,7 @@ class Summary:
     def show_summary_and_prompt_for_enter(self, title: str) -> None:
         self._printer.new_line_fn()
         self._printer.print_horizontal_line_fn(f"{title}")
-        self._printer.print_fn(self.get_text())
+        self._printer.print_fn(self._get_text())
         if not self._auto_prompt:
             self._printer.new_line_fn()
             self._prompter.prompt_for_enter_fn()

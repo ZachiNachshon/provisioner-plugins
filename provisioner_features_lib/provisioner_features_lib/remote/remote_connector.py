@@ -7,6 +7,7 @@ from loguru import logger
 from python_core_lib.infra.context import Context
 from python_core_lib.infra.evaluator import Evaluator
 from python_core_lib.runner.ansible.ansible import HostIpPair
+from python_core_lib.shared.collaborators import CoreCollaborators
 from python_core_lib.utils.checks import Checks
 from python_core_lib.utils.network import NetworkUtil
 from python_core_lib.utils.printer import Printer
@@ -59,11 +60,11 @@ class RemoteMachineConnector:
     printer: Printer = None
     prompter: Prompter = None
 
-    def __init__(self, checks: Checks, printer: Printer, prompter: Prompter, network_util: NetworkUtil) -> None:
-        self.checks = checks
-        self.network_util = network_util
-        self.printer = printer
-        self.prompter = prompter
+    def __init__(self, collaborators: CoreCollaborators) -> None:
+        self.checks = collaborators.checks()
+        self.network_util = collaborators.network_util()
+        self.printer = collaborators.printer()
+        self.prompter = collaborators.prompter()
 
     def collect_ssh_connection_info(
         self,
@@ -222,7 +223,7 @@ class RemoteMachineConnector:
                 host_ip_pairs=selected_host_ip_pairs,
             )
 
-            # TODO: might want to avoid from prompting for auth method since Ansible SSH key in keychain is used by default
+            # TODO: might want to avoid from prompting for auth method since Ansible is using the SSH key in keychain by default
         else:
             password = Evaluator.eval_step_return_failure_throws(
                 call=lambda: self.prompter.prompt_user_input_fn(
@@ -363,8 +364,8 @@ def generate_instructions_dhcpcd_config(
       If Ansible is missing, a Docker image will be built and used instead.
 
   This step requires the following values (press ENTER for defaults):
-    • Raspberry Pi node desired static IP address
-    • Raspberry Pi node desired hostname
+    • Single board node desired static IP address
+    • Single board node desired hostname
     • Internet gateway address / home router address   (default: {default_gw_address})
     • Domain name server address / home router address (default: {default_dns_address})
 """

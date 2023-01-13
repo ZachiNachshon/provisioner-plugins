@@ -41,7 +41,7 @@ class Printer:
 
     def _print_with_rich_table(self, message: str, border_color: Optional[str] = "green") -> None:
         """
-        Text support Python rich format i.e. [green]Hello[/green]
+        Message text supports Python rich format i.e. [green]Hello[/green]
         List of colors can be found on the following link:
           https://rich.readthedocs.io/en/stable/appendix/colors.html#appendix-colors
         """

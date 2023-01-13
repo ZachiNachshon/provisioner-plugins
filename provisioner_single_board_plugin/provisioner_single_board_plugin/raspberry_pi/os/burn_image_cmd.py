@@ -3,12 +3,11 @@
 from typing import Optional
 
 from loguru import logger
-from python_core_lib.infra.context import Context
-
 from provisioner_features_lib.sd_card.image_burner import (
     ImageBurnerArgs,
     ImageBurnerCmdRunner,
 )
+from python_core_lib.infra.context import Context
 
 
 class RPiOsBurnImageCmdArgs:

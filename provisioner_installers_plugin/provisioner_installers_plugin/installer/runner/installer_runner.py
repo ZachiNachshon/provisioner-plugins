@@ -58,7 +58,7 @@ class UtilityInstallerCmdRunner:
             ctx=ctx,
             err_msg="No utilities were resolved",
         )
-        collaborators.summary().add_values("utilities", utilities_to_install)
+        collaborators.summary().append("utilities", utilities_to_install)
 
         collaborators.printer().print_with_rich_table_fn(
             generate_installer_welcome(args.utilities, args.remote_opts.environment)
@@ -69,7 +69,7 @@ class UtilityInstallerCmdRunner:
             ctx=ctx,
             err_msg="Could not resolve run environment",
         )
-        collaborators.summary().add_value("run_env", selected_run_env)
+        collaborators.summary().append("run_env", selected_run_env)
 
         if selected_run_env == RunEnvironment.Local:
             Evaluator.eval_step_no_return_failure_throws(
@@ -163,7 +163,7 @@ class UtilityInstallerCmdRunner:
             ctx=ctx,
             err_msg="Could not resolve SSH connection info",
         )
-        collaborators.summary().add_values("ssh_conn_info", ssh_conn_info)
+        collaborators.summary().append("ssh_conn_info", ssh_conn_info)
 
         for utility in utilities:
             self._print_pre_install_summary(
@@ -176,14 +176,14 @@ class UtilityInstallerCmdRunner:
 
             output = collaborators.printer().progress_indicator.status.long_running_process_fn(
                 call=lambda: collaborators.ansible_runner().run_fn(
-                    working_dir=collaborators.io_utils().get_path_from_exec_module_root_fn(),
+                    working_dir=collaborators.paths().get_path_from_exec_module_root_fn(),
                     username=ssh_conn_info.username,
                     password=ssh_conn_info.password,
                     ssh_private_key_file_path=ssh_conn_info.ssh_private_key_file_path,
-                    playbook_path=collaborators.io_utils().get_path_relative_from_module_root_fn(
+                    playbook_path=collaborators.paths().get_path_relative_from_module_root_fn(
                         __name__, ProvisionerRunAnsiblePlaybookRelativePath
                     ),
-                    extra_modules_paths=[collaborators.io_utils().get_path_abs_to_module_root_fn(__name__)],
+                    extra_modules_paths=[collaborators.paths().get_path_abs_to_module_root_fn(__name__)],
                     ansible_vars=ansible_vars,
                     ansible_tags=["provisioner_run"],
                     selected_hosts=ssh_conn_info.host_ip_pairs,
@@ -220,17 +220,8 @@ class UtilityInstallerCmdRunner:
             return RunEnvironment.Remote
         return None
 
-    def _print_pre_install_summary(
-        self, name: str, is_auto_prompt: bool, printer: Printer, prompter: Prompter, summary: Summary
-    ) -> None:
-
-        printer.new_line_fn()
-        printer.print_horizontal_line_fn(f"Installing Utility: {name}")
-        printer.print_fn(summary.get_text())
-        if not is_auto_prompt:
-            printer.new_line_fn()
-            prompter.prompt_for_enter_fn()
-
+    def _print_pre_install_summary(self, name: str, summary: Summary) -> None:
+        summary.show_summary_and_prompt_for_enter(f"Installing Utility: {name}")
 
 def generate_installer_welcome(utilities_to_install: List[str], environment: Optional[RunEnvironment]) -> str:
     selected_utils_names = ""
@@ -256,7 +247,7 @@ When opting-in for the remote option you will be prompted for additional argumen
 #             ctx=ctx,
 #             err_msg="No utilities were resolved",
 #         )
-#         collaborators.summary.add_values("utilities", utilities_to_install)
+#         collaborators.summary.append("utilities", utilities_to_install)
 
 # def _resolve_utilities_metadata(
 #         self, io_utiles: IOUtils, json_util: JsonUtil, prompter: Prompter, args: UtilityInstallerRunnerCmdArgs

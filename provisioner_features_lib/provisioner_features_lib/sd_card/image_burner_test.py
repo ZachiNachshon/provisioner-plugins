@@ -51,7 +51,7 @@ class ImageBurnerTestShould(unittest.TestCase):
         cols = self.create_fake_collaborators(ctx)
         runner = ImageBurnerCmdRunner()
         Assertion.expect_failure(
-            self, ex_type=MissingUtilityException, methodToRun=lambda: runner._prerequisites(ctx, cols.checks)
+            self, ex_type=MissingUtilityException, method_to_run=lambda: runner._prerequisites(ctx, cols.checks)
         )
 
     def test_prerequisites_darwin_success(self) -> None:
@@ -62,7 +62,7 @@ class ImageBurnerTestShould(unittest.TestCase):
         cols.checks.register_utility("unzip")
         cols.checks.register_utility("dd")
         runner = ImageBurnerCmdRunner()
-        Assertion.expect_success(self, methodToRun=lambda: runner._prerequisites(ctx, cols.checks))
+        Assertion.expect_success(self, method_to_run=lambda: runner._prerequisites(ctx, cols.checks))
 
     def test_prerequisites_linux_success(self) -> None:
         ctx = Context.create(os_arch=OsArch(os=LINUX, arch="test_arch", os_release="test_os_release"))
@@ -73,14 +73,14 @@ class ImageBurnerTestShould(unittest.TestCase):
         cols.checks.register_utility("dd")
         cols.checks.register_utility("sync")
         runner = ImageBurnerCmdRunner()
-        Assertion.expect_success(self, methodToRun=lambda: runner._prerequisites(ctx, cols.checks))
+        Assertion.expect_success(self, method_to_run=lambda: runner._prerequisites(ctx, cols.checks))
 
     def test_prerequisites_fail_on_os_not_supported(self) -> None:
         ctx = Context.create(os_arch=OsArch(os=WINDOWS, arch="test_arch", os_release="test_os_release"))
 
         runner = ImageBurnerCmdRunner()
         Assertion.expect_failure(
-            self, ex_type=NotImplementedError, methodToRun=lambda: runner._prerequisites(ctx, None)
+            self, ex_type=NotImplementedError, method_to_run=lambda: runner._prerequisites(ctx, None)
         )
 
         ctx = Context.create(
@@ -90,7 +90,7 @@ class ImageBurnerTestShould(unittest.TestCase):
         )
         runner = ImageBurnerCmdRunner()
         Assertion.expect_failure(
-            self, ex_type=NotImplementedError, methodToRun=lambda: runner._prerequisites(ctx, None)
+            self, ex_type=NotImplementedError, method_to_run=lambda: runner._prerequisites(ctx, None)
         )
 
     def test_read_block_device_linux_success(self) -> None:
@@ -102,7 +102,7 @@ class ImageBurnerTestShould(unittest.TestCase):
             expected_output="linux block devices",
         )
         runner = ImageBurnerCmdRunner()
-        output = Assertion.expect_success(self, methodToRun=lambda: runner.read_block_devices(ctx, cols.process))
+        output = Assertion.expect_success(self, method_to_run=lambda: runner.read_block_devices(ctx, cols.process))
         self.assertEqual(output, "linux block devices")
 
     def test_read_block_device_darwin_success(self) -> None:
@@ -114,7 +114,7 @@ class ImageBurnerTestShould(unittest.TestCase):
             expected_output="darwin block devices",
         )
         runner = ImageBurnerCmdRunner()
-        output = Assertion.expect_success(self, methodToRun=lambda: runner.read_block_devices(ctx, cols.process))
+        output = Assertion.expect_success(self, method_to_run=lambda: runner.read_block_devices(ctx, cols.process))
         self.assertEqual(output, "darwin block devices")
 
     def test_read_block_device_os_not_supported(self) -> None:
@@ -123,7 +123,7 @@ class ImageBurnerTestShould(unittest.TestCase):
         cols = self.create_fake_collaborators(ctx)
         runner = ImageBurnerCmdRunner()
         Assertion.expect_failure(
-            self, ex_type=NotImplementedError, methodToRun=lambda: runner.read_block_devices(ctx, cols.process)
+            self, ex_type=NotImplementedError, method_to_run=lambda: runner.read_block_devices(ctx, cols.process)
         )
 
         ctx = Context.create(
@@ -135,7 +135,7 @@ class ImageBurnerTestShould(unittest.TestCase):
         cols = self.create_fake_collaborators(ctx)
         runner = ImageBurnerCmdRunner()
         Assertion.expect_failure(
-            self, ex_type=NotImplementedError, methodToRun=lambda: runner.read_block_devices(ctx, cols.process)
+            self, ex_type=NotImplementedError, method_to_run=lambda: runner.read_block_devices(ctx, cols.process)
         )
 
     def test_burn_image_linux_skip_by_user(self) -> None:
@@ -259,7 +259,7 @@ class ImageBurnerTestShould(unittest.TestCase):
         Assertion.expect_failure(
             self,
             ex_type=NotImplementedError,
-            methodToRun=lambda: runner._burn_image(ctx, None, None, None, None, cols.printer),
+            method_to_run=lambda: runner._burn_image(ctx, None, None, None, None, cols.printer),
         )
 
         ctx = Context.create(os_arch=OsArch(os="NOT-SUPPORTED", arch="test_arch", os_release="test_os_release"))
@@ -268,7 +268,7 @@ class ImageBurnerTestShould(unittest.TestCase):
         Assertion.expect_failure(
             self,
             ex_type=NotImplementedError,
-            methodToRun=lambda: runner._burn_image(ctx, None, None, None, None, cols.printer),
+            method_to_run=lambda: runner._burn_image(ctx, None, None, None, None, cols.printer),
         )
 
     def test_block_device_verification_fail(self) -> None:
@@ -291,7 +291,7 @@ class ImageBurnerTestShould(unittest.TestCase):
             Assertion.expect_failure(
                 self,
                 ex_type=CliApplicationException,
-                methodToRun=lambda: runner.run(ctx=ctx, args=None, collaborators=cols),
+                method_to_run=lambda: runner.run(ctx=ctx, args=None, collaborators=cols),
             )
             self.assertEqual(1, prerequisites.call_count)
             prerequisites.assert_called_once_with(ctx=ctx, checks=cols.checks)
@@ -311,7 +311,7 @@ class ImageBurnerTestShould(unittest.TestCase):
             Assertion.expect_failure(
                 self,
                 ex_type=StepEvaluationFailure,
-                methodToRun=lambda: runner.run(ctx=ctx, args=None, collaborators=cols),
+                method_to_run=lambda: runner.run(ctx=ctx, args=None, collaborators=cols),
             )
             self.assertEqual(1, read_block_devices.call_count)
             read_block_devices.assert_called_once_with(ctx=ctx, process=cols.process)
@@ -332,7 +332,7 @@ class ImageBurnerTestShould(unittest.TestCase):
             Assertion.expect_failure(
                 self,
                 ex_type=StepEvaluationFailure,
-                methodToRun=lambda: runner.run(ctx=ctx, args=None, collaborators=cols),
+                method_to_run=lambda: runner.run(ctx=ctx, args=None, collaborators=cols),
             )
             self.assertEqual(1, select_block_device.call_count)
             select_block_device.assert_called_once_with(prompter=cols.prompter)
@@ -358,7 +358,7 @@ class ImageBurnerTestShould(unittest.TestCase):
             Assertion.expect_failure(
                 self,
                 ex_type=StepEvaluationFailure,
-                methodToRun=lambda: runner.run(ctx=ctx, args=None, collaborators=cols),
+                method_to_run=lambda: runner.run(ctx=ctx, args=None, collaborators=cols),
             )
             self.assertEqual(1, verify_block_device_name.call_count)
             verify_block_device_name.assert_called_once_with(
@@ -389,7 +389,7 @@ class ImageBurnerTestShould(unittest.TestCase):
             Assertion.expect_failure(
                 self,
                 ex_type=StepEvaluationFailure,
-                methodToRun=lambda: runner.run(ctx=ctx, args=None, collaborators=cols),
+                method_to_run=lambda: runner.run(ctx=ctx, args=None, collaborators=cols),
             )
             self.assertEqual(1, ask_to_verify_block_device.call_count)
             ask_to_verify_block_device.assert_called_once_with(block_device_name="/dev/disk1", prompter=cols.prompter)
@@ -424,7 +424,7 @@ class ImageBurnerTestShould(unittest.TestCase):
             Assertion.expect_failure(
                 self,
                 ex_type=StepEvaluationFailure,
-                methodToRun=lambda: runner.run(
+                method_to_run=lambda: runner.run(
                     ctx=ctx, args=ImageBurnerArgs(image_download_url, image_download_path), collaborators=cols
                 ),
             )
@@ -463,7 +463,7 @@ class ImageBurnerTestShould(unittest.TestCase):
             Assertion.expect_failure(
                 self,
                 ex_type=StepEvaluationFailure,
-                methodToRun=lambda: runner.run(
+                method_to_run=lambda: runner.run(
                     ctx=ctx,
                     args=ImageBurnerArgs("https://burn-image-test.download.com", "/path/to/downloaded/image"),
                     collaborators=cols,

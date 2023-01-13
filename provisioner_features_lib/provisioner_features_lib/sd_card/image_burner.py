@@ -36,7 +36,7 @@ class ImageBurnerCmdRunner:
             collaborators.prompter(),
             collaborators.printer(),
         )
-        collaborators.summary().add_value("block_device_name", block_device_name)
+        collaborators.summary().append("block_device_name", block_device_name)
 
         collaborators.printer().new_line_fn()
         image_file_path = Evaluator.eval_step_return_failure_throws(
@@ -46,7 +46,7 @@ class ImageBurnerCmdRunner:
             ctx=ctx,
             err_msg="Failed to download image to burn",
         )
-        collaborators.summary().add_value("image_file_path", image_file_path)
+        collaborators.summary().append("image_file_path", image_file_path)
 
         logger.debug(f"Burn image candidate is located at path: {image_file_path}")
 

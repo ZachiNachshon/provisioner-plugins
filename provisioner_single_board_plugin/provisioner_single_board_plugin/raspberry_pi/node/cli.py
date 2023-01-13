@@ -4,21 +4,25 @@ from typing import Optional
 
 import typer
 from loguru import logger
+from provisioner_features_lib.config.config_resolver import ConfigResolver
 from python_core_lib.cli.state import CliGlobalArgs
 from python_core_lib.errors.cli_errors import (
     CliApplicationException,
     StepEvaluationFailure,
 )
 from python_core_lib.infra.context import CliContextManager
-from provisioner_features_lib.config.config_resolver import ConfigResolver
 
-from provisioner_single_board_plugin.raspberry_pi.node.configure_cmd import RPiOsConfigureCmd, RPiOsConfigureCmdArgs
+from provisioner_single_board_plugin.raspberry_pi.node.configure_cmd import (
+    RPiOsConfigureCmd,
+    RPiOsConfigureCmdArgs,
+)
 from provisioner_single_board_plugin.raspberry_pi.node.network_cmd import (
     RPiNetworkConfigureCmd,
     RPiNetworkConfigureCmdArgs,
 )
 
 rpi_node_cli_app = typer.Typer()
+
 
 @rpi_node_cli_app.command(name="configure")
 @logger.catch(reraise=True)
@@ -61,9 +65,7 @@ def network(
     """
     try:
         args = RPiNetworkConfigureCmdArgs(
-            gw_ip_address=gw_ip_address,
-            dns_ip_address=dns_ip_address,
-            static_ip_address=static_ip_address
+            gw_ip_address=gw_ip_address, dns_ip_address=dns_ip_address, static_ip_address=static_ip_address
         )
         args.print()
         RPiNetworkConfigureCmd().run(ctx=CliContextManager.create(), args=args)

@@ -5,10 +5,10 @@ from typing import Any, Type
 
 class Assertion:
     @staticmethod
-    def expect_failure(testObj, ex_type: Type, methodToRun) -> None:
+    def expect_failure(testObj, ex_type: Type, method_to_run) -> None:
         failed = False
         try:
-            methodToRun()
+            method_to_run()
         except Exception as ex:
             failed = True
             testObj.assertIsInstance(ex, ex_type)
@@ -16,11 +16,11 @@ class Assertion:
         testObj.assertTrue(failed)
 
     @staticmethod
-    def expect_success(testObj, methodToRun) -> Any:
+    def expect_success(testObj, method_to_run) -> Any:
         output = None
         success = False
         try:
-            output = methodToRun()
+            output = method_to_run()
             success = True
         except Exception as ex:
             testObj.fail(f"Test was expected to pass. message: {str(ex)}")

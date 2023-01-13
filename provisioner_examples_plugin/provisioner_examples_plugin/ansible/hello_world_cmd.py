@@ -21,9 +21,9 @@ class HelloWorldCmdArgs:
     username: str
     remote_opts: CliRemoteOpts
 
-    def __init__(self, username: str = None) -> None:
+    def __init__(self, username: str = None, remote_opts: CliRemoteOpts = CliRemoteOpts.maybe_get()) -> None:
         self.username = username
-        self.remote_opts = CliRemoteOpts.maybe_get()
+        self.remote_opts = remote_opts
 
     def print(self) -> None:
         if self.remote_opts:
@@ -34,6 +34,7 @@ class HelloWorldCmdArgs:
 class HelloWorldCmd:
     def run(self, ctx: Context, args: HelloWorldCmdArgs) -> None:
         logger.debug("Inside HelloWorldCmd run()")
+        args.print()
 
         HelloWorldRunner().run(
             ctx=ctx,

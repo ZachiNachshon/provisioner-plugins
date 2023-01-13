@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
-from typing import List, Optional
+from typing import List
 
-from ..infra.context import Context
-from .process import Process
+from python_core_lib.infra.context import Context
+from python_core_lib.utils.process import Process
 
 
 class FakeProcess(Process):

@@ -8,6 +8,7 @@ from python_core_lib.infra.evaluator import Evaluator
 
 from provisioner_examples_plugin.ansible.hello_world_cmd import HelloWorldCmd, HelloWorldCmdArgs
 
+example_ansible_cli_app = typer.Typer()
 
 def register_ansible_commands(app: typer.Typer):
     app.add_typer(
@@ -16,9 +17,6 @@ def register_ansible_commands(app: typer.Typer):
         invoke_without_command=True,
         no_args_is_help=True,
     )
-
-example_ansible_cli_app = typer.Typer()
-
 
 @example_ansible_cli_app.command(name="hello")
 @logger.catch(reraise=True)

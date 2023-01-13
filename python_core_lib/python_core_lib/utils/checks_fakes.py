@@ -26,8 +26,9 @@ class FakeChecks(Checks):
     def create(ctx: Context) -> "FakeChecks":
         return FakeChecks._create_fake(dry_run=ctx.is_dry_run(), verbose=ctx.is_verbose())
 
-    def register_utility(self, name: str, exist: Optional[bool] = True):
+    def register_utility(self, name: str, exist: Optional[bool] = True) -> "FakeChecks":
         self.registered_utilities[name] = exist
+        return self
 
     def _utilities_selector(self, name: str, soft_fail: bool) -> Any:
         for key in self.registered_utilities.keys():

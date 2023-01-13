@@ -3,15 +3,18 @@
 from typing import Optional
 
 from loguru import logger
+from provisioner_features_lib.remote.typer_remote_opts import CliRemoteOpts
 from python_core_lib.infra.context import Context
+from python_core_lib.shared.collaborators import CoreCollaborators
+
 from provisioner_single_board_plugin.common.remote.remote_network_configure import (
     RemoteMachineNetworkConfigureArgs,
     RemoteMachineNetworkConfigureRunner,
 )
-from python_core_lib.shared.collaborators import CoreCollaborators
-from provisioner_features_lib.remote.typer_remote_opts import CliRemoteOpts
 
-RpiNetworkConfigureAnsiblePlaybookRelativePathFromRoot = "provisioner/single_board/raspberry_pi/node/playbooks/configure_network.yaml"
+RpiNetworkConfigureAnsiblePlaybookRelativePathFromRoot = (
+    "provisioner/single_board/raspberry_pi/node/playbooks/configure_network.yaml"
+)
 
 
 class RPiNetworkConfigureCmdArgs:
@@ -25,7 +28,7 @@ class RPiNetworkConfigureCmdArgs:
         self,
         gw_ip_address: Optional[str] = None,
         dns_ip_address: Optional[str] = None,
-        static_ip_address: Optional[str] = None
+        static_ip_address: Optional[str] = None,
     ) -> None:
         self.gw_ip_address = gw_ip_address
         self.dns_ip_address = dns_ip_address
@@ -50,7 +53,7 @@ class RPiNetworkConfigureCmd:
         RemoteMachineNetworkConfigureRunner().run(
             ctx=ctx,
             args=RemoteMachineNetworkConfigureArgs(
-                remote_args=args.remote_opts,
+                remote_opts=args.remote_opts,
                 gw_ip_address=args.gw_ip_address,
                 dns_ip_address=args.dns_ip_address,
                 static_ip_address=args.static_ip_address,

@@ -39,13 +39,14 @@ class ProgressIndicator:
         def _get_rich_status_indicator(self) -> Console:
             return Console(log_path=False)
 
-        def _inc_based_status_indicator(self, future, desc_run: str, desc_end: str) -> Any:
+        def _inc_based_status_indicator(self, console: Console, future, desc_run: str, desc_end: str) -> Any:
             """
             Display status indicator based on expected time increments.
             Complete early if future completes.
             Wait for future if it doesn't complete in expected_time.
             """
-            with self._get_rich_status_indicator() as console:
+            # with self._get_rich_status_indicator() as console:
+            with console:
                 with console.status(f"[bold cyan]{desc_run}...", spinner="dots"):
                     try:
                         result = future.result()
@@ -65,9 +66,10 @@ class ProgressIndicator:
                 logger.debug("Skipping status indicator on dry-run mode.")
                 return call()
 
+            rich_console = self._get_rich_status_indicator()
             with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
                 future = executor.submit(call)
-                return self._inc_based_status_indicator(future, desc_run, desc_end)
+                return self._inc_based_status_indicator(rich_console, future, desc_run, desc_end)
 
         long_running_process_fn = _long_running_process
 

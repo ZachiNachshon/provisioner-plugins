@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
-from ..infra.context import Context
-from .httpclient import HttpClient, HttpResponse
-from .io_utils import IOUtils
-from .printer import Printer
+from python_core_lib.infra.context import Context
+from python_core_lib.utils.httpclient import HttpClient, HttpResponse
+from python_core_lib.utils.io_utils import IOUtils
+from python_core_lib.utils.printer import Printer
 
 
 class FakeHttpClient(HttpClient):

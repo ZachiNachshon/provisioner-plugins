@@ -1,18 +1,17 @@
 #!/usr/bin/env python3
 
 from loguru import logger
+from provisioner_features_lib.remote.remote_connector import (
+    RemoteMachineConnector,
+    SSHConnectionInfo,
+)
+from provisioner_features_lib.remote.typer_remote_opts import CliRemoteOpts
 from python_core_lib.infra.context import Context
 from python_core_lib.infra.evaluator import Evaluator
 from python_core_lib.shared.collaborators import CoreCollaborators
 from python_core_lib.utils.checks import Checks
 from python_core_lib.utils.printer import Printer
 from python_core_lib.utils.prompter import Prompter
-
-from provisioner_features_lib.remote.remote_connector import (
-    RemoteMachineConnector,
-    SSHConnectionInfo,
-)
-from provisioner_features_lib.remote.typer_remote_opts import CliRemoteOpts
 
 
 class RemoteMachineOsConfigureArgs:
@@ -24,42 +23,40 @@ class RemoteMachineOsConfigureArgs:
         self.remote_opts = remote_opts
         self.ansible_playbook_relative_path_from_root = ansible_playbook_relative_path_from_root
 
+
 class RemoteMachineOsConfigureRunner:
     def run(self, ctx: Context, args: RemoteMachineOsConfigureArgs, collaborators: CoreCollaborators) -> None:
         logger.debug("Inside RemoteMachineOsConfigureRunner run()")
 
-        self.prerequisites(ctx=ctx, checks=collaborators.checks())
-        self._print_pre_run_instructions(collaborators.printer(), collaborators.prompter())
-
-        remote_connector = RemoteMachineConnector(
-            collaborators.checks(), collaborators.printer(), collaborators.prompter(), collaborators.network_util()
-        )
+        self._prerequisites(ctx=ctx, checks=collaborators.checks())
+        self._print_pre_run_instructions(collaborators.printer(), collaborators.prompter()),
 
         ssh_conn_info = Evaluator.eval_step_return_failure_throws(
-            call=lambda: remote_connector.collect_ssh_connection_info(
+            call=lambda: RemoteMachineConnector(collaborators=collaborators).collect_ssh_connection_info(
                 ctx, args.remote_opts, force_single_conn_info=True
             ),
             ctx=ctx,
             err_msg="Could not resolve SSH connection info",
         )
-        collaborators.summary().add_values("ssh_conn_info", ssh_conn_info)
+        collaborators.summary().append("ssh_conn_info", ssh_conn_info)
 
         hostname_ip_tuple = self._extract_host_ip_tuple(ctx, ssh_conn_info)
         ssh_hostname = hostname_ip_tuple[0]
         ssh_ip_address = hostname_ip_tuple[1]
-        ansible_vars = [f"host_name={ssh_hostname}"]
 
         collaborators.summary().show_summary_and_prompt_for_enter("Configure OS")
 
         output = collaborators.printer().progress_indicator.status.long_running_process_fn(
             call=lambda: collaborators.ansible_runner().run_fn(
-                working_dir=collaborators.io_utils().get_path_from_exec_module_root_fn(),
+                working_dir=collaborators.paths().get_path_from_exec_module_root_fn(),
                 username=ssh_conn_info.username,
                 password=ssh_conn_info.password,
                 ssh_private_key_file_path=ssh_conn_info.ssh_private_key_file_path,
-                playbook_path=collaborators.io_utils().get_path_relative_from_module_root_fn(__name__, args.ansible_playbook_relative_path_from_root),
-                extra_modules_paths=[collaborators.io_utils().get_path_abs_to_module_root_fn(__name__)],
-                ansible_vars=ansible_vars,
+                playbook_path=collaborators.paths().get_path_relative_from_module_root_fn(
+                    __name__, args.ansible_playbook_relative_path_from_root
+                ),
+                extra_modules_paths=[collaborators.paths().get_path_abs_to_module_root_fn(__name__)],
+                ansible_vars=[f"host_name={ssh_hostname}"],
                 ansible_tags=["configure_remote_node", "reboot"],
                 selected_hosts=ssh_conn_info.host_ip_pairs,
             ),
@@ -86,7 +83,7 @@ class RemoteMachineOsConfigureRunner:
         printer.print_with_rich_table_fn(generate_instructions_pre_configure())
         prompter.prompt_for_enter_fn()
 
-    def prerequisites(self, ctx: Context, checks: Checks) -> None:
+    def _prerequisites(self, ctx: Context, checks: Checks) -> None:
         if ctx.os_arch.is_linux():
             checks.check_tool_fn("docker")
 

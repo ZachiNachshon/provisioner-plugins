@@ -64,39 +64,32 @@ class AnchorCmdRunner:
             raise MissingCliArgument("Missing Cli argument. name: environment")
 
     def _start_remote_run_command_flow(self, ctx: Context, args: AnchorRunnerCmdArgs, collaborators: CoreCollaborators):
-
-        remote_connector = None
-        ssh_conn_info = None
-        remote_connector = RemoteMachineConnector(
-            collaborators.checks(), collaborators.printer(), collaborators.prompter(), collaborators.network_util()
-        )
+        remote_connector = RemoteMachineConnector(collaborators)
         ssh_conn_info = Evaluator.eval_step_return_failure_throws(
             call=lambda: remote_connector.collect_ssh_connection_info(ctx, args.remote_opts),
             ctx=ctx,
             err_msg="Could not resolve SSH connection info",
         )
-        collaborators.summary().add_values("ssh_conn_info", ssh_conn_info)
-
-        ansible_vars = [
-            "anchor_command=Run",
-            f"\"anchor_args='{args.anchor_run_command}'\"",
-            f"anchor_github_organization={args.github_organization}",
-            f"anchor_github_repository={args.repository_name}",
-            f"anchor_github_repo_branch={args.branch_name}",
-            f"github_access_token={args.github_access_token}",
-        ]
+        collaborators.summary().append("ssh_conn_info", ssh_conn_info)
 
         collaborators.printer().new_line_fn()
 
         output = collaborators.printer().progress_indicator.status.long_running_process_fn(
             call=lambda: collaborators.ansible_runner().run_fn(
-                working_dir=collaborators.io_utils().get_path_from_exec_module_root_fn(),
+                working_dir=collaborators.paths().get_path_from_exec_module_root_fn(),
                 username=ssh_conn_info.username,
                 password=ssh_conn_info.password,
                 ssh_private_key_file_path=ssh_conn_info.ssh_private_key_file_path,
-                playbook_path=collaborators.io_utils().get_path_relative_from_module_root_fn(__name__, AnchorRunAnsiblePlaybookRelativePathFromRoot),
-                extra_modules_paths=[collaborators.io_utils().get_path_abs_to_module_root_fn(__name__)],
-                ansible_vars=ansible_vars,
+                playbook_path=collaborators.paths().get_path_relative_from_module_root_fn(__name__, AnchorRunAnsiblePlaybookRelativePathFromRoot),
+                extra_modules_paths=[collaborators.paths().get_path_abs_to_module_root_fn(__name__)],
+                ansible_vars=[
+                    "anchor_command=Run",
+                    f"\"anchor_args='{args.anchor_run_command}'\"",
+                    f"anchor_github_organization={args.github_organization}",
+                    f"anchor_github_repository={args.repository_name}",
+                    f"anchor_github_repo_branch={args.branch_name}",
+                    f"github_access_token={args.github_access_token}",
+                ],
                 ansible_tags=["ansible_run"],
                 selected_hosts=ssh_conn_info.host_ip_pairs,
             ),

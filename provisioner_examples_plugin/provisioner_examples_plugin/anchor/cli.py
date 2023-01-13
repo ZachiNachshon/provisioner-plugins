@@ -9,6 +9,7 @@ from provisioner_features_lib.config.config_resolver import ConfigResolver
 
 from provisioner_examples_plugin.anchor.anchor_cmd import AnchorCmd, AnchorCmdArgs
 
+example_anchor_cli_app = typer.Typer()
 
 def register_anchor_commands(app: typer.Typer, callback_remote_args):
     app.add_typer(
@@ -18,9 +19,6 @@ def register_anchor_commands(app: typer.Typer, callback_remote_args):
         no_args_is_help=True,
         callback=callback_remote_args,
     )
-
-
-example_anchor_cli_app = typer.Typer()
 
 
 @example_anchor_cli_app.command(name="run-command")
@@ -37,7 +35,7 @@ def run_anchor_command(
     ),
     repository_name: str = typer.Option(None, show_default=False, help="Repository name", envvar="ANCHOR_REPO_NAME"),
     branch_name: str = typer.Option("master", help="Repository branch name", envvar="ANCHOR_REPO_BRANCH_NAME"),
-    git_access_token: str = typer.Option(
+    github_access_token: str = typer.Option(
         ConfigResolver.get_config().anchor.github.github_access_token,
         help="GitHub access token (only for private repos)",
         envvar="GITHUB_ACCESS_TOKEN",
@@ -56,7 +54,7 @@ def run_anchor_command(
                 github_organization=github_organization,
                 repository_name=repository_name,
                 branch_name=branch_name,
-                github_access_token=git_access_token,
+                github_access_token=github_access_token,
             ),
         ),
     )

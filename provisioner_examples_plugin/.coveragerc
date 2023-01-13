@@ -8,15 +8,21 @@
 # include = utils/*.py
 # exclude = external
 
+source = 
+    provisioner_examples_plugin
+
 omit = 
     */site-packages/*
     *external/*
     */loguru/*
     *_fakes.py
+    *_fake.py
     *__init__.py
     *__main__.py
-    */templates/*
+    */templates/*py
     *_test.py
+    *python_core_lib*
+    *provisioner_features_lib*
     
 
 [report]
@@ -24,7 +30,12 @@ omit =
     */site-packages/*
     *external/*
     */loguru/*
+    *_fakes.py
+    *_fake.py
     *__init__.py
     *__main__.py
     */templates/*
     *_test.py
+    *python_core_lib*
+    *provisioner_features_lib*
+

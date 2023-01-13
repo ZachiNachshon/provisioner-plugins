@@ -67,3 +67,7 @@ class FailedToResolveLatestVersionFromGitHub(Exception):
 
 class OsArchNotSupported(Exception):
     pass
+
+
+class TestEnvironmentAssertionError(Exception):
+    pass
