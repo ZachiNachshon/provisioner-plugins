@@ -1,0 +1,18 @@
+---
+- name: "Runing provisioner (version: {{ provisioner_version }})"
+  tags: ['provisioner_run']
+  script: "provisioner_run.sh"
+  register: scriptOut
+  become: no
+  changed_when: False # nothing really gets changed
+  environment:
+    ENV_LOCAL_BIN_FOLDER_PATH: "{{ local_bin_folder_path | mandatory }}"
+    ENV_LOCAL_PIP_PKG_FOLDER_PATH: "{{ local_pip_pkg_folder_path | mandatory }}"
+    ENV_PROVISIONER_BIN_FILE_NAME: "{{ provisioner_bin_file_name | mandatory }}"
+    ENV_PROVISIONER_ANSIBLE_COMMAND: "{{ provisioner_ansible_command | mandatory }}"
+    ENV_PROVISIONER_VERSION: "{{ provisioner_version | mandatory }}"
+    ENV_PROVISIONER_COMMAND: "{{ provisioner_command | mandatory }}"
+    ENV_GIT_ACCESS_TOKEN: "{{ git_access_token | mandatory }}"
+
+- debug: msg={{ scriptOut.stdout }}
+  tags: ['provisioner_run']

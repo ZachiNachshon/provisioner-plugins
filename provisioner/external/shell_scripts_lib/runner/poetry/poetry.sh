@@ -74,8 +74,13 @@ install_poetry() {
     mkdir -p "${PATTERN_POETRY_HOME_PATH}"
   fi
 
+  local verbose_flag=""
+  if [[ -n ${LOGGER_VERBOSE} ]]; then
+    verbose_flag="-vv"
+  fi
+
   log_info "Downloading Poetry. version: ${PROP_POETRY_VERSION}, path: ${PATTERN_POETRY_BINARY_PATH}"
-  cmd_run "curl -sSL https://install.python-poetry.org | POETRY_HOME=${PATTERN_POETRY_HOME_PATH} POETRY_VERSION=${PROP_POETRY_VERSION} python3 - --force"
+  cmd_run "curl -sSL https://install.python-poetry.org | POETRY_HOME=${PATTERN_POETRY_HOME_PATH} POETRY_VERSION=${PROP_POETRY_VERSION} python3 ${verbose_flag} - --force"
 
   if ! is_file_exist "${PATTERN_POETRY_BINARY_PATH}"; then
     log_fatal "Failed to install Poetry from remote"
@@ -117,8 +122,8 @@ poetry_create_virtual_environment() {
   run_poetry env use "$(pyenv which python3)" # Don't want to force using pyenv
   run_poetry update "${no_dev_deps_flag}"
   run_poetry install "${no_dev_deps_flag}"
-  # run_poetry build
-  run_poetry build-project
+  run_poetry build
+  # run_poetry build-project
 }
 
 poetry_is_active_venv() {
