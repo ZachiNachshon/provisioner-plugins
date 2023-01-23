@@ -54,8 +54,8 @@ class RemoteMachineNetworkConfigureRunner:
             collaborators=collaborators,
             args=args,
         )
-        self._print_post_run_instructions(ctx, tuple_info, collaborators.printer())
-        self._maybe_add_hosts_file_entry(ctx, tuple_info, collaborators.prompter(), collaborators.hosts_file())
+        self._print_post_run_instructions(ctx, tuple_info, collaborators)
+        self._maybe_add_hosts_file_entry(ctx, tuple_info, collaborators)
 
     def _get_ssh_conn_info(
         self, ctx: Context, collaborators: CoreCollaborators, remote_opts: Optional[CliRemoteOpts] = None
@@ -81,7 +81,11 @@ class RemoteMachineNetworkConfigureRunner:
 
         dhcpcd_configure_info = Evaluator.eval_step_return_failure_throws(
             call=lambda: RemoteMachineConnector(collaborators=collaborators).collect_dhcpcd_configuration_info(
-                ctx, ssh_conn_info.host_ip_pairs, args.static_ip_address, args.gw_ip_address, args.dns_ip_address
+                ctx=ctx,
+                host_ip_pairs=ssh_conn_info.host_ip_pairs,
+                static_ip_address=args.static_ip_address,
+                gw_ip_address=args.gw_ip_address,
+                dns_ip_address=args.dns_ip_address,
             ),
             ctx=ctx,
             err_msg="Could not resolve SSH connection info",
@@ -134,7 +138,7 @@ class RemoteMachineNetworkConfigureRunner:
         return (ssh_conn_info, dhcpcd_configure_info)
 
     def _print_post_run_instructions(
-        self, ctx: Context, tuple_info: tuple[SSHConnectionInfo, DHCPCDConfigurationInfo], printer: Printer
+        self, ctx: Context, tuple_info: tuple[SSHConnectionInfo, DHCPCDConfigurationInfo], collaborators: CoreCollaborators,
     ):
 
         ssh_conn_info = tuple_info[0]
@@ -144,7 +148,7 @@ class RemoteMachineNetworkConfigureRunner:
         ssh_hostname = hostname_ip_tuple[0]
         ssh_ip_address = hostname_ip_tuple[1]
 
-        printer.print_with_rich_table_fn(
+        collaborators.printer().print_with_rich_table_fn(
             generate_instructions_post_network(
                 username=ssh_conn_info.username,
                 hostname=ssh_hostname,
@@ -165,8 +169,7 @@ class RemoteMachineNetworkConfigureRunner:
         self,
         ctx: Context,
         tuple_info: tuple[SSHConnectionInfo, DHCPCDConfigurationInfo],
-        prompter: Prompter,
-        hosts_file: HostsFile,
+        collaborators: CoreCollaborators
     ):
 
         ssh_conn_info = tuple_info[0]
@@ -176,12 +179,12 @@ class RemoteMachineNetworkConfigureRunner:
         hostname_ip_tuple = self._extract_host_ip_tuple(ctx, ssh_conn_info)
         ssh_hostname = hostname_ip_tuple[0]
 
-        if prompter.prompt_yes_no_fn(
+        if collaborators.prompter().prompt_yes_no_fn(
             message=f"Add entry '{ssh_hostname} {static_ip}' to /etc/hosts file ({color.RED}password required{color.NONE})",
             post_no_message="Skipped adding new entry to /etc/hosts",
             post_yes_message=f"Selected to update /etc/hosts file",
         ):
-            hosts_file.add_entry_fn(ip_address=static_ip, dns_names=[ssh_hostname], comment="Added by provisioner")
+            collaborators.hosts_file().add_entry_fn(ip_address=static_ip, dns_names=[ssh_hostname], comment="Added by provisioner")
 
     def _print_pre_run_instructions(self, printer: Printer, prompter: Prompter):
         printer.print_fn(generate_logo_network())
@@ -233,11 +236,11 @@ def generate_instructions_post_network(ip_address: str, static_ip: str, username
                           [yellow]ssh {username}@{hostname}[/yellow]
     • Update password   - [yellow]sudo /usr/bin/raspi-config nonint do_change_pass[/yellow]
 
-  To declare the new static node in the provisioner config, add to <ROOT>/config.properties:
+  To declare the new static node in the provisioner config, add to ~/.config/provisioner/config.yaml:
 
-    Master:
-      • // TODO
-
-    Worker (replace X with the node number):
-      • // TODO
+    provisioner:
+        remote:
+            hosts:
+              - name: <NAME>
+                address: <IP-ADDRESS>
 """

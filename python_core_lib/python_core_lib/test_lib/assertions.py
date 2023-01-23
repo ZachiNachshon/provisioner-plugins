@@ -1,9 +1,20 @@
 #!/usr/bin/env python3
 
 from typing import Any, Type
+from unittest import mock
 
 
 class Assertion:
+
+    @staticmethod
+    def expect_call_argument(testObj, method_run_call: mock.MagicMock, arg_name: str, expected_value: Any) -> None:
+        try:
+            run_call_kwargs = method_run_call.call_args.kwargs
+            call_arg = run_call_kwargs[arg_name]
+            testObj.assertEqual(expected_value, call_arg)
+        except Exception as ex:
+            testObj.fail(f"Method call argument did not have the expected value. message: {str(ex)}")
+
     @staticmethod
     def expect_failure(testObj, ex_type: Type, method_to_run) -> None:
         failed = False

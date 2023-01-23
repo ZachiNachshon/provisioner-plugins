@@ -7,9 +7,9 @@ from typing import Any
 
 from loguru import logger
 
-from ..domain.serialize import SerializationBase
-from ..infra.context import Context
-from .io_utils import IOUtils
+from python_core_lib.domain.serialize import SerializationBase
+from python_core_lib.infra.context import Context
+from python_core_lib.utils.io_utils import IOUtils
 
 
 class JsonUtil:

@@ -119,19 +119,19 @@ class RemoteMachineConnector:
         return self._get_ssh_connection_info(ctx, remote_opts, selected_host_ip_pairs)
 
     def collect_dhcpcd_configuration_info(
-        self, ctx: Context, host_ip_pairs: str, arg_static_ip: str, arg_gw_address: str, arg_dns_address: str
+        self, ctx: Context, host_ip_pairs: str, static_ip_address: str, gw_ip_address: str, dns_ip_address: str
     ) -> DHCPCDConfigurationInfo:
 
         self.printer.print_with_rich_table_fn(
             generate_instructions_dhcpcd_config(
-                host_ip_pairs=host_ip_pairs, default_gw_address=arg_gw_address, default_dns_address=arg_dns_address
+                host_ip_pairs=host_ip_pairs, default_gw_address=gw_ip_address, default_dns_address=dns_ip_address
             )
         )
 
         selected_static_ip = Evaluator.eval_step_return_failure_throws(
             call=lambda: self.prompter.prompt_user_input_fn(
                 message="Enter a desired remote static IP address (example: 192.168.1.2XX)",
-                default=arg_static_ip,
+                default=static_ip_address,
                 post_user_input_message="Selected remote static IP address       :: ",
             ),
             ctx=ctx,
@@ -141,7 +141,7 @@ class RemoteMachineConnector:
         selected_gw_address = Evaluator.eval_step_return_failure_throws(
             call=lambda: self.prompter.prompt_user_input_fn(
                 message="Enter the gateway address",
-                default=arg_gw_address,
+                default=gw_ip_address,
                 post_user_input_message="Selected gateway address                :: ",
             ),
             ctx=ctx,
@@ -151,7 +151,7 @@ class RemoteMachineConnector:
         selected_dns_resolver_address = Evaluator.eval_step_return_failure_throws(
             call=lambda: self.prompter.prompt_user_input_fn(
                 message="Enter the DNS resolver address",
-                default=arg_dns_address,
+                default=dns_ip_address,
                 post_user_input_message="Selected remote DNS resolver IP address :: ",
             ),
             ctx=ctx,

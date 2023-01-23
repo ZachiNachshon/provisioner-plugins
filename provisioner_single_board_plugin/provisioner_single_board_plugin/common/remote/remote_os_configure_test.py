@@ -28,7 +28,7 @@ class RemoteMachineConfigureTestShould(unittest.TestCase):
 
     def test_prerequisites_fail_missing_utility(self) -> None:
         env = TestEnv.create()
-        env.collaborators.override_checks.checks.register_utility("docker", exist=False)
+        env.__collaborators.override_checks.checks.register_utility("docker", exist=False)
 
         runner = RemoteMachineOsConfigureRunner()
         Assertion.expect_failure(

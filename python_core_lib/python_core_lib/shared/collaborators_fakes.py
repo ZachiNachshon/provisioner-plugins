@@ -28,6 +28,7 @@ from python_core_lib.utils.progress_indicator import ProgressIndicator
 from python_core_lib.utils.prompter import Prompter
 from python_core_lib.utils.prompter_fakes import FakePrompter
 from python_core_lib.utils.summary import Summary
+from python_core_lib.utils.summary_fakes import FakeSummary
 
 class FakeCoreCollaborators(CoreCollaborators):
 
@@ -54,34 +55,34 @@ class FakeCoreCollaborators(CoreCollaborators):
         with self.__lock:
             return callback()
 
-    def io_utils(self) -> IOUtils:
+    def io_utils(self) -> FakeIOUtils:
         def create_io_utils():
             if not self.__io:
                 self.__io = FakeIOUtils.create(self.__ctx)
             return self.__io
         return self._lock_and_get(callback=create_io_utils)
 
-    def override_io_utils(self, io_utils: IOUtils) -> None:
+    def override_io_utils(self, io_utils: FakeIOUtils) -> None:
         self.__io = io_utils
 
-    def paths(self) -> Paths:
+    def paths(self) -> FakePaths:
         def create_paths():
             if not self.__paths:
                 self.__paths = FakePaths.create(self.__ctx)
             return self.__paths
         return self._lock_and_get(callback=create_paths)
 
-    def override_paths(self, paths: Paths) -> None:
+    def override_paths(self, paths: FakePaths) -> None:
         self.__paths = paths
 
-    def checks(self) -> Checks:
+    def checks(self) -> FakeChecks:
         def create_checks():
             if not self.__checks:
                 self.__checks = FakeChecks.create(self.__ctx)
             return self.__checks
         return self._lock_and_get(callback=create_checks)
 
-    def override_checks(self, checks: Checks) -> None:
+    def override_checks(self, checks: FakeChecks) -> None:
         self.__checks = checks
 
     def json_util(self) -> JsonUtil:
@@ -94,34 +95,34 @@ class FakeCoreCollaborators(CoreCollaborators):
     def override_json_util(self, json_util: JsonUtil) -> None:
         self.__json_util = json_util
 
-    def process(self) -> Process:
+    def process(self) -> FakeProcess:
         def create_process():
             if not self.__process:
                 self.__process = FakeProcess.create(self.__ctx)
             return self.__process
         return self._lock_and_get(callback=create_process)
 
-    def override_process(self, process: Process) -> None:
+    def override_process(self, process: FakeProcess) -> None:
         self.__process = process
 
-    def printer(self) -> Printer:
+    def printer(self) -> FakePrinter:
         def create_printer():
             if not self.__printer:
                 self.__printer = FakePrinter.create(self.__ctx, ProgressIndicator.create(self.__ctx, self.io_utils()))
             return self.__printer
         return self._lock_and_get(callback=create_printer)
 
-    def override_printer(self, printer: Printer) -> None:
+    def override_printer(self, printer: FakePrinter) -> None:
         self.__printer = printer
 
-    def prompter(self) -> Prompter:
+    def prompter(self) -> FakePrompter:
         def create_prompter():
             if not self.__prompter:
                 self.__prompter = FakePrompter.create(self.__ctx)
             return self.__prompter
         return self._lock_and_get(callback=create_prompter)
 
-    def override_prompter(self, prompter: Prompter) -> None:
+    def override_prompter(self, prompter: FakePrompter) -> None:
         self.prompter = prompter
 
     def ansible_runner(self) -> FakeAnsibleRunner:
@@ -131,17 +132,17 @@ class FakeCoreCollaborators(CoreCollaborators):
             return self.__ansible_runner
         return self._lock_and_get(callback=create_ansible_runner)
 
-    def override_ansible_runner(self, ansible_runner: AnsibleRunner) -> None:
+    def override_ansible_runner(self, ansible_runner: FakeAnsibleRunner) -> None:
         self.__ansible_runner = ansible_runner
 
-    def network_util(self) -> NetworkUtil:
+    def network_util(self) -> FakeNetworkUtil:
         def create_network_util():
             if not self.__network_util:
-                self.__network_util = FakeNetworkUtil.create(self.__ctx, self.printer())
+                self.__network_util = FakeNetworkUtil.create(self.__ctx)
             return self.__network_util
         return self._lock_and_get(callback=create_network_util)
 
-    def override_network_util(self, network_util: NetworkUtil) -> None:
+    def override_network_util(self, network_util: FakeNetworkUtil) -> None:
         self.__network_util = network_util
 
     def github(self) -> GitHub:
@@ -154,32 +155,32 @@ class FakeCoreCollaborators(CoreCollaborators):
     def override_github(self, github: GitHub) -> None:
         self.__github = github
 
-    def summary(self) -> Summary:
+    def summary(self) -> FakeSummary:
         def create_summary():
             if not self.__summary:
-                self.__summary = Summary.create(self.__ctx, self.json_util(), self.printer(), self.prompter())
+                self.__summary = FakeSummary.create(self.__ctx)
             return self.__summary
         return self._lock_and_get(callback=create_summary)
 
-    def override_summary(self, summary: Summary) -> None:
+    def override_summary(self, summary: FakeSummary) -> None:
         self.__summary = summary
 
-    def hosts_file(self) -> HostsFile:
+    def hosts_file(self) -> FakeHostsFile:
         def create_hosts_file():
             if not self.__hosts_file:
-                self.__hosts_file = FakeHostsFile.create(self.__ctx, self.process())
+                self.__hosts_file = FakeHostsFile.create(self.__ctx)
             return self.__hosts_file
         return self._lock_and_get(callback=create_hosts_file)
 
-    def override_hosts_file(self, hosts_file: HostsFile) -> None:
+    def override_hosts_file(self, hosts_file: FakeHostsFile) -> None:
         self.__hosts_file = hosts_file
 
-    def http_client(self) -> HttpClient:
+    def http_client(self) -> FakeHttpClient:
         def create_http_client():
             if not self.__http_client:
                 self.__http_client = FakeHttpClient.create(self.__ctx, io_utils=self.io_utils(), printer=self.printer())
             return self.__http_client
         return self._lock_and_get(callback=create_http_client)
 
-    def override_http_client(self, http_client: HttpClient) -> None:
+    def override_http_client(self, http_client: FakeHttpClient) -> None:
         self.__http_client = http_client

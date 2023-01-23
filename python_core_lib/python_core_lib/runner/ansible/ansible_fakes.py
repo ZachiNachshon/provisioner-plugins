@@ -1,12 +1,17 @@
 #!/usr/bin/env python3
 
 from typing import List, Optional
-from python_core_lib.errors.cli_errors import TestEnvironmentAssertionError
+from python_core_lib.errors.cli_errors import FakeEnvironmentAssertionError
 
 from python_core_lib.infra.context import Context
 from python_core_lib.runner.ansible.ansible import AnsibleRunner, HostIpPair
+from python_core_lib.utils.io_utils import IOUtils
+from python_core_lib.utils.json_util import JsonUtil
 
 class FakeAnsibleRunner(AnsibleRunner):
+
+    # Used to serialize objects to string for assertion error logs
+    json_util: JsonUtil = None
 
     @staticmethod
     def calculate_hash( 
@@ -96,6 +101,8 @@ class FakeAnsibleRunner(AnsibleRunner):
             verbose=verbose,
             ansible_shell_runner_path=ansible_shell_runner_path,
         )
+        ctx = Context.create()
+        self.json_util = JsonUtil.create(ctx=ctx, io_utils=IOUtils.create(ctx))
 
     @staticmethod
     def _create_fake(dry_run: bool, verbose: bool, ansible_shell_runner_path: str) -> "FakeAnsibleRunner":
@@ -174,5 +181,6 @@ class FakeAnsibleRunner(AnsibleRunner):
             force_dockerized=force_dockerized  
             )
         if cmd_args not in self.registered_commands:
-            raise TestEnvironmentAssertionError("Ansible command was not triggered with expected arguments")
+            cmd_args_json = self.json_util.to_json_fn(cmd_args)
+            raise FakeEnvironmentAssertionError(f"Ansible command was not triggered with expected arguments. args:\n{str(cmd_args_json)}")
         return cmd_args

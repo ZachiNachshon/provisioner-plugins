@@ -1,26 +1,25 @@
 #!/usr/bin/env python3
 
-import os
 import tempfile
 from typing import List, Optional
 
 from loguru import logger
 from python_hosts import Hosts, HostsEntry
 
-from ..infra.context import Context
-from .process import Process
+from python_core_lib.infra.context import Context
+from python_core_lib.utils.process import Process
 
 
 class HostsFile:
 
     _dry_run: bool = None
     _verbose: bool = None
-    process: Process = None
+    _process: Process = None
 
     def __init__(self, process: Process, dry_run: bool, verbose: bool) -> None:
         self._dry_run = dry_run
         self._verbose = verbose
-        self.process = process
+        self._process = process
 
     @staticmethod
     def create(ctx: Context, process: Process) -> "HostsFile":
@@ -51,7 +50,7 @@ class HostsFile:
         tmp_hosts_file_path = f"{tmp_dir}/hosts"
         write_counts = hosts_mgr.write(path=tmp_hosts_file_path)
         logger.debug(f"Hosts file write counts: {write_counts}")
-        self.process.run_fn([f"sudo mv {tmp_hosts_file_path} /etc/hosts"], allow_single_shell_command_str=True)
+        self._process.run_fn([f"sudo mv {tmp_hosts_file_path} /etc/hosts"], allow_single_shell_command_str=True)
 
     def _get_temp_dir(self) -> str:
         return tempfile.mkdtemp(prefix="provisioner-hosts")

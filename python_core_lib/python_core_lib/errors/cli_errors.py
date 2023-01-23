@@ -69,5 +69,5 @@ class OsArchNotSupported(Exception):
     pass
 
 
-class TestEnvironmentAssertionError(Exception):
+class FakeEnvironmentAssertionError(Exception):
     pass

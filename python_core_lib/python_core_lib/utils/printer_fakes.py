@@ -16,7 +16,7 @@ class FakePrinter(Printer):
         printer.print_fn = lambda message: None
         printer.new_line_fn = lambda count=1: None
         printer.print_horizontal_line_fn = lambda message, line_color="green": None
-        printer.print_with_rich_table_fn = lambda message, border_color: None
+        printer.print_with_rich_table_fn = lambda message, border_color="green": None
         return printer
 
     @staticmethod

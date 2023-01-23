@@ -10,6 +10,8 @@ PROJECT_LOCATION=.
 clear-virtual-env: ## Clear Poetry virtual environments
 	@rm -rf .venv
 
+# Make sure to install the Poetry multi project plugin to support 'build-project':
+#   poetry self add poetry-multiproject-plugin
 # Add -vv for debug logs
 .PHONY: create-update-venv
 create-update-venv: ## Create/Update a Python virtual env

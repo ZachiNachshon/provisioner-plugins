@@ -5,11 +5,8 @@ from unittest import mock
 from provisioner_examples_plugin.ansible.hello_world_runner import HelloWorldRunner, HelloWorldRunnerArgs
 from provisioner_features_lib.remote.typer_remote_opts import CliRemoteOpts
 
-from python_core_lib.infra.context import Context
 from python_core_lib.test_lib.test_env import TestEnv
-from python_core_lib.utils.os import MAC_OS, OsArch
 
-from provisioner_examples_plugin.anchor.anchor_cmd import AnchorCmd, AnchorCmdArgs
 
 #
 # To run these directly from the terminal use:
