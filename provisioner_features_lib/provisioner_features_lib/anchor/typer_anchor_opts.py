@@ -17,6 +17,9 @@ class TyperAnchorOpts:
     # Static variable
     anchor_config: AnchorConfig
 
+    def __init__(self, anchor_config: AnchorConfig = None) -> None:
+        self.anchor_config = anchor_config
+
     @staticmethod
     def load(anchor_config: AnchorConfig) -> None:
         TyperAnchorOpts.anchor_config = anchor_config

@@ -3,7 +3,7 @@
 import json
 from abc import abstractmethod
 
-from ..errors.cli_errors import FailedToSerializeConfiguration
+from python_core_lib.errors.cli_errors import FailedToSerializeConfiguration
 
 
 class SerializationBase:

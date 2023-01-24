@@ -34,7 +34,6 @@ REMOTE_NETWORK_CONFIGURE_RUNNER_PATH = (
     "provisioner_single_board_plugin.common.remote.remote_network_configure.RemoteMachineNetworkConfigureRunner"
 )
 
-
 class RemoteMachineNetworkConfigureTestShould(unittest.TestCase):
 
     env = TestEnv.create()
@@ -46,6 +45,14 @@ class RemoteMachineNetworkConfigureTestShould(unittest.TestCase):
             static_ip_address=ARG_STATIC_IP_ADDRESS,
             ansible_playbook_relative_path_from_root=ARG_ANSIBLE_PLAYBOOK_RELATIVE_PATH_FROM_ROOT,
             remote_opts=None,
+        )
+
+    def create_fake_network_info_bundle() -> RemoteMachineNetworkConfigureRunner.NetworkInfoBundle:
+        return RemoteMachineNetworkConfigureRunner.NetworkInfoBundle(
+            ssh_ip_address=TestDataRemoteConnector.TEST_DATA_SSH_IP_ADDRESS_1,
+            ssh_username=TestDataRemoteConnector.TEST_DATA_SSH_USERNAME,
+            ssh_hostname=TestDataRemoteConnector.TEST_DATA_SSH_HOSTNAME_1,
+            static_ip_address=TestDataRemoteConnector.TEST_DATA_DHCP_STATIC_IP_ADDRESS
         )
 
     def test_prerequisites_fail_missing_utility(self) -> None:
@@ -222,3 +229,24 @@ class RemoteMachineNetworkConfigureTestShould(unittest.TestCase):
                 comment="Added by provisioner"
             )
         )
+
+    def test_pre_run_instructions_printed_successfully(self) -> None:
+        env = TestEnv.create()
+
+        RemoteMachineNetworkConfigureRunner()._print_pre_run_instructions(env.get_collaborators())
+
+        Assertion.expect_success(self, method_to_run=lambda: env.get_collaborators().prompter().assert_enter_prompt_count(1))
+
+    def test_post_run_instructions_printed_successfully(self) -> None:
+        env = TestEnv.create()
+
+        RemoteMachineNetworkConfigureRunner()._print_post_run_instructions(
+            env.get_context(), 
+            (TestDataRemoteConnector.create_fake_ssh_conn_info_fn()(), TestDataRemoteConnector.create_fake_get_dhcpcd_configure_info_fn()()), 
+            env.get_collaborators())
+
+        printer = env.get_collaborators().printer()
+        Assertion.expect_success(self, method_to_run=lambda: printer.assert_output(TestDataRemoteConnector.TEST_DATA_SSH_USERNAME))
+        Assertion.expect_success(self, method_to_run=lambda: printer.assert_output(TestDataRemoteConnector.TEST_DATA_SSH_HOSTNAME_1))
+        Assertion.expect_success(self, method_to_run=lambda: printer.assert_output(TestDataRemoteConnector.TEST_DATA_SSH_IP_ADDRESS_1))
+        Assertion.expect_success(self, method_to_run=lambda: printer.assert_output(TestDataRemoteConnector.TEST_DATA_DHCP_STATIC_IP_ADDRESS))

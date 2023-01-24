@@ -6,10 +6,10 @@ from loguru import logger
 from rich.console import Console
 from rich.table import Table
 
-from ..colors import color
-from ..colors.color import *
-from ..infra.context import Context
-from .progress_indicator import ProgressIndicator
+from python_core_lib.colors import color
+from python_core_lib.colors.color import *
+from python_core_lib.infra.context import Context
+from python_core_lib.utils.progress_indicator import ProgressIndicator
 
 FIXED_CONSOLE_WIDTH=100
 

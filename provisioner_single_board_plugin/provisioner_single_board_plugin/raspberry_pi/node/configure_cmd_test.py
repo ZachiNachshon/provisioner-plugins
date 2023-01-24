@@ -1,48 +1,48 @@
 #!/usr/bin/env python3
 
 import unittest
-from unittest import SkipTest, mock
+from unittest import mock
+from provisioner_features_lib.remote.typer_remote_opts_fakes import TestDataRemoteOpts
+from provisioner_single_board_plugin.common.remote.remote_os_configure import RemoteMachineOsConfigureArgs
 
-from python_core_lib.infra.context import Context
-from python_core_lib.utils.os import MAC_OS, OsArch
+from python_core_lib.test_lib.assertions import Assertion
+from python_core_lib.test_lib.test_env import TestEnv
 
 from provisioner_single_board_plugin.raspberry_pi.node.configure_cmd import (
     RPiOsConfigureCmd,
     RPiOsConfigureCmdArgs,
 )
 
+REMOTE_OS_CONFIGURE_RUNNER_PATH = (
+    "provisioner_single_board_plugin.common.remote.remote_os_configure.RemoteMachineOsConfigureRunner"
+)
 
 # To run as a single test target:
-#  poetry run coverage run -m pytest provisioner_single_board_plugin/raspberry_pi/node/configure_cmd/configure_test.py
+#  poetry run coverage run -m pytest provisioner_single_board_plugin/raspberry_pi/node/configure_cmd_test.py
 #
 class RPiOsConfigureTestShould(unittest.TestCase):
-    @SkipTest
-    @mock.patch("common.remote.remote_os_configure.RemoteMachineOsConfigureRunner.run")
-    def test_configure_os_with_expected_arguments(self, run_call: mock.MagicMock) -> None:
-        ctx = Context.create(os_arch=OsArch(os=MAC_OS, arch="test_arch", os_release="test_os_release"))
 
-        expected_username = "test-user"
-        expected_password = "test-pass"
-        expected_ip_discovery_range = "192.168.1.1/24"
-        expected_ansible_playbook_configure_os = "rpi/os/playbooks/configure_os.yaml"
+    env = TestEnv.create()
 
-        args = RPiOsConfigureCmdArgs(
-            node_username=expected_username,
-            node_password=expected_password,
-            ip_discovery_range=expected_ip_discovery_range,
+    def create_fake_configure_args(self) -> RPiOsConfigureCmdArgs:
+        return RPiOsConfigureCmdArgs(
+            remote_opts=TestDataRemoteOpts.create_fake_cli_remote_opts(),
         )
 
-        runner = RPiOsConfigureCmd()
-        runner.run(ctx=ctx, args=args)
+    @mock.patch(f"{REMOTE_OS_CONFIGURE_RUNNER_PATH}.run")
+    def test_configure_os_cmd_with_expected_arguments(self, run_call: mock.MagicMock) -> None:
+        fake_cmd_args = self.create_fake_configure_args()
 
-        run_call_kwargs = run_call.call_args.kwargs
-        ctx_call_arg = run_call_kwargs["ctx"]
-        configure_os_call_args = run_call_kwargs["args"]
-
-        self.assertEqual(ctx, ctx_call_arg)
-        self.assertEqual(expected_username, configure_os_call_args.node_username)
-        self.assertEqual(expected_password, configure_os_call_args.node_password)
-        self.assertEqual(expected_ip_discovery_range, configure_os_call_args.ip_discovery_range)
+        RPiOsConfigureCmd().run(ctx=self.env.get_context(), args=fake_cmd_args)
+        
+        Assertion.expect_call_argument(self, run_call, arg_name="ctx", expected_value=self.env.get_context())
+        
         self.assertEqual(
-            expected_ansible_playbook_configure_os, configure_os_call_args.ansible_playbook_path_configure_os
+            first=fake_cmd_args.remote_opts, 
+            second=run_call.call_args.kwargs["args"].remote_opts
+        )
+
+        self.assertEqual(
+            first="provisioner_single_board_plugin/raspberry_pi/node/playbooks/configure_os.yaml", 
+            second=run_call.call_args.kwargs["args"].ansible_playbook_relative_path_from_root
         )

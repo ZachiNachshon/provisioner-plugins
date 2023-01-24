@@ -14,9 +14,6 @@ from python_core_lib.infra.context import Context
 from python_core_lib.infra.evaluator import Evaluator
 from python_core_lib.shared.collaborators import CoreCollaborators
 from python_core_lib.utils.checks import Checks
-from python_core_lib.utils.hosts_file import HostsFile
-from python_core_lib.utils.printer import Printer
-from python_core_lib.utils.prompter import Prompter
 
 
 class RemoteMachineNetworkConfigureArgs:
@@ -42,11 +39,24 @@ class RemoteMachineNetworkConfigureArgs:
 
 
 class RemoteMachineNetworkConfigureRunner:
+
+    class NetworkInfoBundle:
+        ssh_ip_address: str
+        ssh_username: str
+        ssh_hostname: str
+        static_ip_address: str
+
+        def __init__(self, ssh_ip_address: str, ssh_username: str, ssh_hostname: str, static_ip_address: str) -> None:
+            self.ssh_ip_address = ssh_ip_address
+            self.ssh_username = ssh_username
+            self.ssh_hostname = ssh_hostname
+            self.static_ip_address = static_ip_address
+
     def run(self, ctx: Context, args: RemoteMachineNetworkConfigureArgs, collaborators: CoreCollaborators) -> None:
         logger.debug("Inside RemoteMachineNetworkConfigureRunner run()")
 
         self._prerequisites(ctx=ctx, checks=collaborators.checks())
-        self._print_pre_run_instructions(collaborators.printer(), collaborators.prompter())
+        self._print_pre_run_instructions(collaborators)
         tuple_info = self._run_ansible_network_configure_playbook_with_progress_bar(
             ctx=ctx,
             get_ssh_conn_info_fn=self._get_ssh_conn_info,
@@ -104,10 +114,10 @@ class RemoteMachineNetworkConfigureRunner:
 
         ssh_conn_info = get_ssh_conn_info_fn(ctx, collaborators, args.remote_opts)
         dhcpcd_configure_info = get_dhcpcd_configure_info_fn(ctx, collaborators, args, ssh_conn_info)
+        
+        tuple_info = (ssh_conn_info, dhcpcd_configure_info)
+        network_info = self._bundle_network_information_from_tuple(ctx, tuple_info)
 
-        hostname_ip_tuple = self._extract_host_ip_tuple(ctx, ssh_conn_info)
-        ssh_hostname = hostname_ip_tuple[0]
-        ssh_ip_address = hostname_ip_tuple[1]
         collaborators.summary().show_summary_and_prompt_for_enter("Configure Network")
 
         output = collaborators.printer().progress_indicator.status.long_running_process_fn(
@@ -121,7 +131,7 @@ class RemoteMachineNetworkConfigureRunner:
                 ),
                 extra_modules_paths=[collaborators.paths().get_path_abs_to_module_root_fn(__name__)],
                 ansible_vars=[
-                    f"host_name={ssh_hostname}",
+                    f"host_name={network_info.ssh_hostname}",
                     f"static_ip={dhcpcd_configure_info.static_ip_address}",
                     f"gateway_address={dhcpcd_configure_info.gw_ip_address}",
                     f"dns_address={dhcpcd_configure_info.dns_ip_address}",
@@ -135,25 +145,20 @@ class RemoteMachineNetworkConfigureRunner:
         collaborators.printer().new_line_fn()
         collaborators.printer().print_fn(output)
 
-        return (ssh_conn_info, dhcpcd_configure_info)
+        return tuple_info
 
     def _print_post_run_instructions(
-        self, ctx: Context, tuple_info: tuple[SSHConnectionInfo, DHCPCDConfigurationInfo], collaborators: CoreCollaborators,
+        self, ctx: Context, 
+        tuple_info: tuple[SSHConnectionInfo, DHCPCDConfigurationInfo], 
+        collaborators: CoreCollaborators,
     ):
-
-        ssh_conn_info = tuple_info[0]
-        dhcpcd_configure_info = tuple_info[1]
-
-        hostname_ip_tuple = self._extract_host_ip_tuple(ctx, ssh_conn_info)
-        ssh_hostname = hostname_ip_tuple[0]
-        ssh_ip_address = hostname_ip_tuple[1]
-
+        network_info = self._bundle_network_information_from_tuple(ctx, tuple_info)
         collaborators.printer().print_with_rich_table_fn(
             generate_instructions_post_network(
-                username=ssh_conn_info.username,
-                hostname=ssh_hostname,
-                ip_address=ssh_ip_address,
-                static_ip=dhcpcd_configure_info.static_ip_address,
+                username=network_info.ssh_username,
+                hostname=network_info.ssh_hostname,
+                ip_address=network_info.ssh_ip_address,
+                static_ip=network_info.static_ip_address,
             )
         )
 
@@ -171,25 +176,34 @@ class RemoteMachineNetworkConfigureRunner:
         tuple_info: tuple[SSHConnectionInfo, DHCPCDConfigurationInfo],
         collaborators: CoreCollaborators
     ):
-
-        ssh_conn_info = tuple_info[0]
-        dhcpcd_configure_info = tuple_info[1]
-        static_ip = dhcpcd_configure_info.static_ip_address
-
-        hostname_ip_tuple = self._extract_host_ip_tuple(ctx, ssh_conn_info)
-        ssh_hostname = hostname_ip_tuple[0]
+        network_info = self._bundle_network_information_from_tuple(ctx, tuple_info)
 
         if collaborators.prompter().prompt_yes_no_fn(
-            message=f"Add entry '{ssh_hostname} {static_ip}' to /etc/hosts file ({color.RED}password required{color.NONE})",
+            message=f"Add entry '{network_info.ssh_hostname} {network_info.static_ip_address}' to /etc/hosts file ({color.RED}password required{color.NONE})",
             post_no_message="Skipped adding new entry to /etc/hosts",
             post_yes_message=f"Selected to update /etc/hosts file",
         ):
-            collaborators.hosts_file().add_entry_fn(ip_address=static_ip, dns_names=[ssh_hostname], comment="Added by provisioner")
+            collaborators.hosts_file().add_entry_fn(ip_address=network_info.static_ip_address, dns_names=[network_info.ssh_hostname], comment="Added by provisioner")
 
-    def _print_pre_run_instructions(self, printer: Printer, prompter: Prompter):
-        printer.print_fn(generate_logo_network())
-        printer.print_with_rich_table_fn(generate_instructions_pre_network())
-        prompter.prompt_for_enter_fn()
+    def _print_pre_run_instructions(self, collaborators: CoreCollaborators):
+        collaborators.printer().print_fn(generate_logo_network())
+        collaborators.printer().print_with_rich_table_fn(generate_instructions_pre_network())
+        collaborators.prompter().prompt_for_enter_fn()
+
+    def _bundle_network_information_from_tuple(self, ctx: Context, tuple_info: tuple[SSHConnectionInfo, DHCPCDConfigurationInfo]):
+        ssh_conn_info = tuple_info[0]
+        ssh_username = ssh_conn_info.username
+
+        hostname_ip_tuple = self._extract_host_ip_tuple(ctx, ssh_conn_info)
+        ssh_hostname = hostname_ip_tuple[0]
+        ssh_ip_address = hostname_ip_tuple[1]
+
+        dhcpcd_configure_info = tuple_info[1]
+        static_ip_address = dhcpcd_configure_info.static_ip_address
+
+        return RemoteMachineNetworkConfigureRunner.NetworkInfoBundle(
+            ssh_username=ssh_username, ssh_hostname=ssh_hostname, ssh_ip_address=ssh_ip_address, static_ip_address=static_ip_address
+        )
 
     def _prerequisites(self, ctx: Context, checks: Checks) -> None:
         if ctx.os_arch.is_linux():

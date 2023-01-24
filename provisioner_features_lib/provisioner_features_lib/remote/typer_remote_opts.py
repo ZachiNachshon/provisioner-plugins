@@ -21,6 +21,9 @@ class TyperRemoteOpts:
     # Static variable
     remote_config: RemoteConfig
 
+    def __init__(self, remote_config: RemoteConfig = None) -> None:
+        self.remote_config = remote_config
+
     @staticmethod
     def load(remote_config: RemoteConfig) -> None:
         TyperRemoteOpts.remote_config = remote_config
@@ -111,8 +114,8 @@ class TyperResolvedRemoteOpts:
     ) -> None:
 
         try:
-            global typer_cli_remote_opts
-            typer_cli_remote_opts = TyperResolvedRemoteOpts(
+            global _typer_cli_remote_opts
+            _typer_cli_remote_opts = TyperResolvedRemoteOpts(
                 environment, node_username, node_password, ssh_private_key_file_path, ip_discovery_range, remote_hosts
             )
 
@@ -122,33 +125,34 @@ class TyperResolvedRemoteOpts:
 
     @staticmethod
     def environment() -> Optional[RunEnvironment]:
-        return typer_cli_remote_opts.environment
+        return TyperResolvedRemoteOpts.environment
 
     @staticmethod
     def node_username() -> Optional[str]:
-        return typer_cli_remote_opts.node_username
+        return TyperResolvedRemoteOpts.node_username
 
     @staticmethod
     def node_password() -> Optional[str]:
-        return typer_cli_remote_opts.node_password
+        return TyperResolvedRemoteOpts.node_password
 
     @staticmethod
     def ssh_private_key_file_path() -> Optional[str]:
-        return typer_cli_remote_opts.ssh_private_key_file_path
+        return TyperResolvedRemoteOpts.ssh_private_key_file_path
 
     @staticmethod
     def ip_discovery_range() -> Optional[str]:
-        return typer_cli_remote_opts.ip_discovery_range
+        return TyperResolvedRemoteOpts.ip_discovery_range
 
     @staticmethod
     def remote_hosts() -> Optional[str]:
-        return typer_cli_remote_opts.remote_hosts
+        return TyperResolvedRemoteOpts.remote_hosts
 
 
-typer_cli_remote_opts: TyperResolvedRemoteOpts = None
+_typer_cli_remote_opts: TyperResolvedRemoteOpts = None
 
 
 class CliRemoteOpts:
+
     environment: Optional[RunEnvironment]
     node_username: Optional[str]
     node_password: Optional[str]
@@ -158,17 +162,24 @@ class CliRemoteOpts:
     # Calculated
     host_ip_pairs: List[HostIpPair]
 
-    def __init__(self) -> None:
-        self.environment = TyperResolvedRemoteOpts.environment()
-        self.node_username = TyperResolvedRemoteOpts.node_username()
-        self.node_password = TyperResolvedRemoteOpts.node_password()
-        self.ssh_private_key_file_path = TyperResolvedRemoteOpts.ssh_private_key_file_path()
-        self.ip_discovery_range = TyperResolvedRemoteOpts.ip_discovery_range()
-        self.host_ip_pairs = self._to_host_ip_pairs(TyperResolvedRemoteOpts.remote_hosts())
+    def __init__(self, 
+        environment: Optional[RunEnvironment] = TyperResolvedRemoteOpts.environment(),
+        node_username: Optional[str] = TyperResolvedRemoteOpts.node_username(),
+        node_password: Optional[str] = TyperResolvedRemoteOpts.node_password(),
+        ssh_private_key_file_path: Optional[str] = TyperResolvedRemoteOpts.ssh_private_key_file_path(),
+        ip_discovery_range: Optional[str] = TyperResolvedRemoteOpts.ip_discovery_range(),
+        remote_hosts: Optional[dict[str, RemoteConfig.Host]] = TyperResolvedRemoteOpts.remote_hosts()) -> None:
+
+        self.environment = environment
+        self.node_username = node_username 
+        self.node_password = node_password
+        self.ssh_private_key_file_path = ssh_private_key_file_path
+        self.ip_discovery_range = ip_discovery_range
+        self.host_ip_pairs = self._to_host_ip_pairs(remote_hosts)
 
     @staticmethod
     def maybe_get() -> "CliRemoteOpts":
-        if typer_cli_remote_opts:
+        if _typer_cli_remote_opts:
             return CliRemoteOpts()
         return None
 

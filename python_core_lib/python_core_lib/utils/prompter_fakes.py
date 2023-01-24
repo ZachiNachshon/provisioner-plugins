@@ -10,14 +10,14 @@ from python_core_lib.utils.prompter import Prompter, PromptLevel
 
 class FakePrompter(Prompter):
 
-    press_enter_response: bool = None
+    registered_enter_prompt_counts: int = None
     registered_yes_no_prompts: List[str] = None
     registered_user_input_prompts: List[str] = None
     registered_user_selection_prompts: List[str] = None
 
     def __init__(self, auto_prompt: bool, dry_run: bool):
         super().__init__(auto_prompt=auto_prompt, dry_run=dry_run)
-        self.press_enter_response = True
+        self.registered_enter_prompt_counts = 0
         self.registered_yes_no_prompts = []
         self.registered_user_input_prompts = []
         self.registered_user_selection_prompts = []
@@ -32,12 +32,20 @@ class FakePrompter(Prompter):
         prompter.prompt_yes_no_fn = lambda message, level=PromptLevel.INFO, post_yes_message=None, post_no_message=None: prompter._register_yes_no_prompt_approve(
             message
         )
-        prompter.prompt_for_enter_fn = lambda level=PromptLevel.INFO: prompter.press_enter_response
+        prompter.prompt_for_enter_fn = lambda level=PromptLevel.INFO: prompter._register_enter_prompt()
         return prompter
 
     @staticmethod
     def create(ctx: Context) -> "FakePrompter":
         return FakePrompter._create_fake(auto_prompt=ctx.is_auto_prompt(), dry_run=ctx.is_dry_run())
+
+    def _register_enter_prompt(self) -> bool:
+        self.registered_enter_prompt_counts += 1
+        return True
+    
+    def assert_enter_prompt_count(self, count: int) -> None:
+        if count != self.registered_enter_prompt_counts:
+            raise FakeEnvironmentAssertionError(f"Prompter expected a specific number of enter prompts which never fulfilled. count: {count}")
 
     def _register_yes_no_prompt_approve(self, prompt_str: str) -> bool:
         self.registered_yes_no_prompts.append(prompt_str)

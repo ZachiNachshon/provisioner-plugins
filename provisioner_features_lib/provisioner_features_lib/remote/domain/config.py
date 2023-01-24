@@ -39,10 +39,18 @@ class RemoteConfig:
     class LanScan:
         ip_discovery_range: str = None
 
+        def __init__(self, ip_discovery_range: str = None) -> None:
+            self.ip_discovery_range = ip_discovery_range
+
     class Auth:
         node_username: str = None
         node_password: str = None
         ssh_private_key_file_path: str = None
+
+        def __init__(self, node_username: str = None, node_password: str = None, ssh_private_key_file_path: str = None) -> None:
+            self.node_username = node_username
+            self.node_password = node_password
+            self.ssh_private_key_file_path = ssh_private_key_file_path
 
     lan_scan: LanScan = LanScan()
     auth: Auth = Auth()

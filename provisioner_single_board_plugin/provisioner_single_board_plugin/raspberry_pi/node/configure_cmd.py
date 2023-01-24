@@ -18,25 +18,26 @@ RpiConfigureOsAnsiblePlaybookRelativePathFromRoot = (
 
 class RPiOsConfigureCmdArgs:
 
-    remote_args: CliRemoteOpts
+    remote_opts: CliRemoteOpts
 
-    def __init__(self) -> None:
-        self.remote_args = CliRemoteOpts.maybe_get()
+    def __init__(self, remote_opts: CliRemoteOpts = CliRemoteOpts.maybe_get()) -> None:
+        self.remote_opts = remote_opts
 
     def print(self) -> None:
-        if self.remote_args:
-            self.remote_args.print()
+        if self.remote_opts:
+            self.remote_opts.print()
         logger.debug("RPiOsConfigureCmdArgs: \n")
 
 
 class RPiOsConfigureCmd:
     def run(self, ctx: Context, args: RPiOsConfigureCmdArgs) -> None:
         logger.debug("Inside RPiOsConfigureCmd run()")
+        args.print()
 
         RemoteMachineOsConfigureRunner().run(
             ctx=ctx,
             args=RemoteMachineOsConfigureArgs(
-                remote_opts=args.remote_args,
+                remote_opts=args.remote_opts,
                 ansible_playbook_relative_path_from_root=RpiConfigureOsAnsiblePlaybookRelativePathFromRoot,
             ),
             collaborators=CoreCollaborators(ctx),
