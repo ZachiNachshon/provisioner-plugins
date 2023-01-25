@@ -2,8 +2,10 @@
 
 import unittest
 from unittest import mock
-from provisioner_features_lib.remote.remote_connector_fakes import TestDataRemoteConnector
 
+from provisioner_features_lib.remote.remote_connector_fakes import (
+    TestDataRemoteConnector,
+)
 from python_core_lib.errors.cli_errors import MissingUtilityException
 from python_core_lib.infra.context import Context
 from python_core_lib.test_lib.assertions import Assertion
@@ -16,11 +18,10 @@ from provisioner_single_board_plugin.common.remote.remote_os_configure import (
     RemoteMachineOsConfigureRunner,
 )
 
-
 # To run as a single test target:
 #  poetry run coverage run -m pytest provisioner_single_board_plugin/common/remote/remote_os_configure_test.py
 #
-ARG_NODE_USERNAME= "test-username"
+ARG_NODE_USERNAME = "test-username"
 ARG_NODE_PASSWORD = "test-password"
 ARG_IP_DISCOVERY_RANGE = "1.1.1.1/24"
 ARG_ANSIBLE_PLAYBOOK_RELATIVE_PATH_FROM_ROOT = "/test/path/ansible/os_configure.yaml"
@@ -28,6 +29,7 @@ ARG_ANSIBLE_PLAYBOOK_RELATIVE_PATH_FROM_ROOT = "/test/path/ansible/os_configure.
 REMOTE_NETWORK_CONFIGURE_RUNNER_PATH = (
     "provisioner_single_board_plugin.common.remote.remote_os_configure.RemoteMachineOsConfigureRunner"
 )
+
 
 class RemoteMachineConfigureTestShould(unittest.TestCase):
 
@@ -159,15 +161,22 @@ class RemoteMachineConfigureTestShould(unittest.TestCase):
 
         RemoteMachineOsConfigureRunner()._print_pre_run_instructions(env.get_collaborators())
 
-        Assertion.expect_success(self, method_to_run=lambda: env.get_collaborators().prompter().assert_enter_prompt_count(1))
+        Assertion.expect_success(
+            self, method_to_run=lambda: env.get_collaborators().prompter().assert_enter_prompt_count(1)
+        )
 
     def test_post_run_instructions_printed_successfully(self) -> None:
         env = TestEnv.create()
 
         RemoteMachineOsConfigureRunner()._print_post_run_instructions(
-            (TestDataRemoteConnector.TEST_DATA_SSH_HOSTNAME_1, TestDataRemoteConnector.TEST_DATA_SSH_IP_ADDRESS_1), 
-            env.get_collaborators())
+            (TestDataRemoteConnector.TEST_DATA_SSH_HOSTNAME_1, TestDataRemoteConnector.TEST_DATA_SSH_IP_ADDRESS_1),
+            env.get_collaborators(),
+        )
 
         printer = env.get_collaborators().printer()
-        Assertion.expect_success(self, method_to_run=lambda: printer.assert_output(TestDataRemoteConnector.TEST_DATA_SSH_HOSTNAME_1))
-        Assertion.expect_success(self, method_to_run=lambda: printer.assert_output(TestDataRemoteConnector.TEST_DATA_SSH_IP_ADDRESS_1))
+        Assertion.expect_success(
+            self, method_to_run=lambda: printer.assert_output(TestDataRemoteConnector.TEST_DATA_SSH_HOSTNAME_1)
+        )
+        Assertion.expect_success(
+            self, method_to_run=lambda: printer.assert_output(TestDataRemoteConnector.TEST_DATA_SSH_IP_ADDRESS_1)
+        )

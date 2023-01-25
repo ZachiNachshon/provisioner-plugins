@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from typing import Callable, Optional
+
 from loguru import logger
 from provisioner_features_lib.remote.remote_connector import (
     RemoteMachineConnector,
@@ -51,7 +52,7 @@ class RemoteMachineOsConfigureRunner:
         ssh_ip_address = hostname_ip_tuple[1]
 
         collaborators.summary().show_summary_and_prompt_for_enter("Configure OS")
-        
+
         output = collaborators.printer().progress_indicator.status.long_running_process_fn(
             call=lambda: collaborators.ansible_runner().run_fn(
                 working_dir=collaborators.paths().get_path_from_exec_module_root_fn(),
@@ -103,7 +104,7 @@ class RemoteMachineOsConfigureRunner:
 
     def _print_post_run_instructions(
         self,
-        hostname_ip_tuple: tuple[str, str], 
+        hostname_ip_tuple: tuple[str, str],
         collaborators: CoreCollaborators,
     ):
         collaborators.printer().print_with_rich_table_fn(

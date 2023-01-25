@@ -17,6 +17,11 @@ class FakeTestAppConfig(SerializationBase):
     remote: RemoteConfig = None
     anchor: AnchorConfig = None
 
+    # TODO: Move those configs from provisioner into this module and create fakes for them
+    #       Maybe it'll be wise to use a json which will be serialized??
+    dummmy: DummyConfig = DummyConfig()
+    rpi: RpiConfig = RpiConfig()
+
     def __init__(self, remote: RemoteConfig, anchor: AnchorConfig) -> None:
         super().__init__({})
         self.remote = remote

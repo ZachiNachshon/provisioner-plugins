@@ -79,12 +79,12 @@ class TyperRemoteOpts:
 
 class TyperResolvedRemoteOpts:
 
-    environment: Optional[RunEnvironment]
-    node_username: Optional[str]
-    node_password: Optional[str]
-    ssh_private_key_file_path: Optional[str]
-    ip_discovery_range: Optional[str]
-    remote_hosts: Optional[dict[str, RemoteConfig.Host]]
+    _environment: Optional[RunEnvironment] = None
+    _node_username: Optional[str] = None
+    _node_password: Optional[str] = None
+    _ssh_private_key_file_path: Optional[str] = None
+    _ip_discovery_range: Optional[str] = None
+    _remote_hosts: Optional[dict[str, RemoteConfig.Host]] = None
 
     def __init__(
         self,
@@ -96,12 +96,12 @@ class TyperResolvedRemoteOpts:
         remote_hosts: dict[str, RemoteConfig.Host] = None,
     ) -> None:
 
-        self.environment = environment
-        self.node_username = node_username
-        self.node_password = node_password
-        self.ssh_private_key_file_path = ssh_private_key_file_path
-        self.ip_discovery_range = ip_discovery_range
-        self.remote_hosts = remote_hosts
+        self._environment = environment
+        self._node_username = node_username
+        self._node_password = node_password
+        self._ssh_private_key_file_path = ssh_private_key_file_path
+        self._ip_discovery_range = ip_discovery_range
+        self._remote_hosts = remote_hosts
 
     @staticmethod
     def create(
@@ -125,27 +125,27 @@ class TyperResolvedRemoteOpts:
 
     @staticmethod
     def environment() -> Optional[RunEnvironment]:
-        return TyperResolvedRemoteOpts.environment
+        return TyperResolvedRemoteOpts._environment
 
     @staticmethod
     def node_username() -> Optional[str]:
-        return TyperResolvedRemoteOpts.node_username
+        return TyperResolvedRemoteOpts._node_username
 
     @staticmethod
     def node_password() -> Optional[str]:
-        return TyperResolvedRemoteOpts.node_password
+        return TyperResolvedRemoteOpts._node_password
 
     @staticmethod
     def ssh_private_key_file_path() -> Optional[str]:
-        return TyperResolvedRemoteOpts.ssh_private_key_file_path
+        return TyperResolvedRemoteOpts._ssh_private_key_file_path
 
     @staticmethod
     def ip_discovery_range() -> Optional[str]:
-        return TyperResolvedRemoteOpts.ip_discovery_range
+        return TyperResolvedRemoteOpts._ip_discovery_range
 
     @staticmethod
     def remote_hosts() -> Optional[str]:
-        return TyperResolvedRemoteOpts.remote_hosts
+        return TyperResolvedRemoteOpts._remote_hosts
 
 
 _typer_cli_remote_opts: TyperResolvedRemoteOpts = None

@@ -13,7 +13,7 @@ from provisioner_single_board_plugin.common.remote.remote_network_configure impo
 )
 
 RpiNetworkConfigureAnsiblePlaybookRelativePathFromRoot = (
-    "provisioner/single_board/raspberry_pi/node/playbooks/configure_network.yaml"
+    "provisioner_single_board_plugin/raspberry_pi/node/playbooks/configure_network.yaml"
 )
 
 
@@ -29,11 +29,12 @@ class RPiNetworkConfigureCmdArgs:
         gw_ip_address: Optional[str] = None,
         dns_ip_address: Optional[str] = None,
         static_ip_address: Optional[str] = None,
+        remote_opts: CliRemoteOpts = CliRemoteOpts.maybe_get(),
     ) -> None:
         self.gw_ip_address = gw_ip_address
         self.dns_ip_address = dns_ip_address
         self.static_ip_address = static_ip_address
-        self.remote_opts = CliRemoteOpts.maybe_get()
+        self.remote_opts = remote_opts
 
     def print(self) -> None:
         if self.remote_opts:
@@ -49,6 +50,7 @@ class RPiNetworkConfigureCmdArgs:
 class RPiNetworkConfigureCmd:
     def run(self, ctx: Context, args: RPiNetworkConfigureCmdArgs) -> None:
         logger.debug("Inside RPiNetworkConfigureCmd run()")
+        args.print()
 
         RemoteMachineNetworkConfigureRunner().run(
             ctx=ctx,

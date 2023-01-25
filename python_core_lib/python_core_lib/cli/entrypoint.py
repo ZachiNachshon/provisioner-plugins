@@ -66,7 +66,7 @@ class EntryPoint:
             config_resolver_fn()
 
         # Use invoke_without_command=True to allow usage of --version flags which are NoOp commands
-        # Use also no_args_is_help=True to print the help menu is no arguments were supplied
+        # Use also no_args_is_help=True to print the help menu if no arguments were supplied
         return typer.Typer(
             help=title,
             callback=main_runner, 

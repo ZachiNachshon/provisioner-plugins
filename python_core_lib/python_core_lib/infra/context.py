@@ -4,9 +4,9 @@ from typing import Optional
 
 from loguru import logger
 
-from ..cli.state import CliGlobalArgs
-from ..errors.cli_errors import NotInitialized
-from ..utils.os import OsArch
+from python_core_lib.cli.state import CliGlobalArgs
+from python_core_lib.errors.cli_errors import NotInitialized
+from python_core_lib.utils.os import OsArch
 
 cli_context = None
 

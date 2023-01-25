@@ -52,6 +52,11 @@ class RemoteConfig:
             self.node_password = node_password
             self.ssh_private_key_file_path = ssh_private_key_file_path
 
-    lan_scan: LanScan = LanScan()
-    auth: Auth = Auth()
+    def __init__(self, lan_scan: LanScan = LanScan(), auth: Auth = Auth(), hosts: dict[str, Host] = None) -> None:
+        self.lan_scan = lan_scan
+        self.auth = auth
+        self.hosts = hosts
+
+    lan_scan: LanScan = None
+    auth: Auth = None
     hosts: dict[str, Host] = None

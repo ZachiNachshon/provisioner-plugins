@@ -32,9 +32,7 @@ def configure() -> None:
     Configuration is aimed for an optimal headless Raspberry Pi used as a Kubernetes cluster node.
     """
     try:
-        args = RPiOsConfigureCmdArgs()
-        args.print()
-        RPiOsConfigureCmd().run(ctx=CliContextManager.create(), args=args)
+        RPiOsConfigureCmd().run(ctx=CliContextManager.create(), args=RPiOsConfigureCmdArgs())
     except StepEvaluationFailure as sef:
         logger.critical("Failed to configure Raspbian OS. ex: {}, message: {}", sef.__class__.__name__, str(sef))
     except Exception as e:
@@ -64,11 +62,12 @@ def network(
     Select a remote Raspberry Pi node on the ethernet network to configure a static IP address.
     """
     try:
-        args = RPiNetworkConfigureCmdArgs(
-            gw_ip_address=gw_ip_address, dns_ip_address=dns_ip_address, static_ip_address=static_ip_address
+        RPiNetworkConfigureCmd().run(
+            ctx=CliContextManager.create(),
+            args=RPiNetworkConfigureCmdArgs(
+                gw_ip_address=gw_ip_address, dns_ip_address=dns_ip_address, static_ip_address=static_ip_address
+            ),
         )
-        args.print()
-        RPiNetworkConfigureCmd().run(ctx=CliContextManager.create(), args=args)
     except StepEvaluationFailure as sef:
         logger.critical("Failed to configure RPi network. ex: {}, message: {}", sef.__class__.__name__, str(sef))
     except Exception as e:
