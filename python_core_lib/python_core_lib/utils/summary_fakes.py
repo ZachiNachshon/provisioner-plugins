@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from typing import Any
-from python_core_lib.errors.cli_errors import FakeEnvironmentAssertionError
+from python_core_lib.test_lib.test_errors import FakeEnvironmentAssertionError
 from python_core_lib.utils.json_util import JsonUtil
 from python_core_lib.utils.summary import Summary
 from python_core_lib.infra.context import Context

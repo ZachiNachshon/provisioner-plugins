@@ -57,7 +57,7 @@ class RemoteMachineNetworkConfigureTestShould(unittest.TestCase):
         )
 
     def test_prerequisites_fail_missing_utility(self) -> None:
-        Assertion.expect_failure(
+        Assertion.expect_raised_failure(
             self,
             ex_type=MissingUtilityException,
             method_to_run=lambda: RemoteMachineNetworkConfigureRunner()._prerequisites(
@@ -85,7 +85,7 @@ class RemoteMachineNetworkConfigureTestShould(unittest.TestCase):
         )
 
     def test_prerequisites_fail_on_os_not_supported(self) -> None:
-        Assertion.expect_failure(
+        Assertion.expect_raised_failure(
             self,
             ex_type=NotImplementedError,
             method_to_run=lambda: RemoteMachineNetworkConfigureRunner()._prerequisites(
@@ -93,7 +93,7 @@ class RemoteMachineNetworkConfigureTestShould(unittest.TestCase):
             ),
         )
 
-        Assertion.expect_failure(
+        Assertion.expect_raised_failure(
             self,
             ex_type=NotImplementedError,
             method_to_run=lambda: RemoteMachineNetworkConfigureRunner()._prerequisites(
@@ -212,7 +212,6 @@ class RemoteMachineNetworkConfigureTestShould(unittest.TestCase):
 
     def test_add_hosts_file_entry_upon_prompt(self) -> None:
         env = TestEnv.create()
-
         RemoteMachineNetworkConfigureRunner()._maybe_add_hosts_file_entry(
             env.get_context(),
             (
@@ -221,7 +220,6 @@ class RemoteMachineNetworkConfigureTestShould(unittest.TestCase):
             ),
             env.get_collaborators(),
         )
-
         Assertion.expect_success(
             self, method_to_run=lambda: env.get_collaborators().prompter().assert_yes_no_prompt("Add entry")
         )
@@ -238,9 +236,7 @@ class RemoteMachineNetworkConfigureTestShould(unittest.TestCase):
 
     def test_pre_run_instructions_printed_successfully(self) -> None:
         env = TestEnv.create()
-
         RemoteMachineNetworkConfigureRunner()._print_pre_run_instructions(env.get_collaborators())
-
         Assertion.expect_success(
             self, method_to_run=lambda: env.get_collaborators().prompter().assert_enter_prompt_count(1)
         )

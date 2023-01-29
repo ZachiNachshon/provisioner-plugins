@@ -1,20 +1,18 @@
 #!/usr/bin/env python3
 
-from typing import Any, Callable, Type
+import re
+from typing import Any, Callable, List, Type
 from unittest import mock
+from click.testing import Result
+from python_core_lib.test_lib.test_errors import TestCliRunnerError
 
+REGEX_REMOTE_COLOR_CODES = re.compile(r'(?:\x1B[@-_]|[\x80-\x9F])[0-?]*[ -/]*[@-~]')
 
 class Assertion:
 
     @staticmethod
     def expect_call_argument(testObj, method_run_call: mock.MagicMock, arg_name: str, expected_value: Any) -> None:
         try:
-            print(method_run_call)
-            print(method_run_call)
-            print(method_run_call)
-            print(method_run_call.call_args)
-            print(method_run_call.call_args)
-            print(method_run_call.call_args)
             run_call_kwargs = method_run_call.call_args.kwargs
             call_arg = run_call_kwargs[arg_name]
             testObj.assertEqual(expected_value, call_arg)
@@ -22,25 +20,64 @@ class Assertion:
             testObj.fail(f"Method call argument did not have the expected value. message: {str(ex)}")
     
     @staticmethod
+    def expect_exists(testObj, method_run_call: mock.MagicMock, arg_name: str) -> None:
+        try:
+            run_call_kwargs = method_run_call.call_args.kwargs
+            call_arg = run_call_kwargs[arg_name]
+            testObj.assertIsNotNone(call_arg)
+        except Exception as ex:
+            testObj.fail(f"Method call was missing an argument. message: {str(ex)}")
+
+    @staticmethod
     def expect_call_arguments(testObj, method_run_call: mock.MagicMock, arg_name: str, assertion_callable: Callable[..., Any]) -> None:
         try:
             run_call_kwargs = method_run_call.call_args.kwargs
             call_arg = run_call_kwargs[arg_name]
-            callable(call_arg)
-            # testObj.assertEqual(expected_value, call_arg)
+            assertion_callable(call_arg)
         except Exception as ex:
             testObj.fail(f"Method call arguments did not have the expected values. message: {str(ex)}")
 
     @staticmethod
-    def expect_failure(testObj, ex_type: Type, method_to_run) -> None:
+    def expect_raised_failure(testObj, ex_type: Type, method_to_run) -> None:
         failed = False
         try:
-            method_to_run()
+            output = method_to_run()
+            if output.exit_code != 0:
+                failed = True
+                exception_class=output.exc_info[0]
+                testObj.assertEqual(exception_class, ex_type)
         except Exception as ex:
             failed = True
             testObj.assertIsInstance(ex, ex_type)
 
         testObj.assertTrue(failed)
+
+    
+    
+    @staticmethod
+    def expect_output(testObj, expected: str, method_to_run) -> None:
+        run_output = method_to_run()
+        # Clear all ANSII color codes from output
+        output_clear = REGEX_REMOTE_COLOR_CODES.sub("", run_output)
+        # It won't get printed is test passes
+        print(output_clear)
+        # Assert output
+        testObj.assertIn(expected, output_clear)
+
+    @staticmethod
+    def expect_outputs(testObj, expected: List[str], method_to_run) -> None:
+        run_output = method_to_run()
+        if type(run_output) == Result:
+            print(run_output.stdout)
+            raise TestCliRunnerError()
+        else:
+            # Clear all ANSII color codes from output
+            output_clear = REGEX_REMOTE_COLOR_CODES.sub("", run_output)
+            # It won't get printed is test passes
+            print(output_clear)
+            for item in expected:
+                # Assert single output
+                testObj.assertIn(item, output_clear)
 
     @staticmethod
     def expect_success(testObj, method_to_run) -> Any:

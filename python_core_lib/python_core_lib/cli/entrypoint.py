@@ -4,8 +4,8 @@ from typing import Callable, Optional
 
 import typer
 
-from ..cli.state import CliGlobalArgs
-from ..infra.log import LoggerManager
+from python_core_lib.cli.state import CliGlobalArgs
+from python_core_lib.infra.log import LoggerManager
 
 STATIC_VERSION_FILE_PATH = None
 

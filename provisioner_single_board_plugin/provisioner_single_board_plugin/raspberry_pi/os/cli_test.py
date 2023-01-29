@@ -1,384 +1,130 @@
-# #!/usr/bin/env python3
+#!/usr/bin/env python3
 
-# import os
-# import unittest
-# from unittest import SkipTest, mock
+import unittest
+from unittest import mock
 
-# from python_core_lib.errors.cli_errors import CliApplicationException
-# from typer.testing import CliRunner
+from python_core_lib.errors.cli_errors import (
+    CliApplicationException,
+    StepEvaluationFailure,
+)
+from python_core_lib.test_lib.assertions import Assertion
+from python_core_lib.test_lib.test_cli_runner import TestCliRunner
+from python_core_lib.test_lib.test_env import TestEnv
+from typer.testing import CliRunner
 
-# from provisioner_single_board_plugin.raspberry_pi.os.cli import app
+from provisioner_single_board_plugin.main_fake import get_fake_app
 
-# TEST_CONFIG_USER_PATH = os.path.expanduser("~/.config/provisioner/config.yaml")
-# TEST_CONFIG_INTERNAL_PATH = "rpi/config.yaml"
+ARG_IMAGE_DOWNLOAD_URL = "http://test.image.download.url.com"
 
-# runner = CliRunner()
+AUTO_PROMPT_RESPONSE = "DRY_RUN_RESPONSE"
+RPI_OS_MODULE_PATH = "provisioner_single_board_plugin.raspberry_pi.os"
 
-# # To run as a single test target:
-# #  poetry run coverage run -m pytest rpi/os/cli_test.py
-# #
-# class OsCliTestShould(unittest.TestCase):
-#     @SkipTest
-#     @mock.patch("rpi.os.install_cmd.RPiOsInstallCmd.run")
-#     def test_cli_install_runner_with_cli_args_success(self, run_call: mock.MagicMock) -> None:
-#         expected_image_download_url = "http://test.download.com"
-#         result = runner.invoke(
-#             app,
-#             ["--dry-run", "--verbose", "os", "install", f"--image-download-url={expected_image_download_url}"],
-#         )
-#         self.assertEqual(1, run_call.call_count)
+# To run as a single test target:
+#  poetry run coverage run -m pytest provisioner_single_board_plugin/raspberry_pi/os/cli_test.py
+#
+class RaspberryPiOsCliTestShould(unittest.TestCase):
 
-#         run_call_kwargs = run_call.call_args.kwargs
-#         ctx = run_call_kwargs["ctx"]
-#         os_install_args = run_call_kwargs["args"]
-#         os_install_args = run_call_kwargs["args"]
+    env = TestEnv.create()
 
-#         self.assertIsNotNone(ctx)
-#         self.assertIsNotNone(os_install_args)
-#         self.assertEqual(os_install_args.image_download_url, expected_image_download_url)
+    @staticmethod
+    def create_os_burn_image_runner(runner: CliRunner):
+        return runner.invoke(
+            get_fake_app(),
+            [
+                "--dry-run",
+                "--verbose",
+                "--auto-prompt",
+                "single-board",
+                "raspberry-pi",
+                "os",
+                "burn-image",
+                f"--image-download-url={ARG_IMAGE_DOWNLOAD_URL}",
+            ],
+        )
 
-#     @SkipTest
-#     @mock.patch("rpi.os.install_cmd.RPiOsInstallCmd.run")
-#     def test_cli_install_runner_with_config_args_success(self, run_call: mock.MagicMock) -> None:
-#         result = runner.invoke(
-#             app,
-#             [
-#                 "--dry-run",
-#                 "--verbose",
-#                 "os",
-#                 "install",
-#             ],
-#         )
-#         self.assertEqual(1, run_call.call_count)
+    @staticmethod
+    def create_os_burn_image_runner_darwin(runner: CliRunner):
+        return runner.invoke(
+            get_fake_app(),
+            [
+                "--dry-run",
+                "--verbose",
+                "--auto-prompt",
+                "--os-arch=darwin_amd64",
+                "single-board",
+                "raspberry-pi",
+                "os",
+                "burn-image",
+                f"--image-download-url={ARG_IMAGE_DOWNLOAD_URL}",
+            ],
+        )
 
-#         run_call_kwargs = run_call.call_args.kwargs
-#         ctx = run_call_kwargs["ctx"]
-#         os_install_args = run_call_kwargs["args"]
-#         os_install_args = run_call_kwargs["args"]
+    @staticmethod
+    def create_os_burn_image_runner_linux(runner: CliRunner):
+        return runner.invoke(
+            get_fake_app(),
+            [
+                "--dry-run",
+                "--verbose",
+                "--auto-prompt",
+                "--os-arch=linux_amd64",
+                "single-board",
+                "raspberry-pi",
+                "os",
+                "burn-image",
+                f"--image-download-url={ARG_IMAGE_DOWNLOAD_URL}",
+            ],
+        )
 
-#         self.assertIsNotNone(ctx)
-#         self.assertIsNotNone(os_install_args)
-#         self.assertEqual(
-#             os_install_args.image_download_url,
-#             "https://downloads.raspberrypi.org/raspios_lite_arm64/images/raspios_lite_arm64-2022-01-28/2022-01-28-raspios-bullseye-arm64-lite.zip",
-#         )
-#     @SkipTest
-#     @mock.patch("rpi.os.install_cmd.RPiOsInstallCmd.run", side_effect=Exception("runner failure"))
-#     def test_cli_os_install_runner_failure(self, run_call: mock.MagicMock) -> None:
-#         result = runner.invoke(
-#             app,
-#             [
-#                 "--dry-run",
-#                 "--verbose",
-#                 "os",
-#                 "install",
-#             ],
-#         )
+    @mock.patch(f"{RPI_OS_MODULE_PATH}.burn_image_cmd.RPiOsBurnImageCmd.run")
+    def test_run_rpi_os_burn_image_cmd_with_args_success(self, run_call: mock.MagicMock) -> None:
+        TestCliRunner.run(RaspberryPiOsCliTestShould.create_os_burn_image_runner)
 
-#         self.assertEqual(1, run_call.call_count)
-#         self.assertIn("Failed to burn Raspbian OS", str(result.stdout))
-#         self.assertIsInstance(result.exception, CliApplicationException)
-#         self.assertEqual(str(result.exception), "runner failure")
+        def assertion_callback(args):
+            self.assertEqual(args.image_download_url, ARG_IMAGE_DOWNLOAD_URL)
 
-#     @SkipTest
-#     def test_integration_os_install_runner_darwin_cli_success(self) -> None:
-#         auto_prompt = "DRY_RUN_RESPONSE"
-#         result = runner.invoke(
-#             app,
-#             [
-#                 "--dry-run",
-#                 "--auto-prompt",
-#                 "--os-arch=darwin_amd64",
-#                 "os",
-#                 "install",
-#             ],
-#         )
-#         cmd_output = str(result.stdout)
-#         self.assertIn("diskutil list", cmd_output)
-#         self.assertIn(f"diskutil unmountDisk {auto_prompt}", cmd_output)
-#         self.assertIn(f"unzip -p DRY_RUN_DOWNLOAD_FILE_PATH | sudo dd of={auto_prompt} bs=1m", cmd_output)
-#         self.assertIn("sync", cmd_output)
-#         self.assertIn(f"diskutil unmountDisk {auto_prompt}", cmd_output)
-#         self.assertIn(f"diskutil mountDisk {auto_prompt}", cmd_output)
-#         self.assertIn("sudo touch /Volumes/boot/ssh", cmd_output)
-#         self.assertIn(f"diskutil eject {auto_prompt}", cmd_output)
+        Assertion.expect_call_arguments(self, run_call, arg_name="args", assertion_callable=assertion_callback)
+        Assertion.expect_exists(self, run_call, arg_name="ctx")
 
-#     @SkipTest
-#     def test_integration_os_install_runner_linux_cli_success(self) -> None:
-#         auto_prompt = "DRY_RUN_RESPONSE"
-#         result = runner.invoke(
-#             app,
-#             [
-#                 "--dry-run",
-#                 "--auto-prompt",
-#                 "--os-arch=linux_amd64",
-#                 "os",
-#                 "install",
-#             ],
-#         )
-#         cmd_output = str(result.stdout)
-#         self.assertIn("lsblk -p", cmd_output)
-#         self.assertIn(
-#             f"unzip -p DRY_RUN_DOWNLOAD_FILE_PATH | dd of={auto_prompt} bs=4M conv=fsync status=progress", cmd_output
-#         )
-#         self.assertIn("sync", cmd_output)
+    @mock.patch(f"{RPI_OS_MODULE_PATH}.burn_image_cmd.RPiOsBurnImageCmd.run", side_effect=StepEvaluationFailure())
+    def test_run_rpi_os_burn_image_cmd_managed_failure(self, run_call: mock.MagicMock) -> None:
+        Assertion.expect_output(
+            self,
+            expected="StepEvaluationFailure",
+            method_to_run=lambda: TestCliRunner.run(RaspberryPiOsCliTestShould.create_os_burn_image_runner),
+        )
 
-#     @SkipTest
-#     @mock.patch("rpi.os.configure_cmd.RPiOsConfigureCmd.run")
-#     def test_cli_os_configure_runner_with_cli_args_success(self, run_call: mock.MagicMock) -> None:
-#         expected_node_username = "test-user"
-#         expected_node_password = "test-user"
-#         expected_ip_discovery_range = "1.2.3.4"
-#         result = runner.invoke(
-#             app,
-#             [
-#                 "--dry-run",
-#                 "--verbose",
-#                 "os",
-#                 "configure",
-#                 f"--node-username={expected_node_username}",
-#                 f"--node-password={expected_node_password}",
-#                 f"--ip-discovery-range={expected_ip_discovery_range}",
-#             ],
-#         )
-#         self.assertEqual(1, run_call.call_count)
+    @mock.patch(f"{RPI_OS_MODULE_PATH}.burn_image_cmd.RPiOsBurnImageCmd.run", side_effect=Exception())
+    def test_run_rpi_os_burn_image_cmd_unmanaged_failure(self, run_call: mock.MagicMock) -> None:
+        Assertion.expect_raised_failure(
+            self,
+            ex_type=CliApplicationException,
+            method_to_run=lambda: TestCliRunner.run(RaspberryPiOsCliTestShould.create_os_burn_image_runner),
+        )
 
-#         run_call_kwargs = run_call.call_args.kwargs
-#         ctx = run_call_kwargs["ctx"]
-#         os_configure_args = run_call_kwargs["args"]
+    def test_e2e_run_rpi_os_burn_image_darwin_success(self) -> None:
+        Assertion.expect_outputs(
+            self,
+            expected=[
+                "diskutil list",
+                f"diskutil unmountDisk {AUTO_PROMPT_RESPONSE}",
+                f"unzip -p DRY_RUN_DOWNLOAD_FILE_PATH | sudo dd of={AUTO_PROMPT_RESPONSE} bs=1m",
+                "sync",
+                f"diskutil unmountDisk {AUTO_PROMPT_RESPONSE}",
+                f"diskutil mountDisk {AUTO_PROMPT_RESPONSE}",
+                "sudo touch /Volumes/boot/ssh",
+                f"diskutil eject {AUTO_PROMPT_RESPONSE}",
+            ],
+            method_to_run=lambda: TestCliRunner.run(RaspberryPiOsCliTestShould.create_os_burn_image_runner_darwin),
+        )
 
-#         self.assertIsNotNone(ctx)
-#         self.assertIsNotNone(os_configure_args)
-#         self.assertEqual(os_configure_args.node_username, expected_node_username)
-#         self.assertEqual(os_configure_args.node_password, expected_node_password)
-#         self.assertEqual(os_configure_args.ip_discovery_range, expected_ip_discovery_range)
-
-#     @SkipTest
-#     @mock.patch("rpi.os.configure_cmd.RPiOsConfigureCmd.run")
-#     def test_cli_os_configure_runner_with_config_args_success(self, run_call: mock.MagicMock) -> None:
-#         result = runner.invoke(
-#             app,
-#             ["--dry-run", "--verbose", "os", "configure"],
-#         )
-#         self.assertEqual(1, run_call.call_count)
-
-#         run_call_kwargs = run_call.call_args.kwargs
-#         ctx = run_call_kwargs["ctx"]
-#         os_configure_args = run_call_kwargs["args"]
-
-#         self.assertIsNotNone(ctx)
-#         self.assertIsNotNone(os_configure_args)
-#         self.assertEqual(os_configure_args.node_username, "pi")
-#         self.assertEqual(os_configure_args.node_password, "raspberry")
-#         self.assertEqual(os_configure_args.ip_discovery_range, "192.168.1.1/24")
-
-#     @SkipTest
-#     @mock.patch("rpi.os.configure_cmd.RPiOsConfigureCmd.run", side_effect=Exception("runner failure"))
-#     def test_cli_os_configure_runner_failure(self, run_call: mock.MagicMock) -> None:
-#         result = runner.invoke(
-#             app,
-#             [
-#                 "--dry-run",
-#                 "--verbose",
-#                 "os",
-#                 "configure",
-#             ],
-#         )
-
-#         self.assertEqual(1, run_call.call_count)
-#         self.assertIn("Failed to configure Raspbian OS", str(result.stdout))
-#         self.assertIsInstance(result.exception, CliApplicationException)
-#         self.assertEqual(str(result.exception), "runner failure")
-
-#     @SkipTest
-#     def test_integration_os_configure_runner_darwin_cli_success(self) -> None:
-#         result = runner.invoke(
-#             app,
-#             [
-#                 "--dry-run",
-#                 "--auto-prompt",
-#                 "--os-arch=darwin_amd64",
-#                 "os",
-#                 "configure",
-#             ],
-#         )
-#         working_dir = os.getcwd()
-#         cmd_output = str(result.stdout)
-#         self.assertIn(
-#             f"bash \
-# ./external/shell_scripts_lib/runner/ansible/ansible.sh \
-# working_dir: {working_dir} \
-# username: DRY_RUN_RESPONSE \
-# password: DRY_RUN_RESPONSE \
-# playbook_path: rpi/os/playbooks/configure_os.yaml \
-# selected_host: DRY_RUN_RESPONSE None \
-# ansible_var: host_name=DRY_RUN_RESPONSE \
-# ansible_tag: configure_remote_node \
-# ansible_tag: reboot \
-# --dry-run",
-#             cmd_output,
-#         )
-
-#     @SkipTest
-#     def test_integration_os_configure_runner_linux_cli_success(self) -> None:
-#         result = runner.invoke(
-#             app,
-#             [
-#                 "--dry-run",
-#                 "--auto-prompt",
-#                 "--os-arch=linux_amd64",
-#                 "os",
-#                 "configure",
-#             ],
-#         )
-#         working_dir = os.getcwd()
-#         cmd_output = str(result.stdout)
-#         self.assertIn(
-#             f"bash \
-# ./external/shell_scripts_lib/runner/ansible/ansible.sh \
-# working_dir: {working_dir} \
-# username: DRY_RUN_RESPONSE \
-# password: DRY_RUN_RESPONSE \
-# playbook_path: rpi/os/playbooks/configure_os.yaml \
-# selected_host: DRY_RUN_RESPONSE None \
-# ansible_var: host_name=DRY_RUN_RESPONSE \
-# ansible_tag: configure_remote_node \
-# ansible_tag: reboot \
-# --dry-run",
-#             cmd_output,
-#         )
-
-#     @SkipTest
-#     @mock.patch("rpi.os.network_cmd.RPiNetworkConfigureCmd.run")
-#     def test_cli_os_network_runner_with_cli_args_success(self, run_call: mock.MagicMock) -> None:
-#         expected_static_ip_address = "1.1.1.1"
-#         expected_gw_ip_address = "1.2.3.4"
-#         expected_dns_ip_address = "4.3.2.1"
-#         expected_node_username = "test-user"
-#         expected_node_password = "test-user"
-#         expected_ip_discovery_range = "1.2.3.4"
-#         result = runner.invoke(
-#             app,
-#             [
-#                 "--dry-run",
-#                 "--verbose",
-#                 "os",
-#                 "network",
-#                 f"--static-ip-address={expected_static_ip_address}",
-#                 f"--gw-ip-address={expected_gw_ip_address}",
-#                 f"--dns-ip-address={expected_dns_ip_address}",
-#                 f"--node-username={expected_node_username}",
-#                 f"--node-password={expected_node_password}",
-#                 f"--ip-discovery-range={expected_ip_discovery_range}",
-#             ],
-#         )
-#         self.assertEqual(1, run_call.call_count)
-
-#         run_call_kwargs = run_call.call_args.kwargs
-#         ctx = run_call_kwargs["ctx"]
-#         os_network_args = run_call_kwargs["args"]
-
-#         self.assertIsNotNone(ctx)
-#         self.assertIsNotNone(os_network_args)
-#         self.assertEqual(os_network_args.static_ip_address, expected_static_ip_address)
-#         self.assertEqual(os_network_args.gw_ip_address, expected_gw_ip_address)
-#         self.assertEqual(os_network_args.dns_ip_address, expected_dns_ip_address)
-#         self.assertEqual(os_network_args.node_username, expected_node_username)
-#         self.assertEqual(os_network_args.node_password, expected_node_password)
-#         self.assertEqual(os_network_args.ip_discovery_range, expected_ip_discovery_range)
-
-#     @SkipTest
-#     @mock.patch("rpi.os.network_cmd.RPiNetworkConfigureCmd.run")
-#     def test_cli_os_network_runner_with_config_args_success(self, run_call: mock.MagicMock) -> None:
-#         expected_static_ip_address = "1.1.1.1"
-#         result = runner.invoke(
-#             app,
-#             [
-#                 "--dry-run",
-#                 "--verbose",
-#                 "os",
-#                 "network",
-#                 f"--static-ip-address={expected_static_ip_address}",
-#             ],
-#         )
-#         self.assertEqual(1, run_call.call_count)
-
-#         run_call_kwargs = run_call.call_args.kwargs
-#         ctx = run_call_kwargs["ctx"]
-#         os_configure_args = run_call_kwargs["args"]
-
-#         self.assertIsNotNone(ctx)
-#         self.assertIsNotNone(os_configure_args)
-#         self.assertEqual(os_configure_args.static_ip_address, expected_static_ip_address)
-#         self.assertEqual(os_configure_args.gw_ip_address, "192.168.1.1")
-#         self.assertEqual(os_configure_args.dns_ip_address, "192.168.1.1")
-#         self.assertEqual(os_configure_args.node_username, "pi")
-#         self.assertEqual(os_configure_args.node_password, "raspberry")
-#         self.assertEqual(os_configure_args.ip_discovery_range, "192.168.1.1/24")
-
-#     @SkipTest
-#     @mock.patch("rpi.os.network_cmd.RPiNetworkConfigureCmd.run", side_effect=Exception("runner failure"))
-#     def test_cli_os_network_runner_failure(self, run_call: mock.MagicMock) -> None:
-#         result = runner.invoke(
-#             app,
-#             ["--dry-run", "--verbose", "os", "network", "--static-ip-address=1.1.1.1"],
-#         )
-
-#         self.assertEqual(1, run_call.call_count)
-#         self.assertIn("Failed to configure RPi network", str(result.stdout))
-#         self.assertIsInstance(result.exception, CliApplicationException)
-#         self.assertEqual(str(result.exception), "runner failure")
-
-#     @SkipTest
-#     def test_integration_os_network_runner_darwin_cli_success(self) -> None:
-#         result = runner.invoke(
-#             app,
-#             ["--dry-run", "--auto-prompt", "--os-arch=darwin_amd64", "os", "network", "--static-ip-address=1.1.1.1"],
-#         )
-#         working_dir = os.getcwd()
-#         cmd_output = str(result.stdout)
-#         self.assertIn(
-#             f"bash \
-# ./external/shell_scripts_lib/runner/ansible/ansible.sh \
-# working_dir: {working_dir} \
-# username: DRY_RUN_RESPONSE \
-# password: DRY_RUN_RESPONSE \
-# playbook_path: rpi/os/playbooks/configure_network.yaml \
-# selected_host: DRY_RUN_RESPONSE None \
-# ansible_var: host_name=DRY_RUN_RESPONSE \
-# ansible_var: static_ip=DRY_RUN_RESPONSE \
-# ansible_var: gateway_address=DRY_RUN_RESPONSE \
-# ansible_var: dns_address=DRY_RUN_RESPONSE \
-# ansible_tag: configure_rpi_network \
-# ansible_tag: define_static_ip \
-# ansible_tag: reboot \
-# --dry-run",
-#             cmd_output,
-#         )
-
-#     @SkipTest
-#     def test_integration_os_network_runner_linux_cli_success(self) -> None:
-#         result = runner.invoke(
-#             app,
-#             ["--dry-run", "--auto-prompt", "--os-arch=darwin_amd64", "os", "network", "--static-ip-address=1.1.1.1"],
-#         )
-#         working_dir = os.getcwd()
-#         cmd_output = str(result.stdout)
-#         self.assertIn(
-#             f"bash \
-# ./external/shell_scripts_lib/runner/ansible/ansible.sh \
-# working_dir: {working_dir} \
-# username: DRY_RUN_RESPONSE \
-# password: DRY_RUN_RESPONSE \
-# playbook_path: rpi/os/playbooks/configure_network.yaml \
-# selected_host: DRY_RUN_RESPONSE None \
-# ansible_var: host_name=DRY_RUN_RESPONSE \
-# ansible_var: static_ip=DRY_RUN_RESPONSE \
-# ansible_var: gateway_address=DRY_RUN_RESPONSE \
-# ansible_var: dns_address=DRY_RUN_RESPONSE \
-# ansible_tag: configure_rpi_network \
-# ansible_tag: define_static_ip \
-# ansible_tag: reboot \
-# --dry-run",
-#             cmd_output,
-#         )
+    def test_e2e_run_rpi_os_burn_image_linux_success(self) -> None:
+        Assertion.expect_outputs(
+            self,
+            expected=[
+                "lsblk -p",
+                f"unzip -p DRY_RUN_DOWNLOAD_FILE_PATH | dd of={AUTO_PROMPT_RESPONSE} bs=4M conv=fsync status=progress",
+                "sync",
+            ],
+            method_to_run=lambda: TestCliRunner.run(RaspberryPiOsCliTestShould.create_os_burn_image_runner_linux),
+        )

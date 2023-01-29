@@ -22,7 +22,8 @@ class TestDataRemoteOpts:
                 auth=RemoteConfig.Auth(
                     node_username=TestDataRemoteOpts.TEST_DATA_REMOTE_NODE_USERNAME,
                     node_password=TestDataRemoteOpts.TEST_DATA_REMOTE_NODE_PASSWORD,
-                    ssh_private_key_file_path=TestDataRemoteOpts.TEST_DATA_REMOTE_SSH_PRIVATE_KEY_FILE_PATH
+                    # Mutually exclusive with node_password
+                    # ssh_private_key_file_path=TestDataRemoteOpts.TEST_DATA_REMOTE_SSH_PRIVATE_KEY_FILE_PATH
                 ),
                 hosts={
                     TestDataRemoteOpts.TEST_DATA_SSH_HOSTNAME: RemoteConfig.Host(

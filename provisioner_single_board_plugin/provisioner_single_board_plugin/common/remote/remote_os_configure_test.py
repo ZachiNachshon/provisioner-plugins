@@ -42,7 +42,7 @@ class RemoteMachineConfigureTestShould(unittest.TestCase):
         )
 
     def test_prerequisites_fail_missing_utility(self) -> None:
-        Assertion.expect_failure(
+        Assertion.expect_raised_failure(
             self,
             ex_type=MissingUtilityException,
             method_to_run=lambda: RemoteMachineOsConfigureRunner()._prerequisites(
@@ -70,7 +70,7 @@ class RemoteMachineConfigureTestShould(unittest.TestCase):
         )
 
     def test_prerequisites_fail_on_os_not_supported(self) -> None:
-        Assertion.expect_failure(
+        Assertion.expect_raised_failure(
             self,
             ex_type=NotImplementedError,
             method_to_run=lambda: RemoteMachineOsConfigureRunner()._prerequisites(
@@ -78,7 +78,7 @@ class RemoteMachineConfigureTestShould(unittest.TestCase):
             ),
         )
 
-        Assertion.expect_failure(
+        Assertion.expect_raised_failure(
             self,
             ex_type=NotImplementedError,
             method_to_run=lambda: RemoteMachineOsConfigureRunner()._prerequisites(
@@ -128,14 +128,12 @@ class RemoteMachineConfigureTestShould(unittest.TestCase):
 
     def test_ansible_os_configure_playbook_run_success(self) -> None:
         env = TestEnv.create()
-
         RemoteMachineOsConfigureRunner()._run_ansible_configure_os_playbook_with_progress_bar(
             ctx=env.get_context(),
             collaborators=env.get_collaborators(),
             args=self.create_fake_configure_args(),
             get_ssh_conn_info_fn=TestDataRemoteConnector.create_fake_ssh_conn_info_fn(),
         )
-
         Assertion.expect_success(
             self,
             method_to_run=lambda: env.get_collaborators()
@@ -158,21 +156,17 @@ class RemoteMachineConfigureTestShould(unittest.TestCase):
 
     def test_pre_run_instructions_printed_successfully(self) -> None:
         env = TestEnv.create()
-
         RemoteMachineOsConfigureRunner()._print_pre_run_instructions(env.get_collaborators())
-
         Assertion.expect_success(
             self, method_to_run=lambda: env.get_collaborators().prompter().assert_enter_prompt_count(1)
         )
 
     def test_post_run_instructions_printed_successfully(self) -> None:
         env = TestEnv.create()
-
         RemoteMachineOsConfigureRunner()._print_post_run_instructions(
             (TestDataRemoteConnector.TEST_DATA_SSH_HOSTNAME_1, TestDataRemoteConnector.TEST_DATA_SSH_IP_ADDRESS_1),
             env.get_collaborators(),
         )
-
         printer = env.get_collaborators().printer()
         Assertion.expect_success(
             self, method_to_run=lambda: printer.assert_output(TestDataRemoteConnector.TEST_DATA_SSH_HOSTNAME_1)

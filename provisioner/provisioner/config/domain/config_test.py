@@ -209,5 +209,5 @@ provisioner:
           32bit: http://download-url-32-bit.com
 """
         internal_config_obj = yaml_util.read_string_fn(yaml_str=internal_yaml_str, class_name=ProvisionerConfig)
-        internal_config_obj.get_os_raspbian_download_url()
+        internal_config_obj.rpi.get_os_raspbian_download_url()
         self.assertEqual(internal_config_obj.rpi.os.download_url_32bit, "http://download-url-32-bit.com")

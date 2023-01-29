@@ -22,6 +22,9 @@ exclude = [
 #     { include = "provisioner_features_lib" },
 # ]
 
+[tool.poetry.scripts]
+test_runner = "provisioner_single_board_plugin.main_fake:main"
+
 [tool.isort]
 profile = "black"
 

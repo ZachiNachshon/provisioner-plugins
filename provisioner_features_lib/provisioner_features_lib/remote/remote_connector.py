@@ -78,7 +78,7 @@ class RemoteMachineConnector:
                 username="DRY_RUN_RESPONSE",
                 password="DRY_RUN_RESPONSE",
                 ssh_private_key_file_path="DRY_RUN_RESPONSE",
-                host_ip_pairs=[],
+                host_ip_pairs=[HostIpPair(host="DRY_RUN_RESPONSE", ip_address="DRY_RUN_RESPONSE")],
             )
 
         """

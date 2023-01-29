@@ -36,7 +36,7 @@ class RemoteMachineOsConfigureRunner:
             collaborators=collaborators,
             args=args,
         )
-        self._print_post_run_instructions(ctx, hostname_ip_tuple)
+        self._print_post_run_instructions(hostname_ip_tuple, collaborators)
 
     def _run_ansible_configure_os_playbook_with_progress_bar(
         self,
@@ -90,12 +90,8 @@ class RemoteMachineOsConfigureRunner:
         return ssh_conn_info
 
     def _extract_host_ip_tuple(self, ctx: Context, ssh_conn_info: SSHConnectionInfo) -> tuple[str, str]:
-        if ctx.is_dry_run():
-            return ("DRY_RUN_RESPONSE", "DRY_RUN_RESPONSE")
-        else:
-            # Promised to have only single item
-            single_pair_item = ssh_conn_info.host_ip_pairs[0]
-            return (single_pair_item.host, single_pair_item.ip_address)
+        single_pair_item = ssh_conn_info.host_ip_pairs[0]
+        return (single_pair_item.host, single_pair_item.ip_address)
 
     def _print_pre_run_instructions(self, collaborators: CoreCollaborators):
         collaborators.printer().print_fn(generate_logo_configure())

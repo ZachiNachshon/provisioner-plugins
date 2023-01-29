@@ -50,7 +50,7 @@ class ImageBurnerTestShould(unittest.TestCase):
 
         cols = self.create_fake_collaborators(ctx)
         runner = ImageBurnerCmdRunner()
-        Assertion.expect_failure(
+        Assertion.expect_raised_failure(
             self, ex_type=MissingUtilityException, method_to_run=lambda: runner._prerequisites(ctx, cols.checks)
         )
 
@@ -79,7 +79,7 @@ class ImageBurnerTestShould(unittest.TestCase):
         ctx = Context.create(os_arch=OsArch(os=WINDOWS, arch="test_arch", os_release="test_os_release"))
 
         runner = ImageBurnerCmdRunner()
-        Assertion.expect_failure(
+        Assertion.expect_raised_failure(
             self, ex_type=NotImplementedError, method_to_run=lambda: runner._prerequisites(ctx, None)
         )
 
@@ -89,7 +89,7 @@ class ImageBurnerTestShould(unittest.TestCase):
             dry_run=False,
         )
         runner = ImageBurnerCmdRunner()
-        Assertion.expect_failure(
+        Assertion.expect_raised_failure(
             self, ex_type=NotImplementedError, method_to_run=lambda: runner._prerequisites(ctx, None)
         )
 
@@ -122,7 +122,7 @@ class ImageBurnerTestShould(unittest.TestCase):
 
         cols = self.create_fake_collaborators(ctx)
         runner = ImageBurnerCmdRunner()
-        Assertion.expect_failure(
+        Assertion.expect_raised_failure(
             self, ex_type=NotImplementedError, method_to_run=lambda: runner.read_block_devices(ctx, cols.process)
         )
 
@@ -134,7 +134,7 @@ class ImageBurnerTestShould(unittest.TestCase):
 
         cols = self.create_fake_collaborators(ctx)
         runner = ImageBurnerCmdRunner()
-        Assertion.expect_failure(
+        Assertion.expect_raised_failure(
             self, ex_type=NotImplementedError, method_to_run=lambda: runner.read_block_devices(ctx, cols.process)
         )
 
@@ -256,7 +256,7 @@ class ImageBurnerTestShould(unittest.TestCase):
         ctx = Context.create(os_arch=OsArch(os=WINDOWS, arch="test_arch", os_release="test_os_release"))
         cols = self.create_fake_collaborators(ctx)
         runner = ImageBurnerCmdRunner()
-        Assertion.expect_failure(
+        Assertion.expect_raised_failure(
             self,
             ex_type=NotImplementedError,
             method_to_run=lambda: runner._burn_image(ctx, None, None, None, None, cols.printer),
@@ -265,7 +265,7 @@ class ImageBurnerTestShould(unittest.TestCase):
         ctx = Context.create(os_arch=OsArch(os="NOT-SUPPORTED", arch="test_arch", os_release="test_os_release"))
         cols = self.create_fake_collaborators(ctx)
         runner = ImageBurnerCmdRunner()
-        Assertion.expect_failure(
+        Assertion.expect_raised_failure(
             self,
             ex_type=NotImplementedError,
             method_to_run=lambda: runner._burn_image(ctx, None, None, None, None, cols.printer),
@@ -288,7 +288,7 @@ class ImageBurnerTestShould(unittest.TestCase):
             prerequisites.side_effect = CliApplicationException("runner failure")
             cols = self.create_fake_collaborators(ctx)
             runner = ImageBurnerCmdRunner()
-            Assertion.expect_failure(
+            Assertion.expect_raised_failure(
                 self,
                 ex_type=CliApplicationException,
                 method_to_run=lambda: runner.run(ctx=ctx, args=None, collaborators=cols),
@@ -308,7 +308,7 @@ class ImageBurnerTestShould(unittest.TestCase):
 
             cols = self.create_fake_collaborators(ctx)
             runner = ImageBurnerCmdRunner()
-            Assertion.expect_failure(
+            Assertion.expect_raised_failure(
                 self,
                 ex_type=StepEvaluationFailure,
                 method_to_run=lambda: runner.run(ctx=ctx, args=None, collaborators=cols),
@@ -329,7 +329,7 @@ class ImageBurnerTestShould(unittest.TestCase):
 
             cols = self.create_fake_collaborators(ctx)
             runner = ImageBurnerCmdRunner()
-            Assertion.expect_failure(
+            Assertion.expect_raised_failure(
                 self,
                 ex_type=StepEvaluationFailure,
                 method_to_run=lambda: runner.run(ctx=ctx, args=None, collaborators=cols),
@@ -355,7 +355,7 @@ class ImageBurnerTestShould(unittest.TestCase):
 
             cols = self.create_fake_collaborators(ctx)
             runner = ImageBurnerCmdRunner()
-            Assertion.expect_failure(
+            Assertion.expect_raised_failure(
                 self,
                 ex_type=StepEvaluationFailure,
                 method_to_run=lambda: runner.run(ctx=ctx, args=None, collaborators=cols),
@@ -386,7 +386,7 @@ class ImageBurnerTestShould(unittest.TestCase):
 
             cols = self.create_fake_collaborators(ctx)
             runner = ImageBurnerCmdRunner()
-            Assertion.expect_failure(
+            Assertion.expect_raised_failure(
                 self,
                 ex_type=StepEvaluationFailure,
                 method_to_run=lambda: runner.run(ctx=ctx, args=None, collaborators=cols),
@@ -421,7 +421,7 @@ class ImageBurnerTestShould(unittest.TestCase):
 
             cols = self.create_fake_collaborators(ctx)
             runner = ImageBurnerCmdRunner()
-            Assertion.expect_failure(
+            Assertion.expect_raised_failure(
                 self,
                 ex_type=StepEvaluationFailure,
                 method_to_run=lambda: runner.run(
@@ -460,7 +460,7 @@ class ImageBurnerTestShould(unittest.TestCase):
 
             cols = self.create_fake_collaborators(ctx)
             runner = ImageBurnerCmdRunner()
-            Assertion.expect_failure(
+            Assertion.expect_raised_failure(
                 self,
                 ex_type=StepEvaluationFailure,
                 method_to_run=lambda: runner.run(

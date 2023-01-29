@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from typing import List
-from python_core_lib.errors.cli_errors import FakeEnvironmentAssertionError
+from python_core_lib.test_lib.test_errors import FakeEnvironmentAssertionError
 from python_core_lib.infra.context import Context
 from python_core_lib.utils.printer import Printer
 from python_core_lib.utils.progress_indicator import ProgressIndicator

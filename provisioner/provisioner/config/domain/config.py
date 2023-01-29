@@ -1,30 +1,10 @@
 #!/usr/bin/env python3
 
+from provisioner_examples_plugin.domain.config import DummyConfig
+from provisioner_single_board_plugin.config.domain.config import RpiConfig
 from python_core_lib.domain.serialize import SerializationBase
 from provisioner_features_lib.anchor.domain.config import AnchorConfig
 from provisioner_features_lib.remote.domain.config import RemoteConfig
-
-
-class DummyConfig:
-    class HelloWorldConfig:
-        username: str = None
-
-    hello_world: HelloWorldConfig = HelloWorldConfig()
-
-
-class RpiConfig:
-    class RpiOsConfig:
-        active_system: str = None
-        download_url_32bit: str = None
-        download_url_64bit: str = None
-        download_path: str = None
-
-    class RpiNetworkConfig:
-        gw_ip_address: str = None
-        dns_ip_address: str = None
-
-    os: RpiOsConfig = RpiOsConfig()
-    network: RpiNetworkConfig = RpiNetworkConfig()
 
 
 class ProvisionerConfig(SerializationBase):
@@ -33,6 +13,8 @@ class ProvisionerConfig(SerializationBase):
     anchor: AnchorConfig = AnchorConfig()
     dummmy: DummyConfig = DummyConfig()
     rpi: RpiConfig = RpiConfig()
+
+    # TODO: need to add a new "raspbian" attribute
 
     def __init__(self, dict_obj: dict) -> None:
         super().__init__(dict_obj)
@@ -161,8 +143,3 @@ class ProvisionerConfig(SerializationBase):
             self.rpi.network.dns_ip_address = other.rpi.network.dns_ip_address
 
         return self
-
-    def get_os_raspbian_download_url(self):
-        if self.rpi.os.active_system == "64bit":
-            return self.rpi.os.download_url_64bit
-        return self.rpi.os.download_url_32bit

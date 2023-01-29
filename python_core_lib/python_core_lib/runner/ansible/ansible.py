@@ -67,7 +67,7 @@ class AnsibleRunner:
     def _prepare_ansible_host_items(self, host_ip_pair_list: List[HostIpPair]) -> List[str]:
         result = []
 
-        if self._dry_run:
+        if self._dry_run and len(host_ip_pair_list) == 0:
             return result
 
         for pair in host_ip_pair_list:

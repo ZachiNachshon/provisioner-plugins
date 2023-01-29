@@ -8,6 +8,7 @@ from provisioner_features_lib.sd_card.image_burner import (
     ImageBurnerCmdRunner,
 )
 from python_core_lib.infra.context import Context
+from python_core_lib.shared.collaborators import CoreCollaborators
 
 
 class RPiOsBurnImageCmdArgs:
@@ -16,7 +17,6 @@ class RPiOsBurnImageCmdArgs:
     image_download_path: str
 
     def __init__(self, image_download_url: Optional[str] = None, image_download_path: Optional[str] = None) -> None:
-
         self.image_download_url = image_download_url
         self.image_download_path = image_download_path
 
@@ -31,6 +31,7 @@ class RPiOsBurnImageCmdArgs:
 class RPiOsBurnImageCmd:
     def run(self, ctx: Context, args: RPiOsBurnImageCmdArgs) -> None:
         logger.debug("Inside RPiOsBurnImageCmd run()")
+        args.print()
 
         ImageBurnerCmdRunner().run(
             ctx=ctx,

@@ -3,12 +3,12 @@
 import os
 import unittest
 
-from ...errors.cli_errors import ExternalDependencyFileNotFound, InvalidAnsibleHostPair
-from ...infra.context import Context
-from ...utils.io_utils import IOUtils
-from ...utils.io_utils_fakes import FakeIOUtils
-from ...utils.process import Process
-from .ansible import AnsibleRunner, HostIpPair
+from python_core_lib.errors.cli_errors import ExternalDependencyFileNotFound, InvalidAnsibleHostPair
+from python_core_lib.infra.context import Context
+from python_core_lib.utils.io_utils import IOUtils
+from python_core_lib.utils.io_utils_fakes import FakeIOUtils
+from python_core_lib.utils.process import Process
+from python_core_lib.runner.ansible import AnsibleRunner, HostIpPair
 
 
 class AnsibleRunnerTestShould(unittest.TestCase):
