@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 
 
-class RpiConfig:
+class SingleBoardConfig:
     def get_os_raspbian_download_url(self):
         if self.os.active_system == "64bit":
             return self.os.download_url_64bit
         return self.os.download_url_32bit
 
-    class RpiOsConfig:
+    class SingleBoardOsConfig:
         active_system: str
         download_url_32bit: str
         download_url_64bit: str
@@ -26,7 +26,7 @@ class RpiConfig:
             self.download_url_64bit = download_url_64bit
             self.download_path = download_path
 
-    class RpiNetworkConfig:
+    class SingleBoardNetworkConfig:
         gw_ip_address: str
         dns_ip_address: str
 
@@ -34,9 +34,12 @@ class RpiConfig:
             self.gw_ip_address = gw_ip_address
             self.dns_ip_address = dns_ip_address
 
-    def __init__(self, os: RpiOsConfig = None, network: RpiNetworkConfig = None) -> None:
+    def __init__(self, 
+        os: SingleBoardOsConfig = SingleBoardOsConfig(), 
+        network: SingleBoardNetworkConfig = SingleBoardNetworkConfig()) -> None:
+        
         self.os = os
         self.network = network
 
-    os: RpiOsConfig = RpiOsConfig()
-    network: RpiNetworkConfig = RpiNetworkConfig()
+    os: SingleBoardOsConfig = None
+    network: SingleBoardNetworkConfig = None

@@ -24,7 +24,7 @@ rpi_os_cli_app = typer.Typer()
 @logger.catch(reraise=True)
 def burn_image(
     image_download_url: Optional[str] = typer.Option(
-        ConfigResolver.get_config().rpi.get_os_raspbian_download_url(),
+        ConfigResolver.get_config().single_board.get_os_raspbian_download_url(),
         help="OS image file download URL",
         envvar="IMAGE_DOWNLOAD_URL",
     )
@@ -37,7 +37,7 @@ def burn_image(
             ctx=CliContextManager.create(),
             args=RPiOsBurnImageCmdArgs(
                 image_download_url=image_download_url,
-                image_download_path=ConfigResolver.get_config().rpi.os.download_path,
+                image_download_path=ConfigResolver.get_config().single_board.os.download_path,
             ),
         )
     except StepEvaluationFailure as sef:

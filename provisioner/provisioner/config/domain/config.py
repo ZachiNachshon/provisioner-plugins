@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from provisioner_examples_plugin.domain.config import DummyConfig
-from provisioner_single_board_plugin.config.domain.config import RpiConfig
+from provisioner_single_board_plugin.config.domain.config import SingleBoardConfig
 from python_core_lib.domain.serialize import SerializationBase
 from provisioner_features_lib.anchor.domain.config import AnchorConfig
 from provisioner_features_lib.remote.domain.config import RemoteConfig
@@ -12,7 +12,7 @@ class ProvisionerConfig(SerializationBase):
     remote: RemoteConfig = RemoteConfig()
     anchor: AnchorConfig = AnchorConfig()
     dummmy: DummyConfig = DummyConfig()
-    rpi: RpiConfig = RpiConfig()
+    single_board: SingleBoardConfig = SingleBoardConfig()
 
     # TODO: need to add a new "raspbian" attribute
 
@@ -68,28 +68,28 @@ class ProvisionerConfig(SerializationBase):
             if "username" in hello_world_block:
                 self.dummmy.hello_world.username = hello_world_block["username"]
 
-    def _parse_rpi_block(self, rpi_block: dict):
-        if "os" in rpi_block:
-            os_block = rpi_block["os"]
+    def _parse_single_board_block(self, single_board_block: dict):
+        if "os" in single_board_block:
+            os_block = single_board_block["os"]
             if "raspbian" in os_block:
                 raspbian_block = os_block["raspbian"]
                 if "download_path" in raspbian_block:
-                    self.rpi.os.download_path = raspbian_block["download_path"]
+                    self.single_board.os.download_path = raspbian_block["download_path"]
                 if "active_system" in raspbian_block:
-                    self.rpi.os.active_system = raspbian_block["active_system"]
+                    self.single_board.os.active_system = raspbian_block["active_system"]
                 if "download_url" in raspbian_block:
                     download_url_block = raspbian_block["download_url"]
                     if "32bit" in download_url_block:
-                        self.rpi.os.download_url_32bit = download_url_block["32bit"]
+                        self.single_board.os.download_url_32bit = download_url_block["32bit"]
                     if "64bit" in download_url_block:
-                        self.rpi.os.download_url_64bit = download_url_block["64bit"]
+                        self.single_board.os.download_url_64bit = download_url_block["64bit"]
 
-        if "network" in rpi_block:
-            network_block = rpi_block["network"]
+        if "network" in single_board_block:
+            network_block = single_board_block["network"]
             if "gw_ip_address" in network_block:
-                self.rpi.network.gw_ip_address = network_block["gw_ip_address"]
+                self.single_board.network.gw_ip_address = network_block["gw_ip_address"]
             if "dns_ip_address" in network_block:
-                self.rpi.network.dns_ip_address = network_block["dns_ip_address"]
+                self.single_board.network.dns_ip_address = network_block["dns_ip_address"]
 
     def _try_parse_config(self, dict_obj: dict):
         provisioner_data = dict_obj["provisioner"]
@@ -99,8 +99,8 @@ class ProvisionerConfig(SerializationBase):
             self._parse_anchor_block(provisioner_data["anchor"])
         if "dummy" in provisioner_data:
             self._parse_dummy_block(provisioner_data["dummy"])
-        if "rpi" in provisioner_data:
-            self._parse_rpi_block(provisioner_data["rpi"])
+        if "single_board" in provisioner_data:
+            self._parse_single_board_block(provisioner_data["single_board"])
 
     def merge(self, other: "ProvisionerConfig") -> SerializationBase:
         if other.remote.hosts:
@@ -128,18 +128,18 @@ class ProvisionerConfig(SerializationBase):
         if other.dummmy.hello_world.username:
             self.dummmy.hello_world.username = other.dummmy.hello_world.username
 
-        if other.rpi.os.active_system:
-            self.rpi.os.active_system = other.rpi.os.active_system
-        if other.rpi.os.download_path:
-            self.rpi.os.download_path = other.rpi.os.download_path
-        if other.rpi.os.download_url_32bit:
-            self.rpi.os.download_url_32bit = other.rpi.os.download_url_32bit
-        if other.rpi.os.download_url_64bit:
-            self.rpi.os.download_url_64bit = other.rpi.os.download_url_64bit
+        if other.single_board.os.active_system:
+            self.single_board.os.active_system = other.single_board.os.active_system
+        if other.single_board.os.download_path:
+            self.single_board.os.download_path = other.single_board.os.download_path
+        if other.single_board.os.download_url_32bit:
+            self.single_board.os.download_url_32bit = other.single_board.os.download_url_32bit
+        if other.single_board.os.download_url_64bit:
+            self.single_board.os.download_url_64bit = other.single_board.os.download_url_64bit
 
-        if other.rpi.network.gw_ip_address:
-            self.rpi.network.gw_ip_address = other.rpi.network.gw_ip_address
-        if other.rpi.network.dns_ip_address:
-            self.rpi.network.dns_ip_address = other.rpi.network.dns_ip_address
+        if other.single_board.network.gw_ip_address:
+            self.single_board.network.gw_ip_address = other.single_board.network.gw_ip_address
+        if other.single_board.network.dns_ip_address:
+            self.single_board.network.dns_ip_address = other.single_board.network.dns_ip_address
 
         return self

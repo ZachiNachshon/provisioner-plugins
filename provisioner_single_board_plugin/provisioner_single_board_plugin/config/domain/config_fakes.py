@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from provisioner_single_board_plugin.config.domain.config import RpiConfig
+from provisioner_single_board_plugin.config.domain.config import SingleBoardConfig
 
 
 class TestDataSingleBoardConfig:
@@ -12,15 +12,15 @@ class TestDataSingleBoardConfig:
     TEST_DATA_DNS_IP_ADDRESS = "2.2.2.2"
 
     @staticmethod
-    def create_fake_rpi_config() -> RpiConfig:
-        return RpiConfig(
-            os=RpiConfig.RpiOsConfig(
+    def create_fake_single_board_config() -> SingleBoardConfig:
+        return SingleBoardConfig(
+            os=SingleBoardConfig.SingleBoardOsConfig(
                 active_system=TestDataSingleBoardConfig.TEST_DATA_ACTIVE_SYSTEM,
                 download_url_32bit=TestDataSingleBoardConfig.TEST_DATA_DOWNLOAD_URL_32BIT,
                 download_url_64bit=TestDataSingleBoardConfig.TEST_DATA_DOWNLOAD_URL_64BIT,
                 download_path=TestDataSingleBoardConfig.TEST_DATA_DOWNLOAD_PATH,
             ),
-            network=RpiConfig.RpiNetworkConfig(
+            network=SingleBoardConfig.SingleBoardNetworkConfig(
                 gw_ip_address=TestDataSingleBoardConfig.TEST_DATA_GW_IP_ADDRESS,
                 dns_ip_address=TestDataSingleBoardConfig.TEST_DATA_DNS_IP_ADDRESS,
             ),

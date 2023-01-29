@@ -12,7 +12,7 @@ from provisioner_features_lib.remote.typer_remote_opts_fakes import TestDataRemo
 from python_core_lib.cli.entrypoint import EntryPoint
 from python_core_lib.domain.serialize import SerializationBase
 
-from provisioner_single_board_plugin.config.domain.config import RpiConfig
+from provisioner_single_board_plugin.config.domain.config import SingleBoardConfig
 from provisioner_single_board_plugin.config.domain.config_fakes import (
     TestDataSingleBoardConfig,
 )
@@ -28,13 +28,13 @@ class FakeTestAppConfig(SerializationBase):
 
     remote: RemoteConfig = None
     anchor: AnchorConfig = None
-    rpi: RpiConfig = None
+    single_board: SingleBoardConfig = None
 
-    def __init__(self, remote: RemoteConfig, anchor: AnchorConfig, rpi: RpiConfig) -> None:
+    def __init__(self, remote: RemoteConfig, anchor: AnchorConfig, single_board: SingleBoardConfig) -> None:
         super().__init__({})
         self.remote = remote
         self.anchor = anchor
-        self.rpi = rpi
+        self.single_board = single_board
 
     def _try_parse_config(self, dict_obj: dict):
         pass
@@ -51,7 +51,9 @@ def generate_fake_config():
     TyperRemoteOpts.load(fake_remote_config)
 
     ConfigResolver.config = FakeTestAppConfig(
-        remote=fake_remote_config, anchor=fake_anchor_config, rpi=TestDataSingleBoardConfig.create_fake_rpi_config()
+        remote=fake_remote_config,
+        anchor=fake_anchor_config,
+        single_board=TestDataSingleBoardConfig.create_fake_single_board_config(),
     )
 
 

@@ -48,12 +48,12 @@ def network(
         None, show_default=False, help="Static IP address to set as the remote host IP address", envvar="RPI_STATIC_IP"
     ),
     gw_ip_address: Optional[str] = typer.Option(
-        ConfigResolver.get_config().rpi.network.gw_ip_address,
+        ConfigResolver.get_config().single_board.network.gw_ip_address,
         help="Internet gateway address / home router address",
         envvar="GATEWAY_ADDRESS",
     ),
     dns_ip_address: Optional[str] = typer.Option(
-        ConfigResolver.get_config().rpi.network.dns_ip_address,
+        ConfigResolver.get_config().single_board.network.dns_ip_address,
         help="Domain name server address / home router address",
         envvar="DNS_ADDRESS",
     ),

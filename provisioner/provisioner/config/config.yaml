@@ -14,7 +14,7 @@ provisioner:
       password: raspberry
       # ssh_private_key_file_path: /path/to/unknown
 
-  rpi:
+  single_board:
     os:
       raspbian:
         download_path: $HOME/temp/rpi_raspios_image

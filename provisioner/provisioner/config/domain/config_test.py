@@ -28,7 +28,7 @@ provisioner:
       password: raspberry
       ssh_private_key_file_path: /path/to/unknown
 
-  rpi:
+  single_board:
     os:
       raspbian:
         active_system: 64bit
@@ -48,7 +48,7 @@ provisioner:
       username: test-user
       ssh_private_key_file_path: /test/path
 
-  rpi:
+  single_board:
     os:
       raspbian:
         active_system: 32bit
@@ -67,9 +67,9 @@ provisioner:
         self.assertEqual(merged_config_obj.remote.auth.node_password, "raspberry")
         self.assertEqual(merged_config_obj.remote.auth.ssh_private_key_file_path, "/test/path")
 
-        self.assertEqual(merged_config_obj.rpi.os.active_system, "32bit")
-        self.assertEqual(merged_config_obj.rpi.os.download_url_32bit, "http://download-url-32-bit-test-path.com")
-        self.assertEqual(merged_config_obj.rpi.os.download_url_64bit, "http://download-url-64-bit.com")
+        self.assertEqual(merged_config_obj.single_board.os.active_system, "32bit")
+        self.assertEqual(merged_config_obj.single_board.os.download_url_32bit, "http://download-url-32-bit-test-path.com")
+        self.assertEqual(merged_config_obj.single_board.os.download_url_64bit, "http://download-url-64-bit.com")
 
     def test_config_full_merge_with_user_config(self):
         ctx = Context.create()
@@ -89,7 +89,7 @@ provisioner:
       password: raspberry
       ssh_private_key_file_path: /path/to/unknown
 
-  rpi:
+  single_board:
     os:
       raspbian:
         active_system: 64bit
@@ -141,7 +141,7 @@ provisioner:
     hello_world:
       username: Config Test User
 
-  rpi:
+  single_board:
     os:
       raspbian:
         active_system: 32bit
@@ -175,20 +175,20 @@ provisioner:
 
         self.assertEqual(merged_config_obj.dummmy.hello_world.username, "Config Test User")
 
-        self.assertEqual(merged_config_obj.rpi.os.active_system, "32bit")
-        self.assertEqual(merged_config_obj.rpi.os.download_path, os.path.expanduser("~/temp/rpi_raspios_image_user"))
-        self.assertEqual(merged_config_obj.rpi.os.download_url_32bit, "http://download-url-32-bit-user.com")
-        self.assertEqual(merged_config_obj.rpi.os.download_url_64bit, "http://download-url-64-bit-user.com")
+        self.assertEqual(merged_config_obj.single_board.os.active_system, "32bit")
+        self.assertEqual(merged_config_obj.single_board.os.download_path, os.path.expanduser("~/temp/rpi_raspios_image_user"))
+        self.assertEqual(merged_config_obj.single_board.os.download_url_32bit, "http://download-url-32-bit-user.com")
+        self.assertEqual(merged_config_obj.single_board.os.download_url_64bit, "http://download-url-64-bit-user.com")
 
-        self.assertEqual(merged_config_obj.rpi.network.gw_ip_address, "1.1.1.1")
-        self.assertEqual(merged_config_obj.rpi.network.dns_ip_address, "2.2.2.2")
+        self.assertEqual(merged_config_obj.single_board.network.gw_ip_address, "1.1.1.1")
+        self.assertEqual(merged_config_obj.single_board.network.dns_ip_address, "2.2.2.2")
 
     def test_config_fail_on_invalid_user_config(self):
         ctx = Context.create()
         yaml_util = YamlUtil.create(ctx=ctx, io_utils=IOUtils.create(ctx))
         user_yaml_str = """
 provisioner:
-  rpi:
+  single_board:
     os:
     active_system: 32bit
 """
@@ -200,7 +200,7 @@ provisioner:
         yaml_util = YamlUtil.create(ctx=ctx, io_utils=IOUtils.create(ctx))
         internal_yaml_str = """
 provisioner:
-  rpi:
+  single_board:
     os:
       raspbian:
         active_system: 32bit
@@ -209,5 +209,5 @@ provisioner:
           32bit: http://download-url-32-bit.com
 """
         internal_config_obj = yaml_util.read_string_fn(yaml_str=internal_yaml_str, class_name=ProvisionerConfig)
-        internal_config_obj.rpi.get_os_raspbian_download_url()
-        self.assertEqual(internal_config_obj.rpi.os.download_url_32bit, "http://download-url-32-bit.com")
+        internal_config_obj.single_board.get_os_raspbian_download_url()
+        self.assertEqual(internal_config_obj.single_board.os.download_url_32bit, "http://download-url-32-bit.com")

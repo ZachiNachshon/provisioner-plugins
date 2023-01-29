@@ -57,6 +57,6 @@ class RemoteConfig:
         self.auth = auth
         self.hosts = hosts
 
-    lan_scan: LanScan = LanScan()
-    auth: Auth = Auth()
+    lan_scan: LanScan = None
+    auth: Auth = None
     hosts: dict[str, Host] = None

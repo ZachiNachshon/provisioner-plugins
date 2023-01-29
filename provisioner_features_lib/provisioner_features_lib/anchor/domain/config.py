@@ -8,4 +8,4 @@ class AnchorConfig:
     def __init__(self, github: GitHubConfig = GitHubConfig()) -> None:
         self.github = github
     
-    github: GitHubConfig = GitHubConfig()
+    github: GitHubConfig = None

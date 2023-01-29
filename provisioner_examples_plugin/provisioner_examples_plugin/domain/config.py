@@ -9,7 +9,7 @@ class DummyConfig:
         def __init__(self, username: str = None) -> None:
             self.username = username
 
-    def __init__(self, hello_world: HelloWorldConfig = None) -> None:
+    def __init__(self, hello_world: HelloWorldConfig = HelloWorldConfig()) -> None:
         self.hello_world = hello_world
 
-    hello_world: HelloWorldConfig = HelloWorldConfig()
+    hello_world: HelloWorldConfig = None
