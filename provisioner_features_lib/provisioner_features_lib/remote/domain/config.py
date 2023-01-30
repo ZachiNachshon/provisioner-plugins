@@ -15,48 +15,55 @@ class RemoteConfig:
     remote:
         hosts:
         - name: kmaster
-            address: 192.168.1.200
-        - name: knode1
-            address: 192.168.1.201
-
-        lan_scan:
-            ip_discovery_range: 192.168.1.1/24
-
-        auth:
+          address: 192.168.1.200
+          auth:
             username: pi
             password: raspberry
-            ssh_private_key_file_path: /path/to/unknown
-    """
 
+        - name: knode1
+          address: 192.168.1.201
+          auth:
+            username: pi
+            ssh_private_key_file_path: /path/to/unknown
+
+        - name: knode2
+          address: 192.168.1.202
+          auth:
+            username: pi
+            
+        lan_scan:
+            ip_discovery_range: 192.168.1.1/24
+    """
     class Host:
+
+        class Auth:
+            username: str
+            password: str
+            ssh_private_key_file_path: str
+
+            def __init__(self, username: str = None, password: str = None, ssh_private_key_file_path: str = None) -> None:
+                self.username = username
+                self.password = password
+                self.ssh_private_key_file_path = ssh_private_key_file_path
+
         name: str
         address: str
+        auth: Auth
 
-        def __init__(self, name: str, address: str) -> None:
+        def __init__(self, name: str = None, address: str = None, auth: Auth = Auth()) -> None:
             self.name = name
             self.address = address
+            self.auth = auth
 
     class LanScan:
-        ip_discovery_range: str = None
+        ip_discovery_range: str
 
         def __init__(self, ip_discovery_range: str = None) -> None:
             self.ip_discovery_range = ip_discovery_range
 
-    class Auth:
-        node_username: str = None
-        node_password: str = None
-        ssh_private_key_file_path: str = None
-
-        def __init__(self, node_username: str = None, node_password: str = None, ssh_private_key_file_path: str = None) -> None:
-            self.node_username = node_username
-            self.node_password = node_password
-            self.ssh_private_key_file_path = ssh_private_key_file_path
-
-    def __init__(self, lan_scan: LanScan = LanScan(), auth: Auth = Auth(), hosts: dict[str, Host] = None) -> None:
+    def __init__(self, lan_scan: LanScan = LanScan(), hosts: dict[str, Host] = None) -> None:
         self.lan_scan = lan_scan
-        self.auth = auth
         self.hosts = hosts
 
-    lan_scan: LanScan = None
-    auth: Auth = None
-    hosts: dict[str, Host] = None
+    lan_scan: LanScan
+    hosts: dict[str, Host]

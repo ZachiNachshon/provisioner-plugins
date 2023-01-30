@@ -40,7 +40,8 @@ class TyperRemoteOpts:
     @staticmethod
     def node_username():
         return typer.Option(
-            TyperRemoteOpts.remote_config.auth.node_username,
+            None,
+            show_default=False,
             help="Remote node username",
             envvar="NODE_USERNAME",
             rich_help_panel=REMOTE_ONLY_HELP_TITLE,
@@ -49,7 +50,8 @@ class TyperRemoteOpts:
     @staticmethod
     def node_password():
         return typer.Option(
-            TyperRemoteOpts.remote_config.auth.node_password,
+            None,
+            show_default=False,
             help="Remote node password",
             envvar="NODE_PASSWORD",
             callback=exclusivity_callback,
@@ -59,7 +61,7 @@ class TyperRemoteOpts:
     @staticmethod
     def ssh_private_key_file_path():
         return typer.Option(
-            TyperRemoteOpts.remote_config.auth.ssh_private_key_file_path,
+            None,
             show_default=False,
             help="Private SSH key local file path",
             envvar="SSH_PRIVATE_KEY_FILE_PATH",

@@ -3,8 +3,8 @@
 import os
 import pathlib
 
-from python_core_lib.cli.entrypoint import EntryPoint
 from provisioner_features_lib.config.config_resolver import ConfigResolver
+from python_core_lib.cli.entrypoint import EntryPoint
 
 from provisioner.config.domain.config import ProvisionerConfig
 
@@ -13,7 +13,9 @@ CONFIG_INTERNAL_PATH = f"{pathlib.Path(__file__).parent}/config/config.yaml"
 
 app = EntryPoint.create_typer(
     title="Provision Everything Anywhere (install plugins from https://zachinachshon.com/provisioner)",
-    config_resolver_fn=lambda: ConfigResolver.load(CONFIG_INTERNAL_PATH, CONFIG_USER_PATH, class_name=ProvisionerConfig)
+    config_resolver_fn=lambda: ConfigResolver.load(
+        CONFIG_INTERNAL_PATH, CONFIG_USER_PATH, class_name=ProvisionerConfig
+    ),
 )
 
 # ======================

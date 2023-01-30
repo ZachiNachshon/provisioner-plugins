@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 
 from provisioner_examples_plugin.domain.config import DummyConfig
-from provisioner_single_board_plugin.config.domain.config import SingleBoardConfig
-from python_core_lib.domain.serialize import SerializationBase
 from provisioner_features_lib.anchor.domain.config import AnchorConfig
 from provisioner_features_lib.remote.domain.config import RemoteConfig
+from provisioner_single_board_plugin.config.domain.config import SingleBoardConfig
+from python_core_lib.domain.serialize import SerializationBase
 
 
 class ProvisionerConfig(SerializationBase):
@@ -31,7 +31,8 @@ class ProvisionerConfig(SerializationBase):
             self.remote.hosts = {}
             for host in hosts_block:
                 if "name" in host and "address" in host:
-                    h = RemoteConfig.Host(host["name"], host["address"])
+                    auth_block = self._parse_host_auth_block(host)
+                    h = RemoteConfig.Host(host["name"], host["address"], auth_block)
                     self.remote.hosts[host["name"]] = h
                 else:
                     print("Bad hosts configuration, please check YAML file")
@@ -41,14 +42,18 @@ class ProvisionerConfig(SerializationBase):
             if "ip_discovery_range" in lan_scan_block:
                 self.remote.lan_scan.ip_discovery_range = lan_scan_block["ip_discovery_range"]
 
-        if "auth" in remote_block:
-            auth_block = remote_block["auth"]
+    def _parse_host_auth_block(self, host_block: dict) -> RemoteConfig.Host.Auth:
+        auth_obj = RemoteConfig.Host.Auth()
+        if "auth" in host_block:
+            auth_block = host_block["auth"]
             if "username" in auth_block:
-                self.remote.auth.node_username = auth_block["username"]
+                auth_obj.username = auth_block["username"]
             if "password" in auth_block:
-                self.remote.auth.node_password = auth_block["password"]
+                auth_obj.password = auth_block["password"]
             if "ssh_private_key_file_path" in auth_block:
-                self.remote.auth.ssh_private_key_file_path = auth_block["ssh_private_key_file_path"]
+                auth_obj.ssh_private_key_file_path = auth_block["ssh_private_key_file_path"]
+
+        return auth_obj
 
     def _parse_anchor_block(self, anchor_block: dict):
         if "github" in anchor_block:
@@ -108,13 +113,6 @@ class ProvisionerConfig(SerializationBase):
 
         if other.remote.lan_scan.ip_discovery_range:
             self.remote.lan_scan.ip_discovery_range = other.remote.lan_scan.ip_discovery_range
-
-        if other.remote.auth.node_username:
-            self.remote.auth.node_username = other.remote.auth.node_username
-        if other.remote.auth.node_password:
-            self.remote.auth.node_password = other.remote.auth.node_password
-        if other.remote.auth.ssh_private_key_file_path:
-            self.remote.auth.ssh_private_key_file_path = other.remote.auth.ssh_private_key_file_path
 
         if other.anchor.github.organization:
             self.anchor.github.organization = other.anchor.github.organization

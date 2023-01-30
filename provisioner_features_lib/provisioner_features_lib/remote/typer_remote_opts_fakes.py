@@ -19,15 +19,16 @@ class TestDataRemoteOpts:
         return TyperRemoteOpts(
             remote_config=RemoteConfig(
                 lan_scan=RemoteConfig.LanScan(TestDataRemoteOpts.TEST_DATA_REMOTE_IP_DISCOVERY_RANGE),
-                auth=RemoteConfig.Auth(
-                    node_username=TestDataRemoteOpts.TEST_DATA_REMOTE_NODE_USERNAME,
-                    node_password=TestDataRemoteOpts.TEST_DATA_REMOTE_NODE_PASSWORD,
-                    # Mutually exclusive with node_password
-                    # ssh_private_key_file_path=TestDataRemoteOpts.TEST_DATA_REMOTE_SSH_PRIVATE_KEY_FILE_PATH
-                ),
                 hosts={
                     TestDataRemoteOpts.TEST_DATA_SSH_HOSTNAME: RemoteConfig.Host(
-                        TestDataRemoteOpts.TEST_DATA_SSH_HOSTNAME, TestDataRemoteOpts.TEST_DATA_SSH_IP_ADDRESS
+                        name=TestDataRemoteOpts.TEST_DATA_SSH_HOSTNAME, 
+                        address=TestDataRemoteOpts.TEST_DATA_SSH_IP_ADDRESS,
+                        auth=RemoteConfig.Host.Auth(
+                            username=TestDataRemoteOpts.TEST_DATA_REMOTE_NODE_USERNAME,
+                            password=TestDataRemoteOpts.TEST_DATA_REMOTE_NODE_PASSWORD,
+                            # Mutually exclusive with node_password
+                            # ssh_private_key_file_path=TestDataRemoteOpts.TEST_DATA_REMOTE_SSH_PRIVATE_KEY_FILE_PATH
+                        )
                     )
                 }
             )
