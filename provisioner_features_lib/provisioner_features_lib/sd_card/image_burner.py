@@ -19,9 +19,9 @@ class ImageBurnerArgs:
     image_download_url: str
     image_download_path: str
 
-    def __init__(self, download_url: str, download_path: str) -> None:
-        self.image_download_url = download_url
-        self.image_download_path = download_path
+    def __init__(self, image_download_url: str, image_download_path: str) -> None:
+        self.image_download_url = image_download_url
+        self.image_download_path = image_download_path
 
 class ImageBurnerCmdRunner:
     def run(self, ctx: Context, args: ImageBurnerArgs, collaborators: CoreCollaborators) -> None:

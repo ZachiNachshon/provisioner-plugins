@@ -1,38 +1,47 @@
 #!/usr/bin/env python3
 
 import unittest
-from unittest import SkipTest, mock
+from unittest import mock
 
-from python_core_lib.infra.context import Context
-from python_core_lib.utils.os import MAC_OS, OsArch
+from python_core_lib.test_lib.assertions import Assertion
+from python_core_lib.test_lib.test_env import TestEnv
 
 from provisioner_single_board_plugin.raspberry_pi.os.burn_image_cmd import (
     RPiOsBurnImageCmd,
     RPiOsBurnImageCmdArgs,
 )
 
+ARG_IMAGE_DOWNLOAD_URL = "https://test-image-download-url.com"
+ARG_IMAGE_DOWNLOAD_PATH = "/test/image/download/path"
+
+IMAGE_BURNER_COMMAND_RUNNER_PATH = (
+    "provisioner_features_lib.sd_card.image_burner.ImageBurnerCmdRunner"
+)
 
 #
 # To run these directly from the terminal use:
-#  poetry run rpi --dry-run os install
+#  poetry run coverage run -m pytest provisioner_single_board_plugin/raspberry_pi/os/burn_image_cmd_test.py
 #
 class RPiOsInstallTestShould(unittest.TestCase):
-    @SkipTest
-    @mock.patch("common.sd_card.image_burner.ImageBurnerCmdRunner.run")
+
+    env = TestEnv.create()
+
+    def create_fake_burn_image_cmd_args(self) -> RPiOsBurnImageCmdArgs:
+        return RPiOsBurnImageCmdArgs(
+            image_download_url=ARG_IMAGE_DOWNLOAD_URL,
+            image_download_path=ARG_IMAGE_DOWNLOAD_PATH
+        )
+
+    @mock.patch(f"{IMAGE_BURNER_COMMAND_RUNNER_PATH}.run")
     def test_burn_os_raspbian_with_expected_arguments(self, run_call: mock.MagicMock) -> None:
-        ctx = Context.create(os_arch=OsArch(os=MAC_OS, arch="test_arch", os_release="test_os_release"))
+        fake_cmd_args = self.create_fake_burn_image_cmd_args()
 
-        download_url = "https://burn-image-test-custom.com"
-        download_path = "/test/download/path"
+        RPiOsBurnImageCmd().run(ctx=self.env.get_context(), args=fake_cmd_args)
 
-        args = RPiOsBurnImageCmdArgs(image_download_url=download_url, image_download_path=download_path)
-        runner = RPiOsBurnImageCmd()
-        runner.run(ctx=ctx, args=args)
+        def assertion_callback(args):
+            print(args.__dict__)
+            self.assertEqual(args.image_download_url, fake_cmd_args.image_download_url)
+            self.assertEqual(args.image_download_path, fake_cmd_args.image_download_path)
 
-        run_call_kwargs = run_call.call_args.kwargs
-        ctx_call_arg = run_call_kwargs["ctx"]
-        img_burner_call_args = run_call_kwargs["args"]
-
-        self.assertEqual(ctx, ctx_call_arg)
-        self.assertEqual(download_url, img_burner_call_args.image_download_url)
-        self.assertEqual(download_path, img_burner_call_args.image_download_path)
+        Assertion.expect_call_arguments(self, run_call, arg_name="args", assertion_callable=assertion_callback)
+        Assertion.expect_call_argument(self, run_call, arg_name="ctx", expected_value=self.env.get_context())

@@ -101,7 +101,11 @@ class LevelFilter:
             if p == last:
                 result += f"{last}"
             else:
-                result += f"{p[0]}."
+                p_len = len(p)
+                char_first = p[0] if p_len > 0 else ""
+                char_sec = p[1] if p_len > 1 else ""
+                char_third = p[2] if p_len > 2 else ""
+                result += f"{char_first}{char_sec}{char_third}."
         return result
 
     def __call__(self, record):

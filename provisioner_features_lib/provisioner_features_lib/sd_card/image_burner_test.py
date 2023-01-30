@@ -30,17 +30,6 @@ from python_core_lib.utils.prompter_fakes import FakePrompter
 # To run as a single test target:
 #  poetry run coverage run -m pytest provisioner_features_lib/sd_card/image_burner_test.py
 #
-class FakeCollaborators(CoreCollaborators):
-    def __init__(self, ctx: Context) -> None:
-        print("Creating Fake collaborators...")
-        self.io = FakeIOUtils.create(ctx)
-        self.process = FakeProcess.create(ctx)
-        self.checks = FakeChecks.create(ctx)
-        self.prompter = FakePrompter.create(ctx)
-        self.printer = FakePrinter.create(ctx)
-        self.http_client = FakeHttpClient.create(ctx, self.io)
-
-
 class ImageBurnerTestShould(unittest.TestCase):
     def create_fake_collaborators(self, ctx: Context) -> FakeCollaborators:
         return FakeCollaborators(ctx)
