@@ -30,6 +30,25 @@ COLLECT_AUTH_CUSTOM_USERNAME = "collect-ssh-info-test-user"
 COLLECT_AUTH_CUSTOM_PASSWORD = "collect-ssh-info-test-pass"
 COLLECT_AUTH_CUSTOM_SSH_PRIVATE_KEY = "collect-ssh-info-test-ssh-private-key"
 
+HOST_SELECTION_HOST_ID_1 = (
+    f"{TestDataRemoteConnector.TEST_DATA_SSH_HOSTNAME_1}, {TestDataRemoteConnector.TEST_DATA_SSH_IP_ADDRESS_1}"
+)
+HOST_SELECTION_HOST_ID_2 = (
+    f"{TestDataRemoteConnector.TEST_DATA_SSH_HOSTNAME_2}, {TestDataRemoteConnector.TEST_DATA_SSH_IP_ADDRESS_2}"
+)
+HOST_SELECTION_OPTIONS_LIST = [HOST_SELECTION_HOST_ID_1, HOST_SELECTION_HOST_ID_2]
+
+HOST_SELECTION_OPTIONS_DICT = {
+    HOST_SELECTION_HOST_ID_1: {
+        "hostname": TestDataRemoteConnector.TEST_DATA_SSH_HOSTNAME_1,
+        "ip_address": TestDataRemoteConnector.TEST_DATA_SSH_IP_ADDRESS_1,
+    },
+    HOST_SELECTION_HOST_ID_2: {
+        "hostname": TestDataRemoteConnector.TEST_DATA_SSH_HOSTNAME_2,
+        "ip_address": TestDataRemoteConnector.TEST_DATA_SSH_IP_ADDRESS_2,
+    },
+}
+
 REMOTE_MACHINE_CONNECTOR_PATH = "provisioner_features_lib.remote.remote_connector.RemoteMachineConnector"
 
 
@@ -209,7 +228,7 @@ class RemoteMachineConnectorTestShould(unittest.TestCase):
     def test_ask_for_network_device_selection_method(self) -> None:
         env = TestEnv.create()
 
-        env.get_collaborators().prompter().mock_user_selection_response(
+        env.get_collaborators().prompter().mock_user_single_selection_response(
             prompt_str="Please choose network device selection method", response="Scan LAN"
         )
 
@@ -219,7 +238,7 @@ class RemoteMachineConnectorTestShould(unittest.TestCase):
     def test_ask_for_network_device_authentication_method(self) -> None:
         env = TestEnv.create()
 
-        env.get_collaborators().prompter().mock_user_selection_response(
+        env.get_collaborators().prompter().mock_user_single_selection_response(
             prompt_str="Please choose network device authentication method", response="SSH Private Key"
         )
 
@@ -307,34 +326,15 @@ class RemoteMachineConnectorTestShould(unittest.TestCase):
     def test_config_based_host_selection(self, run_call: mock.MagicMock) -> None:
         env = TestEnv.create()
 
-        host_id_1 = (
-            f"{TestDataRemoteConnector.TEST_DATA_SSH_HOSTNAME_1}, {TestDataRemoteConnector.TEST_DATA_SSH_IP_ADDRESS_1}"
-        )
-        host_id_2 = (
-            f"{TestDataRemoteConnector.TEST_DATA_SSH_HOSTNAME_2}, {TestDataRemoteConnector.TEST_DATA_SSH_IP_ADDRESS_2}"
-        )
-
         def assertion_callback(args):
-            self.assertEqual(
-                args[host_id_1],
-                {
-                    "hostname": TestDataRemoteConnector.TEST_DATA_SSH_HOSTNAME_1,
-                    "ip_address": TestDataRemoteConnector.TEST_DATA_SSH_IP_ADDRESS_1,
-                },
-            )
-            self.assertEqual(
-                args[host_id_2],
-                {
-                    "hostname": TestDataRemoteConnector.TEST_DATA_SSH_HOSTNAME_2,
-                    "ip_address": TestDataRemoteConnector.TEST_DATA_SSH_IP_ADDRESS_2,
-                },
-            )
+            self.assertEqual(args[HOST_SELECTION_HOST_ID_1], HOST_SELECTION_OPTIONS_DICT[HOST_SELECTION_HOST_ID_1])
+            self.assertEqual(args[HOST_SELECTION_HOST_ID_2], HOST_SELECTION_OPTIONS_DICT[HOST_SELECTION_HOST_ID_2])
 
         RemoteMachineConnector(env.get_collaborators())._run_config_based_host_selection(
             TestDataRemoteConnector.TEST_DATA_SSH_ANSIBLE_HOSTS, force_single_conn_info=True
         )
         Assertion.expect_call_argument(self, run_call, "force_single_conn_info", True)
-        Assertion.expect_call_argument(self, run_call, "options_list", [host_id_1, host_id_2])
+        Assertion.expect_call_argument(self, run_call, "options_list", HOST_SELECTION_OPTIONS_LIST)
         Assertion.expect_call_arguments(self, run_call, "option_to_value_dict", assertion_callback)
 
     @mock.patch(f"{REMOTE_MACHINE_CONNECTOR_PATH}._convert_prompted_host_selection_to_ansible_hosts")
@@ -344,47 +344,51 @@ class RemoteMachineConnectorTestShould(unittest.TestCase):
         env.get_collaborators().checks().mock_utility("nmap")
         env.get_collaborators().network_util().mock_lan_network_devices_response(
             ip_range=ARG_IP_DISCOVERY_RANGE,
-            response={
-                TestDataRemoteConnector.TEST_DATA_SSH_IP_ADDRESS_1: {
-                    "hostname": TestDataRemoteConnector.TEST_DATA_SSH_HOSTNAME_1,
-                    "ip_address": TestDataRemoteConnector.TEST_DATA_SSH_IP_ADDRESS_1,
-                },
-                TestDataRemoteConnector.TEST_DATA_SSH_IP_ADDRESS_2: {
-                    "hostname": TestDataRemoteConnector.TEST_DATA_SSH_HOSTNAME_2,
-                    "ip_address": TestDataRemoteConnector.TEST_DATA_SSH_IP_ADDRESS_2,
-                },
-            },
-        )
-
-        host_id_1 = (
-            f"{TestDataRemoteConnector.TEST_DATA_SSH_HOSTNAME_1}, {TestDataRemoteConnector.TEST_DATA_SSH_IP_ADDRESS_1}"
-        )
-        host_id_2 = (
-            f"{TestDataRemoteConnector.TEST_DATA_SSH_HOSTNAME_2}, {TestDataRemoteConnector.TEST_DATA_SSH_IP_ADDRESS_2}"
+            response=HOST_SELECTION_OPTIONS_DICT,
         )
 
         def assertion_callback(args):
-            self.assertEqual(
-                args[host_id_1],
-                {
-                    "hostname": TestDataRemoteConnector.TEST_DATA_SSH_HOSTNAME_1,
-                    "ip_address": TestDataRemoteConnector.TEST_DATA_SSH_IP_ADDRESS_1,
-                },
-            )
-            self.assertEqual(
-                args[host_id_2],
-                {
-                    "hostname": TestDataRemoteConnector.TEST_DATA_SSH_HOSTNAME_2,
-                    "ip_address": TestDataRemoteConnector.TEST_DATA_SSH_IP_ADDRESS_2,
-                },
-            )
+            print(args)
+            print(args)
+            print(args)
+            self.assertEqual(args[HOST_SELECTION_HOST_ID_1], HOST_SELECTION_OPTIONS_DICT[HOST_SELECTION_HOST_ID_1])
+            self.assertEqual(args[HOST_SELECTION_HOST_ID_2], HOST_SELECTION_OPTIONS_DICT[HOST_SELECTION_HOST_ID_2])
 
         RemoteMachineConnector(env.get_collaborators())._run_lan_scan_host_selection(
             ip_discovery_range=ARG_IP_DISCOVERY_RANGE, force_single_conn_info=True
         )
         Assertion.expect_call_argument(self, run_call, "force_single_conn_info", True)
-        Assertion.expect_call_argument(self, run_call, "options_list", [host_id_1, host_id_2])
+        Assertion.expect_call_argument(self, run_call, "options_list", HOST_SELECTION_OPTIONS_LIST)
         Assertion.expect_call_arguments(self, run_call, "option_to_value_dict", assertion_callback)
 
-    # env.get_collaborators().prompter().mock_user_input_response("Enter remote node username", TestDataRemoteConnector.TEST_DATA_SSH_USERNAME_1)
-    #     env.get_collaborators().prompter().mock_user_input_response("Enter SSH private key path", TestDataRemoteConnector.TEST_DATA_SSH_PRIVATE_KEY_FILE_PATH_1)
+    @mock.patch(f"{REMOTE_MACHINE_CONNECTOR_PATH}._convert_prompted_host_selection_to_ansible_hosts")
+    def test_run_lan_scan_host_selection_fail_missing_nmap(self, run_call: mock.MagicMock) -> None:
+        env = TestEnv.create()
+        env.get_collaborators().checks().mock_utility("nmap", exist=False)
+        response = RemoteMachineConnector(env.get_collaborators())._run_lan_scan_host_selection(
+            ip_discovery_range=ARG_IP_DISCOVERY_RANGE, force_single_conn_info=True
+        )
+        self.assertIsNone(response)
+
+    def test_convert_prompted_single_host_selection_to_ansible_hosts(self) -> None:
+        env = TestEnv.create()
+        env.get_collaborators().prompter().mock_user_single_selection_response(
+            "Please choose a network device", HOST_SELECTION_HOST_ID_1
+        )
+        response = RemoteMachineConnector(env.get_collaborators())._convert_prompted_host_selection_to_ansible_hosts(
+            options_list=HOST_SELECTION_OPTIONS_LIST, option_to_value_dict=HOST_SELECTION_OPTIONS_DICT, 
+            force_single_conn_info=True
+        )
+        Assertion.expect_equal_objects(self, response[0], AnsibleHost.from_dict(HOST_SELECTION_OPTIONS_DICT[HOST_SELECTION_HOST_ID_1]))
+
+    def test_convert_prompted_multiple_host_selection_to_ansible_hosts(self) -> None:
+        env = TestEnv.create()
+        env.get_collaborators().prompter().mock_user_multi_selection_response(
+            "Please choose network devices", HOST_SELECTION_OPTIONS_LIST
+        )
+        response = RemoteMachineConnector(env.get_collaborators())._convert_prompted_host_selection_to_ansible_hosts(
+            options_list=HOST_SELECTION_OPTIONS_LIST, option_to_value_dict=HOST_SELECTION_OPTIONS_DICT, 
+            force_single_conn_info=False
+        )
+        Assertion.expect_equal_objects(self, response[0], AnsibleHost.from_dict(HOST_SELECTION_OPTIONS_DICT[HOST_SELECTION_HOST_ID_1]))
+        Assertion.expect_equal_objects(self, response[1], AnsibleHost.from_dict(HOST_SELECTION_OPTIONS_DICT[HOST_SELECTION_HOST_ID_2]))

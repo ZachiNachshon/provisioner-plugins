@@ -13,12 +13,12 @@ class FakePrompter(Prompter):
     __registered_enter_prompt_counts: int = None
     __registered_yes_no_prompts: List[str] = None
     __registered_user_input_prompts: Set[str] = None
-    __registered_user_selection_prompts: List[str] = None
+    __registered_user_single_selection_prompts: List[str] = None
     __registered_user_multi_selection_prompts: List[str] = None
 
     __mocked_yes_no_response: dict[str, bool] = None
     __mocked_user_input_response: dict[str, str] = None
-    __mocked_user_selection_response: dict[str, Any] = None
+    __mocked_user_single_selection_response: dict[str, Any] = None
     __mocked_user_multi_selection_response: dict[str, List[Any]] = None
 
     def __init__(self, auto_prompt: bool, dry_run: bool):
@@ -26,17 +26,18 @@ class FakePrompter(Prompter):
         self.__registered_enter_prompt_counts = []
         self.__registered_yes_no_prompts = []
         self.__registered_user_input_prompts = []
-        self.__registered_user_selection_prompts = []
+        self.__registered_user_single_selection_prompts = []
+        self.__registered_user_multi_selection_prompts = []
         self.__mocked_yes_no_response = {}
         self.__mocked_user_input_response = {}
-        self.__mocked_user_selection_response = {}
+        self.__mocked_user_single_selection_response = {}
         self.__mocked_user_multi_selection_response = {}
 
     @staticmethod
     def _create_fake(auto_prompt: bool, dry_run: bool) -> "FakePrompter":
         prompter = FakePrompter(auto_prompt, dry_run)
         prompter.prompt_user_multi_selection_fn = lambda message, options: prompter._register_user_multi_selection_prompt(message)
-        prompter.prompt_user_selection_fn = lambda message, options: prompter._register_user_selection_prompt(message)
+        prompter.prompt_user_single_selection_fn = lambda message, options: prompter._register_user_single_selection_prompt(message)
         prompter.prompt_user_input_fn = lambda message, default=None, redact_value=False, level=PromptLevel.HIGHLIGHT, post_user_input_message=None: prompter._register_user_input_prompt(
             message
         )
@@ -92,21 +93,21 @@ class FakePrompter(Prompter):
         if message not in self.__registered_user_input_prompts:
             raise FakeEnvironmentAssertionError("Prompter expected a user input message but it never triggered. message: " + message)
 
-    def mock_user_selection_response(self, prompt_str: str, response: Any):
-        self.__mocked_user_selection_response[prompt_str] = response
+    def mock_user_single_selection_response(self, prompt_str: str, response: Any):
+        self.__mocked_user_single_selection_response[prompt_str] = response
 
-    def _register_user_selection_prompt(self, prompt_str: str) -> Any:
-        self.__registered_user_selection_prompts.append(prompt_str)
-        if prompt_str in self.__mocked_user_selection_response:
-            return self.__mocked_user_selection_response[prompt_str]
+    def _register_user_single_selection_prompt(self, prompt_str: str) -> Any:
+        self.__registered_user_single_selection_prompts.append(prompt_str)
+        if prompt_str in self.__mocked_user_single_selection_response:
+            return self.__mocked_user_single_selection_response[prompt_str]
         return None
 
-    def assert_user_selection_prompt(self, message: str) -> None:
-        if message not in self.__registered_user_selection_prompts:
-            raise FakeEnvironmentAssertionError("Prompter expected a user selection message but it never triggered. message: " + message)
+    def assert_user_single_selection_prompt(self, message: str) -> None:
+        if message not in self.__registered_user_single_selection_prompts:
+            raise FakeEnvironmentAssertionError("Prompter expected a user single selection message but it never triggered. message: " + message)
 
     def mock_user_multi_selection_response(self, prompt_str: str, responses: List[Any]):
-        self.__mocked_user_selection_response[prompt_str] = responses
+        self.__mocked_user_multi_selection_response[prompt_str] = responses
 
     def _register_user_multi_selection_prompt(self, prompt_str: str) -> Any:
         self.__registered_user_multi_selection_prompts.append(prompt_str)

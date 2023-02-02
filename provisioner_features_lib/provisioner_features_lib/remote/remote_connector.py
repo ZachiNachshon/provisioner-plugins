@@ -165,7 +165,7 @@ class RemoteMachineConnector:
         for sel_method in NetworkDeviceSelectionMethod:
             options_list.append(sel_method.value)
 
-        network_device_select_method: str = self.collaborators.prompter().prompt_user_selection_fn(
+        network_device_select_method: str = self.collaborators.prompter().prompt_user_single_selection_fn(
             message="Please choose network device selection method", options=options_list
         )
         return NetworkDeviceSelectionMethod(network_device_select_method) if network_device_select_method else None
@@ -175,7 +175,7 @@ class RemoteMachineConnector:
         for auth_method in NetworkDeviceAuthenticationMethod:
             options_list.append(auth_method.value)
 
-        network_device_auth_method: str = self.collaborators.prompter().prompt_user_selection_fn(
+        network_device_auth_method: str = self.collaborators.prompter().prompt_user_single_selection_fn(
             message="Please choose network device authentication method", options=options_list
         )
         return NetworkDeviceAuthenticationMethod(network_device_auth_method) if network_device_auth_method else None
@@ -304,7 +304,7 @@ class RemoteMachineConnector:
 
     def _run_lan_scan_host_selection(self, ip_discovery_range: str, force_single_conn_info: bool) -> List[AnsibleHost]:
         if not self.collaborators.checks().is_tool_exist_fn("nmap"):
-            logger.warning("Missing mandatory utility. name: nmap")
+            logger.error("Missing mandatory utility. name: nmap")
             return None
 
         self.collaborators.printer().print_with_rich_table_fn(generate_instructions_network_scan())
@@ -332,7 +332,7 @@ class RemoteMachineConnector:
 
         result: List[AnsibleHost] = []
         if force_single_conn_info:
-            selected_item_from_config: dict = self.collaborators.prompter().prompt_user_selection_fn(
+            selected_item_from_config: dict = self.collaborators.prompter().prompt_user_single_selection_fn(
                 message="Please choose a network device", options=options_list
             )
             selected_item_dict = option_to_value_dict[selected_item_from_config]

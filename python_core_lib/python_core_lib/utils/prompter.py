@@ -105,7 +105,7 @@ class Prompter:
 
         return ""
 
-    def _prompt_user_selection(self, message: str, options: List[Any]) -> Any:
+    def _prompt_user_single_selection(self, message: str, options: List[Any]) -> Any:
         if self._dry_run:
             logger.debug(f"{message}: Dry-run mode.")
             return None
@@ -229,7 +229,7 @@ class Prompter:
         return enter_pressed
 
     prompt_user_multi_selection_fn = _prompt_user_multi_selection
-    prompt_user_selection_fn = _prompt_user_selection
+    prompt_user_single_selection_fn = _prompt_user_single_selection
     prompt_user_input_fn = _prompt_user_input
     prompt_yes_no_fn = _prompt_yes_no
     prompt_for_enter_fn = _prompt_for_enter

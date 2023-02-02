@@ -211,7 +211,7 @@ class UtilityInstallerCmdRunner:
             return run_env
 
         options_dict: List[str] = ["Local", "Remote"]
-        selected_scanned_item: dict = prompter.prompt_user_selection_fn(
+        selected_scanned_item: dict = prompter.prompt_user_single_selection_fn(
             message="Please choose an environment", options=options_dict
         )
         if selected_scanned_item == "Local":

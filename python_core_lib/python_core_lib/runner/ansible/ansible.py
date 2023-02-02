@@ -32,13 +32,13 @@ class AnsibleHost:
         self.ssh_private_key_file_path = ssh_private_key_file_path
 
     @staticmethod
-    def from_dict(self, ansible_host_dict: dict) -> "AnsibleHost":
+    def from_dict(ansible_host_dict: dict) -> "AnsibleHost":
         return AnsibleHost(
             host=ansible_host_dict["hostname"], 
             ip_address=ansible_host_dict["ip_address"],
             username=ansible_host_dict["username"] if "username" in ansible_host_dict else None,
             password=ansible_host_dict["password"] if "password" in ansible_host_dict else None,
-            ssh_private_key_file_path=ansible_host_dict["ssh_private_key_file_path"] if "ssh_private_key_file_path" in selected_item_dict else None
+            ssh_private_key_file_path=ansible_host_dict["ssh_private_key_file_path"] if "ssh_private_key_file_path" in ansible_host_dict else None
         )
 
 class AnsibleRunner:
