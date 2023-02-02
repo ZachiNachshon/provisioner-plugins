@@ -31,8 +31,8 @@ class TestDataRemoteOpts:
                 # Mutually exclusive with ssh_private_key_file_path
             ),
         ),
-        TEST_DATA_SSH_HOSTNAME_1: RemoteConfig.Host(
-            host=TEST_DATA_SSH_HOSTNAME_1,
+        TEST_DATA_SSH_HOSTNAME_2: RemoteConfig.Host(
+            host=TEST_DATA_SSH_HOSTNAME_2,
             address=TEST_DATA_SSH_IP_ADDRESS_2,
             auth=RemoteConfig.Host.Auth(
                 username=TEST_DATA_REMOTE_NODE_USERNAME_2,

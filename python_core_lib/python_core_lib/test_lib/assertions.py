@@ -95,6 +95,7 @@ class Assertion:
     @staticmethod
     def expect_equal_objects(testObj, obj1, obj2):
         try:
+            testObj.maxDiff = None
             obj1_json = _to_json(obj1)
             obj2_json = _to_json(obj2)
             testObj.assertEqual(obj1_json, obj2_json)

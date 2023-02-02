@@ -19,7 +19,7 @@ class TyperRemoteOpts:
     """
 
     # Static variable
-    remote_config: RemoteConfig
+    remote_config: RemoteConfig = None
 
     def __init__(self, remote_config: RemoteConfig = None) -> None:
         self.remote_config = remote_config
@@ -115,42 +115,18 @@ class TyperResolvedRemoteOpts:
         remote_hosts: dict[str, RemoteConfig.Host] = None,
     ) -> None:
 
-        try:
-            global _typer_cli_remote_opts
-            _typer_cli_remote_opts = TyperResolvedRemoteOpts(
-                environment, node_username, node_password, ssh_private_key_file_path, ip_discovery_range, remote_hosts
-            )
-
-        except Exception as e:
-            e_name = e.__class__.__name__
-            logger.critical("Failed to create CLI remote args object. ex: {}, message: {}", e_name, str(e))
-
-    @staticmethod
-    def environment() -> Optional[RunEnvironment]:
-        return TyperResolvedRemoteOpts._environment
-
-    @staticmethod
-    def node_username() -> Optional[str]:
-        return TyperResolvedRemoteOpts._node_username
-
-    @staticmethod
-    def node_password() -> Optional[str]:
-        return TyperResolvedRemoteOpts._node_password
-
-    @staticmethod
-    def ssh_private_key_file_path() -> Optional[str]:
-        return TyperResolvedRemoteOpts._ssh_private_key_file_path
-
-    @staticmethod
-    def ip_discovery_range() -> Optional[str]:
-        return TyperResolvedRemoteOpts._ip_discovery_range
-
-    @staticmethod
-    def remote_hosts() -> Optional[str]:
-        return TyperResolvedRemoteOpts._remote_hosts
+        global GLOBAL_TYPER_RESOLVED_REMOTE_OPTS
+        GLOBAL_TYPER_RESOLVED_REMOTE_OPTS = TyperResolvedRemoteOpts(
+            environment=environment,
+            node_username=node_username,
+            node_password=node_password,
+            ssh_private_key_file_path=ssh_private_key_file_path,
+            ip_discovery_range=ip_discovery_range,
+            remote_hosts=remote_hosts,
+        )
 
 
-_typer_cli_remote_opts: TyperResolvedRemoteOpts = None
+GLOBAL_TYPER_RESOLVED_REMOTE_OPTS: TyperResolvedRemoteOpts = None
 
 
 class CliRemoteOpts:
@@ -166,12 +142,12 @@ class CliRemoteOpts:
 
     def __init__(
         self,
-        environment: Optional[RunEnvironment] = TyperResolvedRemoteOpts.environment(),
-        node_username: Optional[str] = TyperResolvedRemoteOpts.node_username(),
-        node_password: Optional[str] = TyperResolvedRemoteOpts.node_password(),
-        ssh_private_key_file_path: Optional[str] = TyperResolvedRemoteOpts.ssh_private_key_file_path(),
-        ip_discovery_range: Optional[str] = TyperResolvedRemoteOpts.ip_discovery_range(),
-        remote_hosts: Optional[dict[str, RemoteConfig.Host]] = TyperResolvedRemoteOpts.remote_hosts(),
+        environment: Optional[RunEnvironment] = None,
+        node_username: Optional[str] = None,
+        node_password: Optional[str] = None,
+        ssh_private_key_file_path: Optional[str] = None,
+        ip_discovery_range: Optional[str] = None,
+        remote_hosts: Optional[dict[str, RemoteConfig.Host]] = None,
     ) -> None:
 
         self.environment = environment
@@ -183,8 +159,15 @@ class CliRemoteOpts:
 
     @staticmethod
     def maybe_get() -> "CliRemoteOpts":
-        if _typer_cli_remote_opts:
-            return CliRemoteOpts()
+        if GLOBAL_TYPER_RESOLVED_REMOTE_OPTS:
+            return CliRemoteOpts(
+                environment=GLOBAL_TYPER_RESOLVED_REMOTE_OPTS._environment,
+                node_username=GLOBAL_TYPER_RESOLVED_REMOTE_OPTS._node_username,
+                node_password=GLOBAL_TYPER_RESOLVED_REMOTE_OPTS._node_password,
+                ssh_private_key_file_path=GLOBAL_TYPER_RESOLVED_REMOTE_OPTS._ssh_private_key_file_path,
+                ip_discovery_range=GLOBAL_TYPER_RESOLVED_REMOTE_OPTS._ip_discovery_range,
+                remote_hosts=GLOBAL_TYPER_RESOLVED_REMOTE_OPTS._remote_hosts,
+            )
         return None
 
     def _to_ansible_hosts(self, hosts: dict[str, RemoteConfig.Host]) -> List[AnsibleHost]:

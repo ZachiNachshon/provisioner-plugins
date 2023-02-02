@@ -376,10 +376,13 @@ class RemoteMachineConnectorTestShould(unittest.TestCase):
             "Please choose a network device", HOST_SELECTION_HOST_ID_1
         )
         response = RemoteMachineConnector(env.get_collaborators())._convert_prompted_host_selection_to_ansible_hosts(
-            options_list=HOST_SELECTION_OPTIONS_LIST, option_to_value_dict=HOST_SELECTION_OPTIONS_DICT, 
-            force_single_conn_info=True
+            options_list=HOST_SELECTION_OPTIONS_LIST,
+            option_to_value_dict=HOST_SELECTION_OPTIONS_DICT,
+            force_single_conn_info=True,
         )
-        Assertion.expect_equal_objects(self, response[0], AnsibleHost.from_dict(HOST_SELECTION_OPTIONS_DICT[HOST_SELECTION_HOST_ID_1]))
+        Assertion.expect_equal_objects(
+            self, response[0], AnsibleHost.from_dict(HOST_SELECTION_OPTIONS_DICT[HOST_SELECTION_HOST_ID_1])
+        )
 
     def test_convert_prompted_multiple_host_selection_to_ansible_hosts(self) -> None:
         env = TestEnv.create()
@@ -387,8 +390,13 @@ class RemoteMachineConnectorTestShould(unittest.TestCase):
             "Please choose network devices", HOST_SELECTION_OPTIONS_LIST
         )
         response = RemoteMachineConnector(env.get_collaborators())._convert_prompted_host_selection_to_ansible_hosts(
-            options_list=HOST_SELECTION_OPTIONS_LIST, option_to_value_dict=HOST_SELECTION_OPTIONS_DICT, 
-            force_single_conn_info=False
+            options_list=HOST_SELECTION_OPTIONS_LIST,
+            option_to_value_dict=HOST_SELECTION_OPTIONS_DICT,
+            force_single_conn_info=False,
         )
-        Assertion.expect_equal_objects(self, response[0], AnsibleHost.from_dict(HOST_SELECTION_OPTIONS_DICT[HOST_SELECTION_HOST_ID_1]))
-        Assertion.expect_equal_objects(self, response[1], AnsibleHost.from_dict(HOST_SELECTION_OPTIONS_DICT[HOST_SELECTION_HOST_ID_2]))
+        Assertion.expect_equal_objects(
+            self, response[0], AnsibleHost.from_dict(HOST_SELECTION_OPTIONS_DICT[HOST_SELECTION_HOST_ID_1])
+        )
+        Assertion.expect_equal_objects(
+            self, response[1], AnsibleHost.from_dict(HOST_SELECTION_OPTIONS_DICT[HOST_SELECTION_HOST_ID_2])
+        )

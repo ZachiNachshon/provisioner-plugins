@@ -7,6 +7,8 @@ from loguru import logger
 
 from provisioner_features_lib.anchor.domain.config import AnchorConfig
 
+ANCHOR_HELP_TITLE = "Anchor Opts"
+
 
 class TyperAnchorOpts:
     """
@@ -15,7 +17,7 @@ class TyperAnchorOpts:
     """
 
     # Static variable
-    anchor_config: AnchorConfig
+    anchor_config: AnchorConfig = None
 
     def __init__(self, anchor_config: AnchorConfig = None) -> None:
         self.anchor_config = anchor_config
@@ -30,47 +32,39 @@ class TyperAnchorOpts:
             show_default=False,
             help="GitHub access token for accessing installers private repo",
             envvar="GITHUB_ACCESS_TOKEN",
+            rich_help_panel=ANCHOR_HELP_TITLE,
         )
 
 
 class TyperResolvedAnchorOpts:
 
-    github_access_token: Optional[str]
+    _github_access_token: Optional[str] = None
 
-    def __init__(self, github_access_token: Optional[str]) -> None:
-        self.github_access_token = github_access_token
+    def __init__(self, github_access_token: Optional[str] = None) -> None:
+        self._github_access_token = github_access_token
 
     @staticmethod
     def create(
         github_access_token: Optional[str] = None,
     ) -> None:
 
-        try:
-            global typer_cli_anchor_opts
-            typer_cli_anchor_opts = TyperResolvedAnchorOpts(github_access_token)
-
-        except Exception as e:
-            e_name = e.__class__.__name__
-            logger.critical("Failed to create CLI anchor args object. ex: {}, message: {}", e_name, str(e))
-
-    @staticmethod
-    def github_access_token() -> Optional[str]:
-        return typer_cli_anchor_opts.github_access_token
+        global GLOBAL_TYPER_CLI_ANCHOR_OPTS
+        GLOBAL_TYPER_CLI_ANCHOR_OPTS = TyperResolvedAnchorOpts(github_access_token=github_access_token)
 
 
-typer_cli_anchor_opts: TyperResolvedAnchorOpts = None
+GLOBAL_TYPER_CLI_ANCHOR_OPTS: TyperResolvedAnchorOpts = None
 
 
 class CliAnchorOpts:
     github_access_token: Optional[str]
 
-    def __init__(self) -> None:
-        self.github_access_token = TyperResolvedAnchorOpts.github_access_token()
+    def __init__(self, github_access_token: Optional[str] = None) -> None:
+        self.github_access_token = github_access_token
 
     @staticmethod
     def maybe_get() -> "CliAnchorOpts":
-        if typer_cli_anchor_opts:
-            return CliAnchorOpts()
+        if GLOBAL_TYPER_CLI_ANCHOR_OPTS:
+            return CliAnchorOpts(github_access_token=GLOBAL_TYPER_CLI_ANCHOR_OPTS._github_access_token)
         return None
 
     def print(self) -> None:
