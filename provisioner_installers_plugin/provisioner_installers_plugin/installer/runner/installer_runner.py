@@ -64,7 +64,7 @@ class UtilityInstallerCmdRunner:
             generate_installer_welcome(args.utilities, args.remote_opts.environment)
         )
 
-        selected_run_env = Evaluator.eval_step_return_failure_throws(
+        selected_run_env = Evaluator.eval_step_with_return_throw_on_failure(
             call=lambda: self._resolve_run_environment(args.remote_opts.environment, collaborators.prompter()),
             ctx=ctx,
             err_msg="Could not resolve run environment",
@@ -72,14 +72,14 @@ class UtilityInstallerCmdRunner:
         collaborators.summary().append("run_env", selected_run_env)
 
         if selected_run_env == RunEnvironment.Local:
-            Evaluator.eval_step_no_return_failure_throws(
+            Evaluator.eval_step_no_return_throw_on_failure(
                 call=lambda: self._run_local_installation(ctx, utilities_to_install, collaborators),
                 ctx=ctx,
                 err_msg=f"Failed to install a CLI utility locally.",
             )
 
         elif selected_run_env == RunEnvironment.Remote:
-            Evaluator.eval_step_no_return_failure_throws(
+            Evaluator.eval_step_no_return_throw_on_failure(
                 call=lambda: self._run_remote_installation(ctx, utilities_to_install, collaborators, args.remote_opts),
                 ctx=ctx,
                 err_msg=f"Failed to install a CLI utility on a remote machine.",
@@ -158,7 +158,7 @@ class UtilityInstallerCmdRunner:
         remote_connector = RemoteMachineConnector(
             collaborators.checks(), collaborators.printer(), collaborators.prompter(), collaborators.network_util()
         )
-        ssh_conn_info = Evaluator.eval_step_return_failure_throws(
+        ssh_conn_info = Evaluator.eval_step_with_return_throw_on_failure(
             call=lambda: remote_connector.collect_ssh_connection_info(ctx, remote_opts),
             ctx=ctx,
             err_msg="Could not resolve SSH connection info",

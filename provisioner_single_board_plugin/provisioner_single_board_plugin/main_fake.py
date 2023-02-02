@@ -64,9 +64,9 @@ def register_remote_cli_args():
 
     remote_args_callback(
         environment=TestDataRemoteOpts.TEST_DATA_ENVIRONMENT,
-        node_username=TestDataRemoteOpts.TEST_DATA_REMOTE_NODE_USERNAME,
-        node_password=TestDataRemoteOpts.TEST_DATA_REMOTE_NODE_PASSWORD,
-        ssh_private_key_file_path=TestDataRemoteOpts.TEST_DATA_REMOTE_SSH_PRIVATE_KEY_FILE_PATH,
+        node_username=TestDataRemoteOpts.TEST_DATA_REMOTE_NODE_USERNAME_1,
+        node_password=TestDataRemoteOpts.TEST_DATA_REMOTE_NODE_PASSWORD_1,
+        ssh_private_key_file_path=TestDataRemoteOpts.TEST_DATA_REMOTE_SSH_PRIVATE_KEY_FILE_PATH_1,
         ip_discovery_range=TestDataRemoteOpts.TEST_DATA_REMOTE_IP_DISCOVERY_RANGE,
     )
 

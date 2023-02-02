@@ -11,13 +11,35 @@ from python_core_lib.utils.process import Process
 
 ANSIBLE_SHELL_RUNNER_PATH = "external/shell_scripts_lib/runner/ansible/ansible.sh"
 
-class HostIpPair:
+class AnsibleHost:
     host: str
     ip_address: str
+    username: str
+    password: str
+    ssh_private_key_file_path: str
 
-    def __init__(self, host: str, ip_address: str) -> None:
+    def __init__(self, 
+        host: str, 
+        ip_address: str, 
+        username: str = None, 
+        password: Optional[str] = None,
+        ssh_private_key_file_path: Optional[str] = None) -> None:
+
         self.host = host
         self.ip_address = ip_address
+        self.username = username
+        self.password = password
+        self.ssh_private_key_file_path = ssh_private_key_file_path
+
+    @staticmethod
+    def from_dict(self, ansible_host_dict: dict) -> "AnsibleHost":
+        return AnsibleHost(
+            host=ansible_host_dict["hostname"], 
+            ip_address=ansible_host_dict["ip_address"],
+            username=ansible_host_dict["username"] if "username" in ansible_host_dict else None,
+            password=ansible_host_dict["password"] if "password" in ansible_host_dict else None,
+            ssh_private_key_file_path=ansible_host_dict["ssh_private_key_file_path"] if "ssh_private_key_file_path" in selected_item_dict else None
+        )
 
 class AnsibleRunner:
 
@@ -64,7 +86,7 @@ class AnsibleRunner:
             raise ExternalDependencyFileNotFound(err_msg)
         logger.debug("Ansible runner external script was found")
 
-    def _prepare_ansible_host_items(self, host_ip_pair_list: List[HostIpPair]) -> List[str]:
+    def _prepare_ansible_host_items(self, host_ip_pair_list: List[AnsibleHost]) -> List[str]:
         result = []
 
         if self._dry_run and len(host_ip_pair_list) == 0:
@@ -88,7 +110,7 @@ class AnsibleRunner:
         self,
         working_dir: str,
         username: str,
-        selected_hosts: List[HostIpPair],
+        selected_hosts: List[AnsibleHost],
         playbook_path: str,
         password: Optional[str] = None,
         ssh_private_key_file_path: Optional[str] = None,

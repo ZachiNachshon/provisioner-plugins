@@ -9,11 +9,11 @@ from .checks import Checks
 
 class FakeChecks(Checks):
 
-    registered_utilities: dict[str, bool] = None
+    __mocked_utilities: dict[str, bool] = None
 
     def __init__(self, dry_run: bool, verbose: bool):
         super().__init__(dry_run=dry_run, verbose=verbose)
-        self.registered_utilities = {}
+        self.__mocked_utilities = {}
 
     @staticmethod
     def _create_fake(dry_run: bool, verbose: bool) -> "FakeChecks":
@@ -26,15 +26,15 @@ class FakeChecks(Checks):
     def create(ctx: Context) -> "FakeChecks":
         return FakeChecks._create_fake(dry_run=ctx.is_dry_run(), verbose=ctx.is_verbose())
 
-    def register_utility(self, name: str, exist: Optional[bool] = True) -> "FakeChecks":
-        self.registered_utilities[name] = exist
+    def mock_utility(self, name: str, exist: Optional[bool] = True) -> "FakeChecks":
+        self.__mocked_utilities[name] = exist
         return self
 
     def _utilities_selector(self, name: str, soft_fail: bool) -> Any:
-        for key in self.registered_utilities.keys():
+        for key in self.__mocked_utilities.keys():
             # If utility was registered and marked as exists
-            if name == key and self.registered_utilities[key]:
-                return self.registered_utilities[key]
+            if name == key and self.__mocked_utilities[key]:
+                return self.__mocked_utilities[key]
 
         if soft_fail:
             return False

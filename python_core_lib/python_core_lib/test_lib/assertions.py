@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import json
 import re
 from typing import Any, Callable, List, Type
 from unittest import mock
@@ -15,7 +16,8 @@ class Assertion:
         try:
             run_call_kwargs = method_run_call.call_args.kwargs
             call_arg = run_call_kwargs[arg_name]
-            testObj.assertEqual(expected_value, call_arg)
+            # testObj.assertEqual(expected_value, call_arg)
+            Assertion.expect_equal_objects(testObj, expected_value, call_arg)
         except Exception as ex:
             testObj.fail(f"Method call argument did not have the expected value. message: {str(ex)}")
     
@@ -51,8 +53,6 @@ class Assertion:
             testObj.assertIsInstance(ex, ex_type)
 
         testObj.assertTrue(failed)
-
-    
     
     @staticmethod
     def expect_output(testObj, expected: str, method_to_run) -> None:
@@ -91,3 +91,19 @@ class Assertion:
 
         testObj.assertTrue(success)
         return output
+
+    @staticmethod
+    def expect_equal_objects(testObj, obj1, obj2):
+        try:
+            obj1_json = _to_json(obj1)
+            obj2_json = _to_json(obj2)
+            testObj.assertEqual(obj1_json, obj2_json)
+        except Exception as ex:
+            testObj.fail(f"Objects are not equal or encountered a JSON serialization failure. message: {str(ex)}")
+        return 
+
+def _to_json(obj: Any) -> str:
+    if hasattr(obj, "__dict__"):
+        return json.dumps(obj.__dict__, default=vars, indent=2)
+    else:
+        return json.dumps(obj, default=vars, indent=2)

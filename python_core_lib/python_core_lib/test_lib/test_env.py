@@ -34,10 +34,11 @@ class TestEnv:
         return TestEnv(ctx, FakeCoreCollaborators(ctx=ctx), enable_test_env_paths=enable_test_env_paths)
 
     @staticmethod
-    def create_test_default_context() -> Context:
-        return Context.create(os_arch=OsArch(os=MAC_OS, arch="test_arch", os_release="test_os_release"))
+    def create_test_default_context(dry_run: bool = False) -> Context:
+        return Context.create(dry_run=dry_run, os_arch=OsArch(os=MAC_OS, arch="test_arch", os_release="test_os_release"))
 
-    def create(ctx: Context = create_test_default_context(), enable_test_env_paths = True) -> "TestEnv":
+    def create(ctx: Context = create_test_default_context(), enable_test_env_paths = True, dry_run: bool = False) -> "TestEnv":
+        ctx._dry_run = dry_run
         return TestEnv._create_env(ctx, enable_test_env_paths)
 
     def get_test_env_root_path(self) -> str:

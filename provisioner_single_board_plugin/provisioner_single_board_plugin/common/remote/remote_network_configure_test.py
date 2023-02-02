@@ -51,7 +51,7 @@ class RemoteMachineNetworkConfigureTestShould(unittest.TestCase):
     def create_fake_network_info_bundle() -> RemoteMachineNetworkConfigureRunner.NetworkInfoBundle:
         return RemoteMachineNetworkConfigureRunner.NetworkInfoBundle(
             ssh_ip_address=TestDataRemoteConnector.TEST_DATA_SSH_IP_ADDRESS_1,
-            ssh_username=TestDataRemoteConnector.TEST_DATA_SSH_USERNAME,
+            ssh_username=TestDataRemoteConnector.TEST_DATA_SSH_USERNAME_1,
             ssh_hostname=TestDataRemoteConnector.TEST_DATA_SSH_HOSTNAME_1,
             static_ip_address=TestDataRemoteConnector.TEST_DATA_DHCP_STATIC_IP_ADDRESS,
         )
@@ -62,7 +62,7 @@ class RemoteMachineNetworkConfigureTestShould(unittest.TestCase):
             ex_type=MissingUtilityException,
             method_to_run=lambda: RemoteMachineNetworkConfigureRunner()._prerequisites(
                 self.env.get_context(),
-                FakeChecks.create(self.env.get_context()).register_utility("docker", exist=False),
+                FakeChecks.create(self.env.get_context()).mock_utility("docker", exist=False),
             ),
         )
 
@@ -71,7 +71,7 @@ class RemoteMachineNetworkConfigureTestShould(unittest.TestCase):
             self,
             method_to_run=lambda: RemoteMachineNetworkConfigureRunner()._prerequisites(
                 Context.create(os_arch=OsArch(os=MAC_OS, arch="test_arch", os_release="test_os_release")),
-                FakeChecks.create(self.env.get_context()).register_utility("docker"),
+                FakeChecks.create(self.env.get_context()).mock_utility("docker"),
             ),
         )
 
@@ -80,7 +80,7 @@ class RemoteMachineNetworkConfigureTestShould(unittest.TestCase):
             self,
             method_to_run=lambda: RemoteMachineNetworkConfigureRunner()._prerequisites(
                 Context.create(os_arch=OsArch(os=LINUX, arch="test_arch", os_release="test_os_release")),
-                FakeChecks.create(self.env.get_context()).register_utility("docker"),
+                FakeChecks.create(self.env.get_context()).mock_utility("docker"),
             ),
         )
 
@@ -158,7 +158,7 @@ class RemoteMachineNetworkConfigureTestShould(unittest.TestCase):
         )
 
         Assertion.expect_call_argument(
-            self, run_call, arg_name="host_ip_pairs", expected_value=ssh_conn_info.host_ip_pairs
+            self, run_call, arg_name="host_ip_pairs", expected_value=ssh_conn_info.ansible_hosts
         )
         Assertion.expect_call_argument(
             self, run_call, arg_name="static_ip_address", expected_value=args.static_ip_address
@@ -193,11 +193,11 @@ class RemoteMachineNetworkConfigureTestShould(unittest.TestCase):
             .ansible_runner()
             .assert_command(
                 working_dir=env.get_test_env_root_path(),
-                username=TestDataRemoteConnector.TEST_DATA_SSH_USERNAME,
-                selected_hosts=TestDataRemoteConnector.TEST_DATA_SSH_HOST_IP_PAIRS,
+                username=TestDataRemoteConnector.TEST_DATA_SSH_USERNAME_1,
+                selected_hosts=TestDataRemoteConnector.TEST_DATA_SSH_ANSIBLE_HOSTS,
                 playbook_path=f"{env.get_test_env_root_path()}{ARG_ANSIBLE_PLAYBOOK_RELATIVE_PATH_FROM_ROOT}",
-                password=TestDataRemoteConnector.TEST_DATA_SSH_PASSWORD,
-                ssh_private_key_file_path=TestDataRemoteConnector.TEST_DATA_SSH_PRIVATE_KEY_FILE_PATH,
+                password=TestDataRemoteConnector.TEST_DATA_SSH_PASSWORD_1,
+                ssh_private_key_file_path=TestDataRemoteConnector.TEST_DATA_SSH_PRIVATE_KEY_FILE_PATH_1,
                 ansible_vars=[
                     f"host_name={TestDataRemoteConnector.TEST_DATA_SSH_HOSTNAME_1}",
                     f"static_ip={TestDataRemoteConnector.TEST_DATA_DHCP_STATIC_IP_ADDRESS}",
@@ -255,7 +255,7 @@ class RemoteMachineNetworkConfigureTestShould(unittest.TestCase):
 
         printer = env.get_collaborators().printer()
         Assertion.expect_success(
-            self, method_to_run=lambda: printer.assert_output(TestDataRemoteConnector.TEST_DATA_SSH_USERNAME)
+            self, method_to_run=lambda: printer.assert_output(TestDataRemoteConnector.TEST_DATA_SSH_USERNAME_1)
         )
         Assertion.expect_success(
             self, method_to_run=lambda: printer.assert_output(TestDataRemoteConnector.TEST_DATA_SSH_HOSTNAME_1)

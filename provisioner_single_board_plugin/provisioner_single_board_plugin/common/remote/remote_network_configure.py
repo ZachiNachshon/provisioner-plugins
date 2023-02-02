@@ -70,7 +70,7 @@ class RemoteMachineNetworkConfigureRunner:
         self, ctx: Context, collaborators: CoreCollaborators, remote_opts: Optional[CliRemoteOpts] = None
     ) -> SSHConnectionInfo:
 
-        ssh_conn_info = Evaluator.eval_step_return_failure_throws(
+        ssh_conn_info = Evaluator.eval_step_with_return_throw_on_failure(
             call=lambda: RemoteMachineConnector(collaborators=collaborators).collect_ssh_connection_info(
                 ctx, remote_opts, force_single_conn_info=True
             ),
@@ -88,10 +88,10 @@ class RemoteMachineNetworkConfigureRunner:
         ssh_conn_info: SSHConnectionInfo,
     ) -> DHCPCDConfigurationInfo:
 
-        dhcpcd_configure_info = Evaluator.eval_step_return_failure_throws(
+        dhcpcd_configure_info = Evaluator.eval_step_with_return_throw_on_failure(
             call=lambda: RemoteMachineConnector(collaborators=collaborators).collect_dhcpcd_configuration_info(
                 ctx=ctx,
-                host_ip_pairs=ssh_conn_info.host_ip_pairs,
+                ansible_hosts=ssh_conn_info.ansible_hosts,
                 static_ip_address=args.static_ip_address,
                 gw_ip_address=args.gw_ip_address,
                 dns_ip_address=args.dns_ip_address,
@@ -136,7 +136,7 @@ class RemoteMachineNetworkConfigureRunner:
                     f"dns_address={dhcpcd_configure_info.dns_ip_address}",
                 ],
                 ansible_tags=["configure_rpi_network", "define_static_ip", "reboot"],
-                selected_hosts=ssh_conn_info.host_ip_pairs,
+                selected_hosts=ssh_conn_info.ansible_hosts,
             ),
             desc_run="Running Ansible playbook (Configure Network)",
             desc_end="Ansible playbook finished (Configure Network).",
@@ -167,7 +167,7 @@ class RemoteMachineNetworkConfigureRunner:
             return ("DRY_RUN_RESPONSE", "DRY_RUN_RESPONSE")
         else:
             # Promised to have only single item
-            single_pair_item = ssh_conn_info.host_ip_pairs[0]
+            single_pair_item = ssh_conn_info.ansible_hosts[0]
             return (single_pair_item.host, single_pair_item.ip_address)
 
     def _maybe_add_hosts_file_entry(

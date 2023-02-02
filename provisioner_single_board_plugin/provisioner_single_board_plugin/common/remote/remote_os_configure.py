@@ -65,7 +65,7 @@ class RemoteMachineOsConfigureRunner:
                 extra_modules_paths=[collaborators.paths().get_path_abs_to_module_root_fn(__name__)],
                 ansible_vars=[f"host_name={ssh_hostname}"],
                 ansible_tags=["configure_remote_node", "reboot"],
-                selected_hosts=ssh_conn_info.host_ip_pairs,
+                selected_hosts=ssh_conn_info.ansible_hosts,
             ),
             desc_run="Running Ansible playbook (Configure OS)",
             desc_end="Ansible playbook finished (Configure OS).",
@@ -79,7 +79,7 @@ class RemoteMachineOsConfigureRunner:
         self, ctx: Context, collaborators: CoreCollaborators, remote_opts: Optional[CliRemoteOpts] = None
     ) -> SSHConnectionInfo:
 
-        ssh_conn_info = Evaluator.eval_step_return_failure_throws(
+        ssh_conn_info = Evaluator.eval_step_with_return_throw_on_failure(
             call=lambda: RemoteMachineConnector(collaborators=collaborators).collect_ssh_connection_info(
                 ctx, remote_opts, force_single_conn_info=True
             ),
@@ -90,7 +90,7 @@ class RemoteMachineOsConfigureRunner:
         return ssh_conn_info
 
     def _extract_host_ip_tuple(self, ctx: Context, ssh_conn_info: SSHConnectionInfo) -> tuple[str, str]:
-        single_pair_item = ssh_conn_info.host_ip_pairs[0]
+        single_pair_item = ssh_conn_info.ansible_hosts[0]
         return (single_pair_item.host, single_pair_item.ip_address)
 
     def _print_pre_run_instructions(self, collaborators: CoreCollaborators):

@@ -67,7 +67,7 @@ class Prompter:
         self,
         message: str,
         default: Optional[str] = None,
-        redact_default: Optional[bool] = False,
+        redact_value: Optional[bool] = False,
         level: Optional[PromptLevel] = PromptLevel.HIGHLIGHT,
         post_user_input_message: Optional[str] = None,
     ) -> str:
@@ -82,21 +82,22 @@ class Prompter:
 
         enriched_msg = "{} (enter to abort): ".format(message)
         if default is not None:
-            enriched_msg = "{} (default: {}): ".format(message, "REDACTED" if redact_default else default)
+            enriched_msg = "{} (default: {}): ".format(message, "REDACTED" if redact_value else default)
 
         color_in_use = self._get_color_from_prompt_level(level)
         prompt = f"{color_in_use}{enriched_msg}{color.NONE}"
         user_input = input(prompt)
 
         if user_input:
+            display_value = "REDACTED" if redact_value else user_input
             if post_user_input_message:
                 self._overwrite_previous_line(
-                    message=f"{post_user_input_message}{user_input}", color_in_use=color.GREEN, icon=CHECKMARK_ICON
+                    message=f"{post_user_input_message}{display_value}", color_in_use=color.GREEN, icon=CHECKMARK_ICON
                 )
             return user_input
         elif default is not None:
             if post_user_input_message:
-                value = "REDACTED" if redact_default else default
+                value = "REDACTED" if redact_value else default
                 self._overwrite_previous_line(
                     message=f"{post_user_input_message}{value}", color_in_use=color.GREEN, icon=CHECKMARK_ICON
                 )

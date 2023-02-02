@@ -5,7 +5,7 @@ from typing import List, Optional
 import typer
 from loguru import logger
 from python_core_lib.cli.typer_callbacks import exclusivity_callback
-from python_core_lib.runner.ansible.ansible import HostIpPair
+from python_core_lib.runner.ansible.ansible import AnsibleHost
 
 from provisioner_features_lib.remote.domain.config import RemoteConfig, RunEnvironment
 
@@ -162,22 +162,24 @@ class CliRemoteOpts:
     ip_discovery_range: Optional[str]
 
     # Calculated
-    host_ip_pairs: List[HostIpPair]
+    ansible_hosts: List[AnsibleHost]
 
-    def __init__(self, 
+    def __init__(
+        self,
         environment: Optional[RunEnvironment] = TyperResolvedRemoteOpts.environment(),
         node_username: Optional[str] = TyperResolvedRemoteOpts.node_username(),
         node_password: Optional[str] = TyperResolvedRemoteOpts.node_password(),
         ssh_private_key_file_path: Optional[str] = TyperResolvedRemoteOpts.ssh_private_key_file_path(),
         ip_discovery_range: Optional[str] = TyperResolvedRemoteOpts.ip_discovery_range(),
-        remote_hosts: Optional[dict[str, RemoteConfig.Host]] = TyperResolvedRemoteOpts.remote_hosts()) -> None:
+        remote_hosts: Optional[dict[str, RemoteConfig.Host]] = TyperResolvedRemoteOpts.remote_hosts(),
+    ) -> None:
 
         self.environment = environment
-        self.node_username = node_username 
+        self.node_username = node_username
         self.node_password = node_password
         self.ssh_private_key_file_path = ssh_private_key_file_path
         self.ip_discovery_range = ip_discovery_range
-        self.host_ip_pairs = self._to_host_ip_pairs(remote_hosts)
+        self.ansible_hosts = self._to_ansible_hosts(remote_hosts)
 
     @staticmethod
     def maybe_get() -> "CliRemoteOpts":
@@ -185,12 +187,23 @@ class CliRemoteOpts:
             return CliRemoteOpts()
         return None
 
-    def _to_host_ip_pairs(self, hosts: dict[str, RemoteConfig.Host]) -> List[HostIpPair]:
+    def _to_ansible_hosts(self, hosts: dict[str, RemoteConfig.Host]) -> List[AnsibleHost]:
         if not hosts:
             return None
-        result: List[HostIpPair] = []
+        result: List[AnsibleHost] = []
         for key, value in hosts.items():
-            result.append(HostIpPair(value.name, value.address))
+            # If user supplied remote options via CLI arguments - override all other sources
+            result.append(
+                AnsibleHost(
+                    host=value.host,
+                    ip_address=value.address,
+                    username=self.node_username if self.node_username else value.auth.username,
+                    password=self.node_password if self.node_password else value.auth.password,
+                    ssh_private_key_file_path=self.ssh_private_key_file_path
+                    if self.ssh_private_key_file_path
+                    else value.auth.ssh_private_key_file_path,
+                )
+            )
         return result
 
     def print(self) -> None:
@@ -201,5 +214,5 @@ class CliRemoteOpts:
             + f"  node_password: {self.node_password}\n"
             + f"  ip_discovery_range: {self.ip_discovery_range}\n"
             + f"  ssh_private_key_file_path: {self.ssh_private_key_file_path}\n"
-            + f"  host_ip_pairs: {'supplied via CLI arguments or user config' if self.host_ip_pairs is not None else None}\n"
+            + f"  host_ip_pairs: {'supplied via CLI arguments or user config' if self.ansible_hosts is not None else None}\n"
         )

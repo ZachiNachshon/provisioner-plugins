@@ -2,7 +2,6 @@
 
 from provisioner_features_lib.anchor.domain.config import AnchorConfig
 from provisioner_features_lib.anchor.typer_anchor_opts import TyperAnchorOpts
-
 from provisioner_features_lib.shared.domain.config import GitHubConfig
 
 
@@ -20,7 +19,7 @@ class TestDataAnchorOpts:
                     organization=TestDataAnchorOpts.TEST_DATA_ANCHOR_GITHUB_ORGANIZATION,
                     repository=TestDataAnchorOpts.TEST_DATA_ANCHOR_GITHUB_REPOSITORY,
                     branch=TestDataAnchorOpts.TEST_DATA_ANCHOR_GITHUB_BRANCH,
-                    github_access_token=TestDataAnchorOpts.TEST_DATA_ANCHOR_GITHUB_GITHUB_ACCESS_TOKEN
+                    github_access_token=TestDataAnchorOpts.TEST_DATA_ANCHOR_GITHUB_GITHUB_ACCESS_TOKEN,
                 )
             )
         )

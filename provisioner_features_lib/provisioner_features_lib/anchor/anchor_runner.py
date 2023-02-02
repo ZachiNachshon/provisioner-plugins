@@ -6,7 +6,7 @@ from loguru import logger
 from python_core_lib.errors.cli_errors import MissingCliArgument
 from python_core_lib.infra.context import Context
 from python_core_lib.infra.evaluator import Evaluator
-from python_core_lib.runner.ansible.ansible import HostIpPair
+from python_core_lib.runner.ansible.ansible import AnsibleHost
 from python_core_lib.shared.collaborators import CoreCollaborators
 from python_core_lib.utils.checks import Checks
 
@@ -14,9 +14,10 @@ from provisioner_features_lib.remote.domain.config import RunEnvironment
 from provisioner_features_lib.remote.remote_connector import RemoteMachineConnector
 from provisioner_features_lib.remote.typer_remote_opts import CliRemoteOpts
 
-# When reading Ansible static files from within `provisioner_features_lib` module, 
+# When reading Ansible static files from within `provisioner_features_lib` module,
 # it should be read as relative from the module root folder
 AnchorRunAnsiblePlaybookRelativePathFromRoot = "provisioner_features_lib/anchor/playbooks/anchor_run.yaml"
+
 
 class AnchorRunnerCmdArgs:
 
@@ -65,7 +66,7 @@ class AnchorCmdRunner:
 
     def _start_remote_run_command_flow(self, ctx: Context, args: AnchorRunnerCmdArgs, collaborators: CoreCollaborators):
         remote_connector = RemoteMachineConnector(collaborators)
-        ssh_conn_info = Evaluator.eval_step_return_failure_throws(
+        ssh_conn_info = Evaluator.eval_step_with_return_throw_on_failure(
             call=lambda: remote_connector.collect_ssh_connection_info(ctx, args.remote_opts),
             ctx=ctx,
             err_msg="Could not resolve SSH connection info",
@@ -80,7 +81,9 @@ class AnchorCmdRunner:
                 username=ssh_conn_info.username,
                 password=ssh_conn_info.password,
                 ssh_private_key_file_path=ssh_conn_info.ssh_private_key_file_path,
-                playbook_path=collaborators.paths().get_path_relative_from_module_root_fn(__name__, AnchorRunAnsiblePlaybookRelativePathFromRoot),
+                playbook_path=collaborators.paths().get_path_relative_from_module_root_fn(
+                    __name__, AnchorRunAnsiblePlaybookRelativePathFromRoot
+                ),
                 extra_modules_paths=[collaborators.paths().get_path_abs_to_module_root_fn(__name__)],
                 ansible_vars=[
                     "anchor_command=Run",
@@ -107,7 +110,9 @@ class AnchorCmdRunner:
         )
 
     def _start_local_run_command_flow(self, ctx: Context, args: AnchorRunnerCmdArgs, collaborators: CoreCollaborators):
-        output = collaborators.process().run_fn([f"anchor {args.anchor_run_command}"], allow_single_shell_command_str=True)
+        output = collaborators.process().run_fn(
+            [f"anchor {args.anchor_run_command}"], allow_single_shell_command_str=True
+        )
         collaborators.printer().print_fn(output)
 
     def prerequisites(self, ctx: Context, checks: Checks) -> None:
@@ -123,7 +128,7 @@ class AnchorCmdRunner:
             raise NotImplementedError("OS is not supported")
 
 
-def generate_summary(host_ip_pairs: List[HostIpPair], anchor_cmd: str):
+def generate_summary(host_ip_pairs: List[AnsibleHost], anchor_cmd: str):
     host_names = []
     ip_addresses = []
     if host_ip_pairs and len(host_ip_pairs) > 0:

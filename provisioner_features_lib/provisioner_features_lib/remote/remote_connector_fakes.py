@@ -1,21 +1,42 @@
 #!/usr/bin/env python3
 
 from typing import Callable
-from provisioner_features_lib.remote.remote_connector import DHCPCDConfigurationInfo, SSHConnectionInfo
-from python_core_lib.runner.ansible.ansible import HostIpPair
+
+from python_core_lib.runner.ansible.ansible import AnsibleHost
+
+from provisioner_features_lib.remote.remote_connector import (
+    DHCPCDConfigurationInfo,
+    SSHConnectionInfo,
+)
+
 
 class TestDataRemoteConnector:
 
-    TEST_DATA_SSH_USERNAME = "test-username"
-    TEST_DATA_SSH_PASSWORD = "test-password"
-    TEST_DATA_SSH_PRIVATE_KEY_FILE_PATH = "test-ssh-private-key-file-path"
+    TEST_DATA_SSH_USERNAME_1 = "test-username-1"
+    TEST_DATA_SSH_USERNAME_2 = "test-username-2"
+    TEST_DATA_SSH_PASSWORD_1 = "test-password-1"
+    TEST_DATA_SSH_PASSWORD_2 = "test-password-2"
+    TEST_DATA_SSH_PRIVATE_KEY_FILE_PATH_1 = "test-ssh-private-key-file-path-1"
+    TEST_DATA_SSH_PRIVATE_KEY_FILE_PATH_2 = "test-ssh-private-key-file-path-2"
     TEST_DATA_SSH_HOSTNAME_1 = "test-hostname-1"
     TEST_DATA_SSH_IP_ADDRESS_1 = "test-ip-address-1"
     TEST_DATA_SSH_HOSTNAME_2 = "test-hostname-2"
     TEST_DATA_SSH_IP_ADDRESS_2 = "test-ip-address-2"
-    TEST_DATA_SSH_HOST_IP_PAIRS = [
-        HostIpPair(TEST_DATA_SSH_HOSTNAME_1, TEST_DATA_SSH_IP_ADDRESS_1), 
-        HostIpPair(TEST_DATA_SSH_HOSTNAME_2, TEST_DATA_SSH_IP_ADDRESS_2)
+    TEST_DATA_SSH_ANSIBLE_HOSTS = [
+        AnsibleHost(
+            host=TEST_DATA_SSH_HOSTNAME_1,
+            ip_address=TEST_DATA_SSH_IP_ADDRESS_1,
+            username=TEST_DATA_SSH_USERNAME_1,
+            password=TEST_DATA_SSH_PASSWORD_1,
+            ssh_private_key_file_path=TEST_DATA_SSH_PRIVATE_KEY_FILE_PATH_1,
+        ),
+        AnsibleHost(
+            host=TEST_DATA_SSH_HOSTNAME_2,
+            ip_address=TEST_DATA_SSH_IP_ADDRESS_2,
+            username=TEST_DATA_SSH_USERNAME_2,
+            password=TEST_DATA_SSH_PASSWORD_2,
+            ssh_private_key_file_path=TEST_DATA_SSH_PRIVATE_KEY_FILE_PATH_2,
+        ),
     ]
     TEST_DATA_DHCP_GW_IP_ADDRESS = "test-gw-ip-address"
     TEST_DATA_DHCP_DNS_IP_ADDRESS = "test-dns-ip-address"
@@ -24,12 +45,7 @@ class TestDataRemoteConnector:
     @staticmethod
     def create_fake_ssh_conn_info_fn() -> Callable[..., SSHConnectionInfo]:
         def create_fn(*any) -> SSHConnectionInfo:
-            return SSHConnectionInfo(
-                username=TestDataRemoteConnector.TEST_DATA_SSH_USERNAME,
-                password=TestDataRemoteConnector.TEST_DATA_SSH_PASSWORD,
-                ssh_private_key_file_path=TestDataRemoteConnector.TEST_DATA_SSH_PRIVATE_KEY_FILE_PATH,
-                host_ip_pairs=TestDataRemoteConnector.TEST_DATA_SSH_HOST_IP_PAIRS
-            )
+            return SSHConnectionInfo(ansible_hosts=TestDataRemoteConnector.TEST_DATA_SSH_ANSIBLE_HOSTS)
 
         return create_fn
 

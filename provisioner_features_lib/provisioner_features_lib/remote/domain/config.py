@@ -30,28 +30,30 @@ class RemoteConfig:
           address: 192.168.1.202
           auth:
             username: pi
-            
+
         lan_scan:
             ip_discovery_range: 192.168.1.1/24
     """
-    class Host:
 
+    class Host:
         class Auth:
             username: str
             password: str
             ssh_private_key_file_path: str
 
-            def __init__(self, username: str = None, password: str = None, ssh_private_key_file_path: str = None) -> None:
+            def __init__(
+                self, username: str = None, password: str = None, ssh_private_key_file_path: str = None
+            ) -> None:
                 self.username = username
                 self.password = password
                 self.ssh_private_key_file_path = ssh_private_key_file_path
 
-        name: str
+        host: str
         address: str
         auth: Auth
 
-        def __init__(self, name: str = None, address: str = None, auth: Auth = Auth()) -> None:
-            self.name = name
+        def __init__(self, host: str = None, address: str = None, auth: Auth = Auth()) -> None:
+            self.host = host
             self.address = address
             self.auth = auth
 

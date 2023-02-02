@@ -4,7 +4,7 @@ from typing import List, Optional
 from python_core_lib.test_lib.test_errors import FakeEnvironmentAssertionError
 
 from python_core_lib.infra.context import Context
-from python_core_lib.runner.ansible.ansible import AnsibleRunner, HostIpPair
+from python_core_lib.runner.ansible.ansible import AnsibleRunner, AnsibleHost
 from python_core_lib.utils.io_utils import IOUtils
 from python_core_lib.utils.json_util import JsonUtil
 
@@ -17,7 +17,7 @@ class FakeAnsibleRunner(AnsibleRunner):
     def calculate_hash( 
         working_dir: str,
         username: str,
-        selected_hosts: List[HostIpPair],
+        selected_hosts: List[AnsibleHost],
         playbook_path: str,
         password: str,
         ssh_private_key_file_path: str,
@@ -41,7 +41,7 @@ class FakeAnsibleRunner(AnsibleRunner):
     class FakeAnsibleCommandArgs:
         working_dir: str
         username: str
-        selected_hosts: List[HostIpPair]
+        selected_hosts: List[AnsibleHost]
         playbook_path: str
         password: str
         ssh_private_key_file_path: str
@@ -53,7 +53,7 @@ class FakeAnsibleRunner(AnsibleRunner):
         def __init__(self,
             working_dir: str,
             username: str,
-            selected_hosts: List[HostIpPair],
+            selected_hosts: List[AnsibleHost],
             playbook_path: str,
             password: Optional[str] = None,
             ssh_private_key_file_path: Optional[str] = None,
@@ -132,7 +132,7 @@ class FakeAnsibleRunner(AnsibleRunner):
     def _record_command(self, 
         working_dir: str,
         username: str,
-        selected_hosts: List[HostIpPair],
+        selected_hosts: List[AnsibleHost],
         playbook_path: str,
         password: str,
         ssh_private_key_file_path: str,
@@ -159,7 +159,7 @@ class FakeAnsibleRunner(AnsibleRunner):
         self, 
         working_dir: str,
         username: str,
-        selected_hosts: List[HostIpPair],
+        selected_hosts: List[AnsibleHost],
         playbook_path: str,
         password: str,
         ssh_private_key_file_path: str,

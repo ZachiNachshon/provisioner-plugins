@@ -47,7 +47,7 @@ class RemoteMachineConfigureTestShould(unittest.TestCase):
             ex_type=MissingUtilityException,
             method_to_run=lambda: RemoteMachineOsConfigureRunner()._prerequisites(
                 self.env.get_context(),
-                FakeChecks.create(self.env.get_context()).register_utility("docker", exist=False),
+                FakeChecks.create(self.env.get_context()).mock_utility("docker", exist=False),
             ),
         )
 
@@ -56,7 +56,7 @@ class RemoteMachineConfigureTestShould(unittest.TestCase):
             self,
             method_to_run=lambda: RemoteMachineOsConfigureRunner()._prerequisites(
                 Context.create(os_arch=OsArch(os=MAC_OS, arch="test_arch", os_release="test_os_release")),
-                FakeChecks.create(self.env.get_context()).register_utility("docker"),
+                FakeChecks.create(self.env.get_context()).mock_utility("docker"),
             ),
         )
 
@@ -65,7 +65,7 @@ class RemoteMachineConfigureTestShould(unittest.TestCase):
             self,
             method_to_run=lambda: RemoteMachineOsConfigureRunner()._prerequisites(
                 Context.create(os_arch=OsArch(os=LINUX, arch="test_arch", os_release="test_os_release")),
-                FakeChecks.create(self.env.get_context()).register_utility("docker"),
+                FakeChecks.create(self.env.get_context()).mock_utility("docker"),
             ),
         )
 
@@ -140,11 +140,11 @@ class RemoteMachineConfigureTestShould(unittest.TestCase):
             .ansible_runner()
             .assert_command(
                 working_dir=env.get_test_env_root_path(),
-                username=TestDataRemoteConnector.TEST_DATA_SSH_USERNAME,
-                selected_hosts=TestDataRemoteConnector.TEST_DATA_SSH_HOST_IP_PAIRS,
+                username=TestDataRemoteConnector.TEST_DATA_SSH_USERNAME_1,
+                selected_hosts=TestDataRemoteConnector.TEST_DATA_SSH_ANSIBLE_HOSTS,
                 playbook_path=f"{env.get_test_env_root_path()}{ARG_ANSIBLE_PLAYBOOK_RELATIVE_PATH_FROM_ROOT}",
-                password=TestDataRemoteConnector.TEST_DATA_SSH_PASSWORD,
-                ssh_private_key_file_path=TestDataRemoteConnector.TEST_DATA_SSH_PRIVATE_KEY_FILE_PATH,
+                password=TestDataRemoteConnector.TEST_DATA_SSH_PASSWORD_1,
+                ssh_private_key_file_path=TestDataRemoteConnector.TEST_DATA_SSH_PRIVATE_KEY_FILE_PATH_1,
                 ansible_vars=[
                     f"host_name={TestDataRemoteConnector.TEST_DATA_SSH_HOSTNAME_1}",
                 ],

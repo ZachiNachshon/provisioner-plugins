@@ -6,12 +6,8 @@ from typing import List, Optional
 from loguru import logger
 from python_core_lib.infra.context import Context
 from python_core_lib.infra.evaluator import Evaluator
-from python_core_lib.runner.ansible.ansible import HostIpPair
+from python_core_lib.runner.ansible.ansible import AnsibleHost
 from python_core_lib.shared.collaborators import CoreCollaborators
-from python_core_lib.utils.checks import Checks
-from python_core_lib.utils.network import NetworkUtil
-from python_core_lib.utils.printer import Printer
-from python_core_lib.utils.prompter import Prompter
 
 from provisioner_features_lib.remote.typer_remote_opts import CliRemoteOpts
 
@@ -22,24 +18,20 @@ class NetworkDeviceSelectionMethod(str, Enum):
     UserPrompt = "User Prompt"
 
 
+class NetworkDeviceAuthenticationMethod(str, Enum):
+    Password = "Password"
+    SSHPrivateKeyPath = "SSH Private Key"
+    NoAuth = "No Auth"
+
+
 class SSHConnectionInfo:
-    username: str
-    password: str
-    ssh_private_key_file_path: str
-    host_ip_pairs: List[HostIpPair]
+    ansible_hosts: List[AnsibleHost]
 
     def __init__(
         self,
-        username: str,
-        host_ip_pairs: List[HostIpPair],
-        password: Optional[str] = None,
-        ssh_private_key_file_path: Optional[str] = None,
+        ansible_hosts: List[AnsibleHost],
     ) -> None:
-
-        self.username = username
-        self.password = password
-        self.ssh_private_key_file_path = ssh_private_key_file_path
-        self.host_ip_pairs = host_ip_pairs
+        self.ansible_hosts = ansible_hosts
 
 
 class DHCPCDConfigurationInfo:
@@ -55,16 +47,10 @@ class DHCPCDConfigurationInfo:
 
 class RemoteMachineConnector:
 
-    checks: Checks = None
-    network_util: NetworkUtil = None
-    printer: Printer = None
-    prompter: Prompter = None
+    collaborators: CoreCollaborators = None
 
     def __init__(self, collaborators: CoreCollaborators) -> None:
-        self.checks = collaborators.checks()
-        self.network_util = collaborators.network_util()
-        self.printer = collaborators.printer()
-        self.prompter = collaborators.prompter()
+        self.collaborators = collaborators
 
     def collect_ssh_connection_info(
         self,
@@ -73,13 +59,18 @@ class RemoteMachineConnector:
         force_single_conn_info: Optional[bool] = False,
     ) -> SSHConnectionInfo:
 
-        if ctx.is_dry_run():
-            return SSHConnectionInfo(
-                username="DRY_RUN_RESPONSE",
-                password="DRY_RUN_RESPONSE",
-                ssh_private_key_file_path="DRY_RUN_RESPONSE",
-                host_ip_pairs=[HostIpPair(host="DRY_RUN_RESPONSE", ip_address="DRY_RUN_RESPONSE")],
-            )
+        # TODO: consider for removal
+
+        # if ctx.is_dry_run():
+        #     return SSHConnectionInfo(
+        #         ansible_hosts=[
+        #             AnsibleHost(
+        #                 host="DRY_RUN_RESPONSE",
+        #                 ip_address="DRY_RUN_RESPONSE",
+        #                 username="DRY_RUN_RESPONSE",
+        #                 password="DRY_RUN_RESPONSE",
+        #                 ssh_private_key_file_path="DRY_RUN_RESPONSE")],
+        #     )
 
         """
         Prompt the user for required remote SSH connection parameters
@@ -88,48 +79,57 @@ class RemoteMachineConnector:
           - Use the hosts attribute from user configuration
           - Ask user for node host and IP address
         """
-        selected_host_ip_pairs: List[HostIpPair] = []
+        selected_ansible_hosts: List[AnsibleHost] = []
         network_device_selection_method = self._ask_for_network_device_selection_method()
 
         if network_device_selection_method == NetworkDeviceSelectionMethod.UserConfig:
-            selected_host_ip_pairs = Evaluator.eval_step_return_failure_throws(
+            selected_ansible_hosts = Evaluator.eval_step_with_return_throw_on_failure(
                 call=lambda: remote_opts
-                and self._select_from_existing_host_ip_pairs(remote_opts.host_ip_pairs, force_single_conn_info),
+                and self._run_config_based_host_selection(
+                    ansible_hosts=remote_opts.ansible_hosts, force_single_conn_info=force_single_conn_info
+                ),
                 ctx=ctx,
                 err_msg="Failed to read host IP address from user configuration",
             )
 
         elif network_device_selection_method == NetworkDeviceSelectionMethod.ScanLAN:
-            selected_host_ip_pairs = Evaluator.eval_step_return_failure_throws(
+            selected_ansible_hosts = Evaluator.eval_step_with_return_throw_on_failure(
                 call=lambda: remote_opts
-                and self._run_host_ip_address_scan(remote_opts.ip_discovery_range, force_single_conn_info),
+                and self._run_scan_lan_host_selection(
+                    ip_discovery_range=remote_opts.ip_discovery_range, force_single_conn_info=force_single_conn_info
+                ),
                 ctx=ctx,
                 err_msg="Failed to read host IP address from LAN scan",
             )
 
         elif network_device_selection_method == NetworkDeviceSelectionMethod.UserPrompt:
-            selected_host_ip_pairs = Evaluator.eval_step_return_failure_throws(
-                call=lambda: self._run_single_host_ip_selection_flow(),
+            selected_ansible_hosts = Evaluator.eval_step_with_return_throw_on_failure(
+                call=lambda: self._run_manual_host_selection(),
                 ctx=ctx,
                 err_msg="Failed to read a host IP address from user prompt",
             )
         else:
             return None
 
-        return self._get_ssh_connection_info(ctx, remote_opts, selected_host_ip_pairs)
+        return self._collect_ssh_auth_info(ctx=ctx, remote_opts=remote_opts, ansible_hosts=selected_ansible_hosts)
 
     def collect_dhcpcd_configuration_info(
-        self, ctx: Context, host_ip_pairs: str, static_ip_address: str, gw_ip_address: str, dns_ip_address: str
+        self,
+        ctx: Context,
+        ansible_hosts: str,
+        static_ip_address: str = None,
+        gw_ip_address: str = None,
+        dns_ip_address: str = None,
     ) -> DHCPCDConfigurationInfo:
 
-        self.printer.print_with_rich_table_fn(
+        self.collaborators.printer().print_with_rich_table_fn(
             generate_instructions_dhcpcd_config(
-                host_ip_pairs=host_ip_pairs, default_gw_address=gw_ip_address, default_dns_address=dns_ip_address
+                ansible_hosts=ansible_hosts, default_gw_address=gw_ip_address, default_dns_address=dns_ip_address
             )
         )
 
-        selected_static_ip = Evaluator.eval_step_return_failure_throws(
-            call=lambda: self.prompter.prompt_user_input_fn(
+        selected_static_ip = Evaluator.eval_step_with_return_throw_on_failure(
+            call=lambda: self.collaborators.prompter().prompt_user_input_fn(
                 message="Enter a desired remote static IP address (example: 192.168.1.2XX)",
                 default=static_ip_address,
                 post_user_input_message="Selected remote static IP address       :: ",
@@ -138,8 +138,8 @@ class RemoteMachineConnector:
             err_msg="Failed to read static IP address",
         )
 
-        selected_gw_address = Evaluator.eval_step_return_failure_throws(
-            call=lambda: self.prompter.prompt_user_input_fn(
+        selected_gw_address = Evaluator.eval_step_with_return_throw_on_failure(
+            call=lambda: self.collaborators.prompter().prompt_user_input_fn(
                 message="Enter the gateway address",
                 default=gw_ip_address,
                 post_user_input_message="Selected gateway address                :: ",
@@ -148,8 +148,8 @@ class RemoteMachineConnector:
             err_msg="Failed to read gateway IP address",
         )
 
-        selected_dns_resolver_address = Evaluator.eval_step_return_failure_throws(
-            call=lambda: self.prompter.prompt_user_input_fn(
+        selected_dns_resolver_address = Evaluator.eval_step_with_return_throw_on_failure(
+            call=lambda: self.collaborators.prompter().prompt_user_input_fn(
                 message="Enter the DNS resolver address",
                 default=dns_ip_address,
                 post_user_input_message="Selected remote DNS resolver IP address :: ",
@@ -165,146 +165,186 @@ class RemoteMachineConnector:
         for sel_method in NetworkDeviceSelectionMethod:
             options_list.append(sel_method.value)
 
-        network_device_select_method: str = self.prompter.prompt_user_selection_fn(
+        network_device_select_method: str = self.collaborators.prompter().prompt_user_selection_fn(
             message="Please choose network device selection method", options=options_list
         )
         return NetworkDeviceSelectionMethod(network_device_select_method) if network_device_select_method else None
 
-    def _run_host_ip_address_scan(self, ip_discovery_range: str, force_single_conn_info: bool) -> List[HostIpPair]:
+    def _ask_for_network_device_authentication_method(self) -> NetworkDeviceAuthenticationMethod:
+        options_list: List[dict] = []
+        for auth_method in NetworkDeviceAuthenticationMethod:
+            options_list.append(auth_method.value)
+
+        network_device_auth_method: str = self.collaborators.prompter().prompt_user_selection_fn(
+            message="Please choose network device authentication method", options=options_list
+        )
+        return NetworkDeviceAuthenticationMethod(network_device_auth_method) if network_device_auth_method else None
+
+    def _run_scan_lan_host_selection(self, ip_discovery_range: str, force_single_conn_info: bool) -> List[AnsibleHost]:
         if ip_discovery_range and len(ip_discovery_range) > 0:
-            if self.prompter.prompt_yes_no_fn(
+            if self.collaborators.prompter().prompt_yes_no_fn(
                 message=f"Scan LAN network for IP addresses at range {ip_discovery_range}",
                 post_no_message="Skipped LAN network scan",
                 post_yes_message=f"Selected to scan LAN at range {ip_discovery_range}",
             ):
-                return self._run_lan_scan_selection_flow(ip_discovery_range, force_single_conn_info)
+                return self._run_lan_scan_host_selection(
+                    ip_discovery_range=ip_discovery_range, force_single_conn_info=force_single_conn_info
+                )
         return None
 
-    def _run_single_host_ip_selection_flow(self) -> List[HostIpPair]:
-        single_ip_address = self.prompter.prompt_user_input_fn(
-            message="Enter remote node IP address", post_user_input_message="Selected IP address :: "
-        )
-        single_hostname = self.prompter.prompt_user_input_fn(
-            message="Enter remote node host name", post_user_input_message="Selected remote hostname :: "
-        )
-        return (
-            [HostIpPair(host=single_hostname, ip_address=single_ip_address)]
-            if len(single_hostname) > 0 and len(single_hostname) > 0
-            else None
+    def _run_manual_host_selection(self, ctx: Context) -> List[AnsibleHost]:
+        ip_address = Evaluator.eval_step_with_return_throw_on_failure(
+            call=lambda: self.collaborators.prompter().prompt_user_input_fn(
+                message="Enter remote node IP address",
+                post_user_input_message="Selected IP address :: ",
+            ),
+            ctx=ctx,
+            err_msg="Failed to read node IP address",
         )
 
-    def _get_ssh_connection_info(
+        hostname = Evaluator.eval_step_with_return_throw_on_failure(
+            call=lambda: self.collaborators.prompter().prompt_user_input_fn(
+                message="Enter remote node host name",
+                post_user_input_message="Selected remote hostname :: ",
+            ),
+            ctx=ctx,
+            err_msg="Failed to read node host name",
+        )
+
+        return [AnsibleHost(host=hostname, ip_address=ip_address)]
+
+    def _collect_ssh_auth_info(
         self,
         ctx: Context,
         remote_opts: CliRemoteOpts,
-        selected_host_ip_pairs: List[HostIpPair],
+        ansible_hosts: List[AnsibleHost],
     ) -> SSHConnectionInfo:
 
-        self.printer.print_with_rich_table_fn(
-            generate_instructions_connect_via_ssh(host_ip_pairs=selected_host_ip_pairs)
+        self.collaborators.printer().print_with_rich_table_fn(
+            generate_instructions_connect_via_ssh(ansible_hosts=ansible_hosts)
         )
 
-        username = Evaluator.eval_step_return_failure_throws(
-            call=lambda: self.prompter.prompt_user_input_fn(
-                message="Enter remote node user",
-                default=remote_opts.node_username,
-                post_user_input_message="Selected remote user :: ",
-            ),
-            ctx=ctx,
-            err_msg="Failed to read username",
-        )
-
-        if remote_opts.ssh_private_key_file_path and len(remote_opts.ssh_private_key_file_path) > 0:
-            self.printer.new_line_fn()
-            self.printer.print_fn("Identified SSH private key path in user configuration, skipping password prompt.")
-            return SSHConnectionInfo(
-                username=username,
-                ssh_private_key_file_path=remote_opts.ssh_private_key_file_path,
-                host_ip_pairs=selected_host_ip_pairs,
+        for host in ansible_hosts:
+            host.username = Evaluator.eval_step_with_return_throw_on_failure(
+                call=lambda: self.collaborators.prompter().prompt_user_input_fn(
+                    message="Enter remote node user name",
+                    default=remote_opts.node_username,
+                    post_user_input_message="Selected remote user :: ",
+                ),
+                ctx=ctx,
+                err_msg="Failed to read username",
             )
 
-            # TODO: might want to avoid from prompting for auth method since Ansible is using the SSH key in keychain by default
+            auth_method = self._ask_for_network_device_authentication_method()
+
+            if auth_method == NetworkDeviceAuthenticationMethod.Password:
+                host.password = self._collect_auth_password(ctx, remote_opts)
+            elif auth_method == NetworkDeviceAuthenticationMethod.SSHPrivateKeyPath:
+                host.ssh_private_key_file_path = self._collect_auth_ssh_private_key_path(ctx, remote_opts)
+
+        return SSHConnectionInfo(ansible_hosts=ansible_hosts)
+
+    def _collect_auth_password(self, ctx: Context, remote_opts: CliRemoteOpts) -> str:
+        password = None
+        if remote_opts.node_password and len(remote_opts.node_password) > 0:
+            password = remote_opts.node_password
+            self.collaborators.printer().new_line_fn()
+            self.collaborators.printer().print_fn("Identified SSH password from CLI argument.")
         else:
-            password = Evaluator.eval_step_return_failure_throws(
-                call=lambda: self.prompter.prompt_user_input_fn(
+            password = Evaluator.eval_step_with_return_throw_on_failure(
+                call=lambda: self.collaborators.prompter().prompt_user_input_fn(
                     message="Enter remote node password",
                     default=remote_opts.node_password,
-                    post_user_input_message="Selected remote password :: ",
-                    redact_default=True,
+                    post_user_input_message="Set remote password :: ",
+                    redact_value=True,
                 ),
                 ctx=ctx,
                 err_msg="Failed to read password",
             )
-            return SSHConnectionInfo(username=username, password=password, host_ip_pairs=selected_host_ip_pairs)
+        return password
 
-    def _select_from_existing_host_ip_pairs(
-        self, host_ip_pairs: List[HostIpPair], force_single_conn_info: bool
-    ) -> List[HostIpPair]:
+    def _collect_auth_ssh_private_key_path(self, ctx: Context, remote_opts: CliRemoteOpts) -> str:
+        ssh_private_key_path = None
+        if remote_opts.ssh_private_key_file_path and len(remote_opts.ssh_private_key_file_path) > 0:
+            ssh_private_key_path = remote_opts.ssh_private_key_file_path
+            self.collaborators.printer().new_line_fn()
+            self.collaborators.printer().print_fn("Identified SSH private key path from CLI argument.")
+        else:
+            ssh_private_key_path = Evaluator.eval_step_with_return_throw_on_failure(
+                call=lambda: self.collaborators.prompter().prompt_user_input_fn(
+                    message="Enter SSH private key path",
+                    default=remote_opts.node_password,
+                    post_user_input_message="Set private key path :: ",
+                    redact_value=True,
+                ),
+                ctx=ctx,
+                err_msg="Failed to read SSH private key path",
+            )
+        return ssh_private_key_path
 
-        if not host_ip_pairs or len(host_ip_pairs) == 0:
+    def _run_config_based_host_selection(
+        self, ansible_hosts: List[AnsibleHost], force_single_conn_info: bool
+    ) -> List[AnsibleHost]:
+
+        if not ansible_hosts or len(ansible_hosts) == 0:
             return None
 
         options_list: List[str] = []
-        option_to_value_map: dict[str, dict] = {}
-        for pair in host_ip_pairs:
+        option_to_value_dict: dict[str, dict] = {}
+        for pair in ansible_hosts:
             identifier = f"{pair.host}, {pair.ip_address}"
             options_list.append(identifier)
-            option_to_value_map[identifier] = {"hostname": pair.host, "ip_address": pair.ip_address}
+            option_to_value_dict[identifier] = {"hostname": pair.host, "ip_address": pair.ip_address}
 
-        result: List[HostIpPair] = []
-        if force_single_conn_info:
-            selected_scanned_items: dict = self.prompter.prompt_user_selection_fn(
-                message="Please choose a network device", options=options_list
-            )
-            selected_item_dict = option_to_value_map[selected_scanned_items]
-            result.append(HostIpPair(host=selected_item_dict["hostname"], ip_address=selected_item_dict["ip_address"]))
-        else:
-            selected_scanned_items: dict = self.prompter.prompt_user_multi_selection_fn(
-                message="Please choose a network device", options=options_list
-            )
-            if selected_scanned_items and len(selected_scanned_items) > 0:
-                for item in selected_scanned_items:
-                    selected_item_dict = option_to_value_map[item]
-                    result.append(
-                        HostIpPair(host=selected_item_dict["hostname"], ip_address=selected_item_dict["ip_address"])
-                    )
+        return self._convert_prompted_host_selection_to_ansible_hosts(
+            options_list=options_list,
+            option_to_value_dict=option_to_value_dict,
+            force_single_conn_info=force_single_conn_info,
+        )
 
-        return result
-
-    def _run_lan_scan_selection_flow(self, ip_discovery_range: str, force_single_conn_info: bool) -> List[HostIpPair]:
-        if not self.checks.is_tool_exist_fn("nmap"):
+    def _run_lan_scan_host_selection(self, ip_discovery_range: str, force_single_conn_info: bool) -> List[AnsibleHost]:
+        if not self.collaborators.checks().is_tool_exist_fn("nmap"):
             logger.warning("Missing mandatory utility. name: nmap")
             return None
 
-        self.printer.print_with_rich_table_fn(generate_instructions_network_scan())
-        scan_dict = self.network_util.get_all_lan_network_devices_fn(ip_range=ip_discovery_range, show_progress=True)
-        self.printer.new_line_fn()
+        self.collaborators.printer().print_with_rich_table_fn(generate_instructions_network_scan())
+        scan_dict = self.collaborators.network_util().get_all_lan_network_devices_fn(
+            ip_range=ip_discovery_range, show_progress=True
+        )
+        self.collaborators.printer().new_line_fn()
 
         options_list: List[str] = []
-        option_to_value_map: dict[str, dict] = {}
+        option_to_value_dict: dict[str, dict] = {}
         for scan_item in scan_dict.values():
             identifier = f"{scan_item['hostname']}, {scan_item['ip_address']}"
             options_list.append(identifier)
-            option_to_value_map[identifier] = scan_item
+            option_to_value_dict[identifier] = scan_item
 
-        result: List[HostIpPair] = []
+        return self._convert_prompted_host_selection_to_ansible_hosts(
+            options_list=options_list,
+            option_to_value_dict=option_to_value_dict,
+            force_single_conn_info=force_single_conn_info,
+        )
+
+    def _convert_prompted_host_selection_to_ansible_hosts(
+        self, options_list: List[str], option_to_value_dict: dict[str, dict], force_single_conn_info: bool
+    ) -> List[AnsibleHost]:
+
+        result: List[AnsibleHost] = []
         if force_single_conn_info:
-            selected_scanned_items: dict = self.prompter.prompt_user_selection_fn(
+            selected_item_from_config: dict = self.collaborators.prompter().prompt_user_selection_fn(
                 message="Please choose a network device", options=options_list
             )
-            selected_item_dict = option_to_value_map[selected_scanned_items]
-            result.append(HostIpPair(host=selected_item_dict["hostname"], ip_address=selected_item_dict["ip_address"]))
+            selected_item_dict = option_to_value_dict[selected_item_from_config]
+            result.append(AnsibleHost.from_dict(selected_item_dict))
         else:
-            selected_scanned_items: dict = self.prompter.prompt_user_multi_selection_fn(
-                message="Please choose a network device", options=options_list
+            selected_items_from_config: dict = self.collaborators.prompter().prompt_user_multi_selection_fn(
+                message="Please choose network devices", options=options_list
             )
-            if selected_scanned_items and len(selected_scanned_items) > 0:
-                for item in selected_scanned_items:
-                    selected_item_dict = option_to_value_map[item]
-                    result.append(
-                        HostIpPair(host=selected_item_dict["hostname"], ip_address=selected_item_dict["ip_address"])
-                    )
-
+            if selected_items_from_config and len(selected_items_from_config) > 0:
+                for item in selected_items_from_config:
+                    selected_item_dict = option_to_value_dict[item]
+                    result.append(AnsibleHost.from_dict(selected_item_dict))
         return result
 
 
@@ -320,10 +360,10 @@ def generate_instructions_network_scan() -> str:
 """
 
 
-def generate_instructions_connect_via_ssh(host_ip_pairs: List[HostIpPair]):
+def generate_instructions_connect_via_ssh(ansible_hosts: List[AnsibleHost]):
     ip_addresses = ""
-    if host_ip_pairs:
-        for pair in host_ip_pairs:
+    if ansible_hosts:
+        for pair in ansible_hosts:
             ip_addresses += f"    - [yellow]{pair.host}, {pair.ip_address}[/yellow]\n"
 
     return f"""
@@ -339,16 +379,16 @@ def generate_instructions_connect_via_ssh(host_ip_pairs: List[HostIpPair]):
     • Raspberry Pi private SSH key path (Recommended)
 
   To change the default values, please refer to the documentation.
-  [yellow]It is recommended to use SSH key instead of password for accessing remote machine.[/yellow]
+  [yellow]It is recommended to use a SSH key instead of password for accessing remote machine.[/yellow]
 """
 
 
 def generate_instructions_dhcpcd_config(
-    host_ip_pairs: List[HostIpPair], default_gw_address: str, default_dns_address: str
+    ansible_hosts: List[AnsibleHost], default_gw_address: str, default_dns_address: str
 ):
     ip_addresses = ""
-    if host_ip_pairs:
-        for pair in host_ip_pairs:
+    if ansible_hosts:
+        for pair in ansible_hosts:
             ip_addresses += f"    - [yellow]{pair.host}, {pair.ip_address}[/yellow]\n"
 
     return f"""

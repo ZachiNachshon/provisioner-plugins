@@ -10,14 +10,14 @@ from python_core_lib.infra.context import Context
 
 class Evaluator:
     @staticmethod
-    def eval_step_no_return_failure_throws(ctx: Context, err_msg: str, call: Callable) -> None:
+    def eval_step_no_return_throw_on_failure(ctx: Context, err_msg: str, call: Callable) -> None:
         try:
             call()
         except Exception as e:
             raise StepEvaluationFailure(f"{err_msg}, ex: {e.__class__.__name__}, message: {str(e)}")
 
     @staticmethod
-    def eval_step_return_failure_throws(ctx: Context, err_msg: str, call: Callable) -> Any:
+    def eval_step_with_return_throw_on_failure(ctx: Context, err_msg: str, call: Callable) -> Any:
         step_response = call()
         if not step_response and not ctx.is_dry_run():
             raise StepEvaluationFailure(err_msg)

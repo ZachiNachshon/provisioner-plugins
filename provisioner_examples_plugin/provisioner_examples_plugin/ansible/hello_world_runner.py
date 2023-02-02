@@ -3,7 +3,7 @@
 from typing import Callable
 from loguru import logger
 from python_core_lib.infra.context import Context
-from python_core_lib.runner.ansible.ansible import HostIpPair
+from python_core_lib.runner.ansible.ansible import AnsibleHost
 from python_core_lib.shared.collaborators import CoreCollaborators
 from python_core_lib.utils.checks import Checks
 from python_core_lib.utils.printer import Printer
@@ -40,7 +40,7 @@ class HelloWorldRunner:
         return SSHConnectionInfo(
             username="pi",
             password="raspbian",
-            host_ip_pairs=[HostIpPair(host="localhost", ip_address="ansible_connection=local")],
+            ansible_hosts=[AnsibleHost(host="localhost", ip_address="ansible_connection=local")],
         )
 
     def _run_ansible_hello_playbook_with_progress_bar(
@@ -60,7 +60,7 @@ class HelloWorldRunner:
                 extra_modules_paths=[collaborators.paths().get_path_abs_to_module_root_fn(__name__)],
                 ansible_vars=[f"\"username='{args.username}'\""],
                 ansible_tags=["hello"],
-                selected_hosts=ssh_conn_info.host_ip_pairs,
+                selected_hosts=ssh_conn_info.ansible_hosts,
             ),
             desc_run="Running Ansible playbook (Hello World)",
             desc_end="Ansible playbook finished (Hello World).",
