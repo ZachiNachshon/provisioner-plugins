@@ -41,3 +41,7 @@ class FakePrinter(Printer):
                 break
         if not found:
             raise FakeEnvironmentAssertionError(f"Printer expected an output message but it never printed. message:\n{message}")            
+
+    def assert_outputs(self, messages: List[str]) -> None:
+        for message in messages:
+            self.assert_output(message)

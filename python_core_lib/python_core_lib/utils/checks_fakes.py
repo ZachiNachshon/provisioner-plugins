@@ -2,9 +2,9 @@
 
 from typing import Any, Optional
 
-from ..errors.cli_errors import MissingUtilityException
-from ..infra.context import Context
-from .checks import Checks
+from python_core_lib.errors.cli_errors import MissingUtilityException
+from python_core_lib.infra.context import Context
+from python_core_lib.utils.checks import Checks
 
 
 class FakeChecks(Checks):
@@ -39,4 +39,4 @@ class FakeChecks(Checks):
         if soft_fail:
             return False
 
-        raise MissingUtilityException(f"Fake checked utility is not defined. name: {name}")
+        raise MissingUtilityException(f"Fake checkes utility is not defined. name: {name}")

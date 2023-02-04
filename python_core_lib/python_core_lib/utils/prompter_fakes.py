@@ -23,7 +23,7 @@ class FakePrompter(Prompter):
 
     def __init__(self, auto_prompt: bool, dry_run: bool):
         super().__init__(auto_prompt=auto_prompt, dry_run=dry_run)
-        self.__registered_enter_prompt_counts = []
+        self.__registered_enter_prompt_counts = 0
         self.__registered_yes_no_prompts = []
         self.__registered_user_input_prompts = []
         self.__registered_user_single_selection_prompts = []

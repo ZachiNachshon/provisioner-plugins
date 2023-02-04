@@ -73,7 +73,7 @@ class Assertion:
         else:
             # Clear all ANSII color codes from output
             output_clear = REGEX_REMOTE_COLOR_CODES.sub("", run_output)
-            # It won't get printed is test passes
+            # It won't get printed if test passes
             print(output_clear)
             for item in expected:
                 # Assert single output

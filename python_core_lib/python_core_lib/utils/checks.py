@@ -4,8 +4,8 @@ from shutil import which
 
 from loguru import logger
 
-from ..errors.cli_errors import MissingUtilityException
-from ..infra.context import Context
+from python_core_lib.errors.cli_errors import MissingUtilityException
+from python_core_lib.infra.context import Context
 
 
 class Checks:
