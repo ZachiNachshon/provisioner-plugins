@@ -23,7 +23,7 @@ class TestDataRemoteOpts:
 
     TEST_REMOTE_HOSTS_DICT = {
         TEST_DATA_SSH_HOSTNAME_1: RemoteConfig.Host(
-            host=TEST_DATA_SSH_HOSTNAME_1,
+            name=TEST_DATA_SSH_HOSTNAME_1,
             address=TEST_DATA_SSH_IP_ADDRESS_1,
             auth=RemoteConfig.Host.Auth(
                 username=TEST_DATA_REMOTE_NODE_USERNAME_1,
@@ -32,7 +32,7 @@ class TestDataRemoteOpts:
             ),
         ),
         TEST_DATA_SSH_HOSTNAME_2: RemoteConfig.Host(
-            host=TEST_DATA_SSH_HOSTNAME_2,
+            name=TEST_DATA_SSH_HOSTNAME_2,
             address=TEST_DATA_SSH_IP_ADDRESS_2,
             auth=RemoteConfig.Host.Auth(
                 username=TEST_DATA_REMOTE_NODE_USERNAME_2,

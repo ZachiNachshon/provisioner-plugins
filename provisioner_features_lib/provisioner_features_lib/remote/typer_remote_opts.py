@@ -178,7 +178,7 @@ class CliRemoteOpts:
             # If user supplied remote options via CLI arguments - override all other sources
             result.append(
                 AnsibleHost(
-                    host=value.host,
+                    host=value.name,
                     ip_address=value.address,
                     username=self.node_username if self.node_username else value.auth.username,
                     password=self.node_password if self.node_password else value.auth.password,

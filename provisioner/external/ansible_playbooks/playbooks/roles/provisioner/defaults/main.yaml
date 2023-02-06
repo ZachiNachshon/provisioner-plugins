@@ -1,0 +1,8 @@
+---
+local_bin_folder_path: "$HOME/.local/bin"
+local_pip_pkg_folder_path: "${HOME}/.config/provisioner/.pip-pkg"
+provisioner_bin_file_name: provisioner
+provisioner_ansible_command: Run # Mandatory. Options: Run/Uninstall
+provisioner_version: "0.10.0"
+# provisioner_command: null
+git_access_token: "test-token"

@@ -140,11 +140,8 @@ class RemoteMachineConfigureTestShould(unittest.TestCase):
             .ansible_runner()
             .assert_command(
                 working_dir=env.get_test_env_root_path(),
-                username=TestDataRemoteConnector.TEST_DATA_SSH_USERNAME_1,
                 selected_hosts=TestDataRemoteConnector.TEST_DATA_SSH_ANSIBLE_HOSTS,
                 playbook_path=f"{env.get_test_env_root_path()}{ARG_ANSIBLE_PLAYBOOK_RELATIVE_PATH_FROM_ROOT}",
-                password=TestDataRemoteConnector.TEST_DATA_SSH_PASSWORD_1,
-                ssh_private_key_file_path=TestDataRemoteConnector.TEST_DATA_SSH_PRIVATE_KEY_FILE_PATH_1,
                 ansible_vars=[
                     f"host_name={TestDataRemoteConnector.TEST_DATA_SSH_HOSTNAME_1}",
                 ],
@@ -164,7 +161,7 @@ class RemoteMachineConfigureTestShould(unittest.TestCase):
     def test_post_run_instructions_printed_successfully(self) -> None:
         env = TestEnv.create()
         RemoteMachineOsConfigureRunner()._print_post_run_instructions(
-            (TestDataRemoteConnector.TEST_DATA_SSH_HOSTNAME_1, TestDataRemoteConnector.TEST_DATA_SSH_IP_ADDRESS_1),
+            TestDataRemoteConnector.TEST_DATA_ANSIBLE_HOST_1,
             env.get_collaborators(),
         )
         printer = env.get_collaborators().printer()

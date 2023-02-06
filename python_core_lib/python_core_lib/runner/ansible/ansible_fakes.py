@@ -16,22 +16,16 @@ class FakeAnsibleRunner(AnsibleRunner):
     @staticmethod
     def calculate_hash( 
         working_dir: str,
-        username: str,
         selected_hosts: List[AnsibleHost],
         playbook_path: str,
-        password: str,
-        ssh_private_key_file_path: str,
         ansible_vars: List[str],
         ansible_tags: List[str],
         extra_modules_paths: List[str],
         force_dockerized: bool) -> str:
         return hash((
                 working_dir, 
-                username, 
                 str(selected_hosts), 
                 playbook_path,
-                password,
-                ssh_private_key_file_path,
                 str(ansible_vars),
                 str(ansible_tags),
                 str(extra_modules_paths),
@@ -40,11 +34,8 @@ class FakeAnsibleRunner(AnsibleRunner):
 
     class FakeAnsibleCommandArgs:
         working_dir: str
-        username: str
         selected_hosts: List[AnsibleHost]
         playbook_path: str
-        password: str
-        ssh_private_key_file_path: str
         ansible_vars: List[str]
         ansible_tags: List[str]
         extra_modules_paths: List[str]
@@ -52,22 +43,16 @@ class FakeAnsibleRunner(AnsibleRunner):
 
         def __init__(self,
             working_dir: str,
-            username: str,
             selected_hosts: List[AnsibleHost],
             playbook_path: str,
-            password: Optional[str] = None,
-            ssh_private_key_file_path: Optional[str] = None,
             ansible_vars: Optional[List[str]] = None,
             ansible_tags: Optional[List[str]] = None,
             extra_modules_paths: Optional[List[str]] = None,
             force_dockerized: Optional[bool] = False) -> None:
 
             self.working_dir = working_dir
-            self.username = username
             self.selected_hosts = selected_hosts
             self.playbook_path = playbook_path
-            self.password = password
-            self.ssh_private_key_file_path = ssh_private_key_file_path
             self.ansible_vars = ansible_vars
             self.ansible_tags = ansible_tags
             self.extra_modules_paths = extra_modules_paths
@@ -83,9 +68,13 @@ class FakeAnsibleRunner(AnsibleRunner):
 
         def __hash__(self):
             return FakeAnsibleRunner.calculate_hash(
-                self.working_dir, self.username, self.selected_hosts, self.playbook_path, 
-                self.password, self.ssh_private_key_file_path, self.ansible_vars,
-                self.ansible_tags, self.extra_modules_paths, self.force_dockerized 
+                working_dir=self.working_dir, 
+                selected_hosts=self.selected_hosts,
+                playbook_path=self.playbook_path, 
+                ansible_vars=self.ansible_vars,
+                ansible_tags=self.ansible_tags, 
+                extra_modules_paths=self.extra_modules_paths, 
+                force_dockerized=self.force_dockerized 
             )
 
     registered_commands: List[FakeAnsibleCommandArgs] = []
@@ -107,13 +96,10 @@ class FakeAnsibleRunner(AnsibleRunner):
     @staticmethod
     def _create_fake(dry_run: bool, verbose: bool, ansible_shell_runner_path: str) -> "FakeAnsibleRunner":
         ansible_runner = FakeAnsibleRunner(dry_run=dry_run, verbose=verbose, ansible_shell_runner_path=ansible_shell_runner_path)
-        ansible_runner.run_fn = lambda working_dir, username, selected_hosts, playbook_path, password=None, ssh_private_key_file_path=None, ansible_vars=None, ansible_tags=None, extra_modules_paths=None, force_dockerized=False: ansible_runner._record_command(
+        ansible_runner.run_fn = lambda working_dir, selected_hosts, playbook_path, ansible_vars=None, ansible_tags=None, extra_modules_paths=None, force_dockerized=False: ansible_runner._record_command(
             working_dir=working_dir, 
-            username=username, 
             selected_hosts=selected_hosts, 
             playbook_path=playbook_path, 
-            password=password, 
-            ssh_private_key_file_path=ssh_private_key_file_path, 
             ansible_vars=ansible_vars,
             ansible_tags=ansible_tags, 
             extra_modules_paths=extra_modules_paths,
@@ -131,23 +117,16 @@ class FakeAnsibleRunner(AnsibleRunner):
 
     def _record_command(self, 
         working_dir: str,
-        username: str,
         selected_hosts: List[AnsibleHost],
         playbook_path: str,
-        password: str,
-        ssh_private_key_file_path: str,
         ansible_vars: List[str],
         ansible_tags: List[str],
         extra_modules_paths: List[str],
         force_dockerized: bool):
-
         self.registered_commands.append(FakeAnsibleRunner.FakeAnsibleCommandArgs(
             working_dir=working_dir, 
-            username=username, 
             selected_hosts=selected_hosts, 
             playbook_path=playbook_path, 
-            password=password, 
-            ssh_private_key_file_path=ssh_private_key_file_path, 
             ansible_vars=ansible_vars,
             ansible_tags=ansible_tags, 
             extra_modules_paths=extra_modules_paths,
@@ -158,11 +137,8 @@ class FakeAnsibleRunner(AnsibleRunner):
     def assert_command(
         self, 
         working_dir: str,
-        username: str,
         selected_hosts: List[AnsibleHost],
         playbook_path: str,
-        password: str,
-        ssh_private_key_file_path: str,
         ansible_vars: List[str],
         ansible_tags: List[str],
         extra_modules_paths: List[str],
@@ -170,11 +146,8 @@ class FakeAnsibleRunner(AnsibleRunner):
 
         cmd_args = FakeAnsibleRunner.FakeAnsibleCommandArgs(
             working_dir=working_dir, 
-            username=username, 
             selected_hosts=selected_hosts, 
             playbook_path=playbook_path, 
-            password=password, 
-            ssh_private_key_file_path=ssh_private_key_file_path, 
             ansible_vars=ansible_vars,
             ansible_tags=ansible_tags, 
             extra_modules_paths=extra_modules_paths,

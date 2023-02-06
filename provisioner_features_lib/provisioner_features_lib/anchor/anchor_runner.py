@@ -104,7 +104,7 @@ class AnchorCmdRunner:
         collaborators.printer().print_fn(output)
         collaborators.printer().print_with_rich_table_fn(
             generate_summary(
-                host_ip_pairs=ssh_conn_info.host_ip_pairs,
+                ansible_hosts=ssh_conn_info.host_ip_pairs,
                 anchor_cmd=args.anchor_run_command,
             )
         )
@@ -128,13 +128,13 @@ class AnchorCmdRunner:
             raise NotImplementedError("OS is not supported")
 
 
-def generate_summary(host_ip_pairs: List[AnsibleHost], anchor_cmd: str):
+def generate_summary(ansible_hosts: List[AnsibleHost], anchor_cmd: str):
     host_names = []
     ip_addresses = []
-    if host_ip_pairs and len(host_ip_pairs) > 0:
-        for pair in host_ip_pairs:
-            host_names.append(pair.host)
-            ip_addresses.append(pair.ip_address)
+    if ansible_hosts and len(ansible_hosts) > 0:
+        for host in ansible_hosts:
+            host_names.append(host.host)
+            ip_addresses.append(host.ip_address)
     return f"""
   You have successfully ran an Anchor command on the following remote machines:
   

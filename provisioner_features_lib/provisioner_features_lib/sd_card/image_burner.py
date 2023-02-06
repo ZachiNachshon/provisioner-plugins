@@ -18,18 +18,6 @@ class ImageBurnerArgs:
         self.image_download_url = image_download_url
         self.image_download_path = image_download_path
 
-
-# Evaluator.eval_step_with_return_throw_on_failure(
-#             call=lambda: self._burn_image(
-#                 ctx,
-#                 block_device_name,
-#                 image_file_path,
-#                 collaborators,
-#             ),
-#             ctx=ctx,
-#             err_msg="Failed burning an image",
-#         )
-
 class ImageBurnerCmdRunner:
     def run(self, ctx: Context, args: ImageBurnerArgs, collaborators: CoreCollaborators) -> None:
         logger.debug("Inside ImageBurner run()")
@@ -40,7 +28,7 @@ class ImageBurnerCmdRunner:
             ctx, 
             args.image_download_url, 
             args.image_download_path, 
-            collaborators.http_client())
+            collaborators)
         self._burn_image_by_os(ctx, block_device_name, image_file_path, collaborators)
 
     def _prerequisites(self, ctx: Context, checks: Checks) -> None:

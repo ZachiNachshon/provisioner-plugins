@@ -10,6 +10,7 @@ from provisioner_features_lib.remote.remote_connector import (
 from provisioner_features_lib.remote.typer_remote_opts import CliRemoteOpts
 from python_core_lib.infra.context import Context
 from python_core_lib.infra.evaluator import Evaluator
+from python_core_lib.runner.ansible.ansible import AnsibleHost
 from python_core_lib.shared.collaborators import CoreCollaborators
 from python_core_lib.utils.checks import Checks
 
@@ -30,13 +31,13 @@ class RemoteMachineOsConfigureRunner:
 
         self._prerequisites(ctx=ctx, checks=collaborators.checks())
         self._print_pre_run_instructions(collaborators),
-        hostname_ip_tuple = self._run_ansible_configure_os_playbook_with_progress_bar(
+        ansible_host = self._run_ansible_configure_os_playbook_with_progress_bar(
             ctx=ctx,
             get_ssh_conn_info_fn=self._get_ssh_conn_info,
             collaborators=collaborators,
             args=args,
         )
-        self._print_post_run_instructions(hostname_ip_tuple, collaborators)
+        self._print_post_run_instructions(ansible_host, collaborators)
 
     def _run_ansible_configure_os_playbook_with_progress_bar(
         self,
@@ -44,26 +45,21 @@ class RemoteMachineOsConfigureRunner:
         get_ssh_conn_info_fn: Callable[..., SSHConnectionInfo],
         collaborators: CoreCollaborators,
         args: RemoteMachineOsConfigureArgs,
-    ) -> tuple[str, str]:
+    ) -> AnsibleHost:
 
         ssh_conn_info = get_ssh_conn_info_fn(ctx, collaborators, args.remote_opts)
-        hostname_ip_tuple = self._extract_host_ip_tuple(ctx, ssh_conn_info)
-        ssh_hostname = hostname_ip_tuple[0]
-        ssh_ip_address = hostname_ip_tuple[1]
+        ansible_host = ssh_conn_info.ansible_hosts[0]
 
         collaborators.summary().show_summary_and_prompt_for_enter("Configure OS")
 
         output = collaborators.printer().progress_indicator.status.long_running_process_fn(
             call=lambda: collaborators.ansible_runner().run_fn(
                 working_dir=collaborators.paths().get_path_from_exec_module_root_fn(),
-                username=ssh_conn_info.username,
-                password=ssh_conn_info.password,
-                ssh_private_key_file_path=ssh_conn_info.ssh_private_key_file_path,
                 playbook_path=collaborators.paths().get_path_relative_from_module_root_fn(
                     __name__, args.ansible_playbook_relative_path_from_root
                 ),
                 extra_modules_paths=[collaborators.paths().get_path_abs_to_module_root_fn(__name__)],
-                ansible_vars=[f"host_name={ssh_hostname}"],
+                ansible_vars=[f"host_name={ansible_host.host}"],
                 ansible_tags=["configure_remote_node", "reboot"],
                 selected_hosts=ssh_conn_info.ansible_hosts,
             ),
@@ -73,7 +69,7 @@ class RemoteMachineOsConfigureRunner:
         collaborators.printer().new_line_fn()
         collaborators.printer().print_fn(output)
 
-        return hostname_ip_tuple
+        return ansible_host
 
     def _get_ssh_conn_info(
         self, ctx: Context, collaborators: CoreCollaborators, remote_opts: Optional[CliRemoteOpts] = None
@@ -89,10 +85,6 @@ class RemoteMachineOsConfigureRunner:
         collaborators.summary().append("ssh_conn_info", ssh_conn_info)
         return ssh_conn_info
 
-    def _extract_host_ip_tuple(self, ctx: Context, ssh_conn_info: SSHConnectionInfo) -> tuple[str, str]:
-        single_pair_item = ssh_conn_info.ansible_hosts[0]
-        return (single_pair_item.host, single_pair_item.ip_address)
-
     def _print_pre_run_instructions(self, collaborators: CoreCollaborators):
         collaborators.printer().print_fn(generate_logo_configure())
         collaborators.printer().print_with_rich_table_fn(generate_instructions_pre_configure())
@@ -100,11 +92,11 @@ class RemoteMachineOsConfigureRunner:
 
     def _print_post_run_instructions(
         self,
-        hostname_ip_tuple: tuple[str, str],
+        ansible_host: AnsibleHost,
         collaborators: CoreCollaborators,
     ):
         collaborators.printer().print_with_rich_table_fn(
-            generate_instructions_post_configure(hostname=hostname_ip_tuple[0], ip_address=hostname_ip_tuple[1])
+            generate_instructions_post_configure(ansible_host)
         )
 
     def _prerequisites(self, ctx: Context, checks: Checks) -> None:
@@ -144,10 +136,10 @@ def generate_instructions_pre_configure() -> str:
 """
 
 
-def generate_instructions_post_configure(hostname: str, ip_address: str):
+def generate_instructions_post_configure(ansible_host: AnsibleHost):
     return f"""
   You have successfully configured hardware and system settings for a Raspberry Pi node:
   
-    • Host Name....: [yellow]{hostname}[/yellow]
-    • IP Address...: [yellow]{ip_address}[/yellow]
+    • Host Name....: [yellow]{ansible_host.host}[/yellow]
+    • IP Address...: [yellow]{ansible_host.ip_address}[/yellow]
 """

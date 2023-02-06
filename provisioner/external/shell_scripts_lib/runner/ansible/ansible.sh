@@ -18,10 +18,8 @@ PROPERTIES_FOLDER_PATH=${ROOT_FOLDER_ABS_PATH}/runner/ansible
 DEPENDENCY_FOLDER_NAME="shell_scripts_lib"
 
 PARAM_ANSIBLE_WORKING_DIR=""
+PARAM_ANSIBLE_EXTRA_MODULE_PATHS=""
 PARAM_ANSIBLE_SELECTED_HOSTS=""
-PARAM_ANSIBLE_PASSWORD=""
-PARAM_ANSIBLE_SSH_PRIVATE_KEY_FILE_PATH=""
-PARAM_ANSIBLE_USERNAME=""
 PARAM_ANSIBLE_PLAYBOOK_PATH=""
 PARAM_ANSIBLE_ANSIBLE_VARS=""
 PARAM_ANSIBLE_ANSIBLE_TAGS=""
@@ -49,6 +47,26 @@ copy_ansible_config_to_config_folder() {
 
   log_debug "Copying Ansible configuration. path: ${localhost_ansible_config_path}"
   cmd_run "cp -a ${runner_ansible_config_folder} ${localhost_ansible_config_path}"
+}
+
+generate_extra_module_paths_docker_volumes() {
+  local result=""
+  local delimiter=","
+
+  local saveIFS=$IFS
+  IFS="${delimiter}"
+  read -r -a extra_modules_array <<<"${PARAM_ANSIBLE_EXTRA_MODULE_PATHS}"
+  IFS=${saveIFS}
+
+  local delim=""
+  for ((i = 0; i < ${#extra_modules_array[@]}; i++)); do
+    local module_path=${extra_modules_array[i]}
+    local folder_name=$(basename "${module_path}")
+    result+="${delim}docker_volume: ${module_path}:${PROP_ANSIBLE_CONTAINER_WORKING_DIR}/${folder_name}"
+    delim=","
+  done
+
+  echo "${result}"
 }
 
 generate_runner_args() {
@@ -94,17 +112,8 @@ generate_ansible_playbook_args() {
     verbose="-vvv"
   fi
 
-  local auth_cli_arg=""
-  if [[ -n "${PARAM_ANSIBLE_PASSWORD}" ]]; then
-    auth_cli_arg="-e ansible_ssh_pass=${PARAM_ANSIBLE_PASSWORD}"
-  elif [[ -n "${PARAM_ANSIBLE_SSH_PRIVATE_KEY_FILE_PATH}" ]]; then
-    auth_cli_arg="-e ansible_ssh_private_key_file=${PARAM_ANSIBLE_SSH_PRIVATE_KEY_FILE_PATH}"
-  fi
-
   local runner_args="-i ${hosts_file_path} ${verbose} \
 ${PROP_ANSIBLE_CONTAINER_WORKING_DIR}/${PARAM_ANSIBLE_PLAYBOOK_PATH} \
--e ansible_user=${PARAM_ANSIBLE_USERNAME} \
-${auth_cli_arg} \
 -e local_bin_folder=${PATTERN_ANSIBLE_CLI_BINARY_FOLDER} \
 ${PARAM_ANSIBLE_ANSIBLE_VARS} \
 ${PARAM_ANSIBLE_ANSIBLE_TAGS}"
@@ -119,23 +128,20 @@ parse_ansible_arguments() {
         PARAM_ANSIBLE_WORKING_DIR=$(cut -d : -f 2- <<<"${1}" | xargs)
         shift
         ;;
+      extra_module_path*)
+        if [[ -z "${PARAM_ANSIBLE_EXTRA_MODULE_PATHS}" ]]; then
+          EXTRA_MODULES_SEP=""
+        fi
+        extra_path=$(cut -d : -f 2- <<<"${1}" | xargs)
+        PARAM_ANSIBLE_EXTRA_MODULE_PATHS+="${EXTRA_MODULES_SEP}${extra_path}"
+        EXTRA_MODULES_SEP=","
+        shift
+        ;;
       selected_host*)
         selected_host=$(cut -d : -f 2- <<<"${1}" | xargs)
         # Force new line at the end
         PARAM_ANSIBLE_SELECTED_HOSTS+="${selected_host} 
 "
-        shift
-        ;;
-      password*)
-        PARAM_ANSIBLE_PASSWORD=$(cut -d : -f 2- <<<"${1}" | xargs)
-        shift
-        ;;
-      ssh_private_key_file_path*)
-        PARAM_ANSIBLE_SSH_PRIVATE_KEY_FILE_PATH=$(cut -d : -f 2- <<<"${1}" | xargs)
-        shift
-        ;;
-      username*)
-        PARAM_ANSIBLE_USERNAME=$(cut -d : -f 2- <<<"${1}" | xargs)
         shift
         ;;
       playbook_path*)
@@ -216,7 +222,7 @@ resolve_required_properties() {
 }
 
 resolve_required_patterns() {
-  PATTERN_ANSIBLE_CLI_BINARY_FOLDER=$(pattern "${PROPERTIES_FOLDER_PATH}" "runner.ansible.cli.binary_folder" "${PARAM_ANSIBLE_USERNAME}")
+  PATTERN_ANSIBLE_CLI_BINARY_FOLDER=$(pattern "${PROPERTIES_FOLDER_PATH}" "runner.ansible.cli.binary_folder")
   PATTERN_ANSIBLE_LOCALHOST_CONFIG_FOLDER=$(pattern "${PROPERTIES_FOLDER_PATH}" "runner.ansible.localhost.config.folder")
 }
 
@@ -227,24 +233,22 @@ resolve_required_patterns() {
 #   None
 # 
 # Arguments:
-#   working_dir         - Host root working directory
-#   username            - SSH remote username
-#   password            - SSH remote password
-#   selected_host       - (Repeating) Selected host with name identifier
-#   playbook_path       - Host path of the playbook to execute
-#   ansible_var         - (Repeating) Ansible variable to be used within the playbook
-#   ansible_tag         - (Repeating) Ansible tag to play a specific task within the playbook
-#   --force-dockerized  - Force to run the CLI runner in a dockerized container
-#   --dry-run           - Run all commands in dry-run mode without file system changes
-#   --verbose           - Output debug logs for commands executions
+#   working_dir          - Host root working directory
+#   extra_module_path    - (Repeating) Optional module path to mount as a Docker volume
+#   selected_host        - (Repeating) Selected host with name identifier, username and password or ssh private key
+#   playbook_path        - Host path of the playbook to execute
+#   ansible_var          - (Repeating) Ansible variable to be used within the playbook
+#   ansible_tag          - (Repeating) Ansible tag to play a specific task within the playbook
+#   --force-dockerized   - Force to run the CLI runner in a dockerized container
+#   --dry-run            - Run all commands in dry-run mode without file system changes
+#   --verbose            - Output debug logs for commands executions
 # 
 # Usage:
 # ./runner/ansible/ansible.sh \
-#   "username: <ssh_remote_username>" \
-#   "password: <ssh_remote_password>" \
 #   "working_dir: /path/to/working/dir" \
-#   "selected_host: kmaster ansible_host=192.168.1.200" \
-#   "selected_host: knode1 ansible_host=192.168.1.201" \
+#   "extra_module_path: /path/to/other/dir" \
+#   "selected_host: kmaster ansible_host=192.168.1.200 ansible_user=user1 ansible_password=password1" \
+#   "selected_host: knode1  ansible_host=192.168.1.201 ansible_user=user2 ansible_private_key_file=~/.ssh/rsa_key" \
 #   "playbook_path: path/to/playbook.yaml" \
 #   "ansible_var: key1=value1" \
 #   "ansible_var: key2=value2" \
@@ -260,7 +264,7 @@ main() {
   resolve_required_properties
   resolve_required_patterns
 
-  # hosts file is always generated on the localhost machine.
+  # Hosts file is always generated on the localhost machine.
   # $HOME/.config/ansible/ansible_hosts
   generate_hosts_file "${PROP_ANSIBLE_HOSTS_FILE_NAME}" "${PATTERN_ANSIBLE_LOCALHOST_CONFIG_FOLDER}"
   local hosts_file_path_localhost="${PATTERN_ANSIBLE_LOCALHOST_CONFIG_FOLDER}/${PROP_ANSIBLE_HOSTS_FILE_NAME}"
@@ -276,6 +280,15 @@ main() {
 
   copy_ansible_config_to_config_folder
 
+  # Set the extra modules paths as docker volumes, implementation is in here since shell cannot return an array
+  # as a function return value
+  local extra_modules_array=()
+  local extra_module_paths_as_docker_volumes=$(generate_extra_module_paths_docker_volumes)
+  local saveIFS=$IFS
+  IFS=","
+  read -r -a extra_modules_array <<<"${extra_module_paths_as_docker_volumes}"
+  IFS=${saveIFS}
+
   local runner_args=$(generate_runner_args "${hosts_file_path_localhost}" "${hosts_file_path_dockerized}")
 
   run_maybe_docker \
@@ -286,7 +299,8 @@ main() {
     "docker_image: ${PROP_ANSIBLE_IMAGE_NAME}" \
     "docker_volume: ${hosts_file_volume_mount}" \
     "docker_volume: ${config_folder_volume_mount}" \
-    "docker_build_context: ${ROOT_FOLDER_ABS_PATH}/runner/ansible"
+    "docker_build_context: ${ROOT_FOLDER_ABS_PATH}/runner/ansible" \
+"${extra_modules_array[@]}"
 }
 
 main "$@"

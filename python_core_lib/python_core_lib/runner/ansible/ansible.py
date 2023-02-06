@@ -86,34 +86,38 @@ class AnsibleRunner:
             raise ExternalDependencyFileNotFound(err_msg)
         logger.debug("Ansible runner external script was found")
 
-    def _prepare_ansible_host_items(self, host_ip_pair_list: List[AnsibleHost]) -> List[str]:
+    def _prepare_ansible_host_items(self, ansible_hosts: List[AnsibleHost]) -> List[str]:
         result = []
 
-        if self._dry_run and len(host_ip_pair_list) == 0:
+        if self._dry_run and len(ansible_hosts) == 0:
             return result
 
-        for pair in host_ip_pair_list:
-            if not pair.host or not pair.ip_address and not self._dry_run:
-                err_msg = f"Ansible selected hosts are not in expected pair (host, ip). host: {pair.host}, ip: {pair.ip_address}"
+        for host in ansible_hosts:
+            if not host.host or not host.ip_address and not self._dry_run:
+                err_msg = f"Ansible selected host is missing a manadatory arguments. host: {host.host}, ip: {host.ip_address}"
                 logger.error(err_msg)
                 raise InvalidAnsibleHostPair(err_msg)
 
             # Do not append 'ansible_host=' prefix for local connection
-            if "ansible_connection=local" in pair.ip_address:
-                result.append(f"{pair.host} {pair.ip_address}")
+            if "ansible_connection=local" in host.ip_address:
+                result.append(f"{host.host} {host.ip_address}")
             else:
-                result.append(f"{pair.host} ansible_host={pair.ip_address}")
+                host_entry = f"{host.host} ansible_host={host.ip_address} ansible_user={host.username}"
+                if host.password:
+                    # k8s-master ansible_host=1.1.1.1 ansible_user=user1 ansible_password=password1
+                    host_entry += f" ansible_password={host.password}"
+                if host.ssh_private_key_file_path:
+                    # k8s-node1 ansible_host=1.1.1.2 ansible_user=user2 ansible_private_key_file=~/.ssh/rsa_key
+                    host_entry += f" ansible_private_key_file={host.ssh_private_key_file_path}"
+                result.append(host_entry)
 
         return result
 
     def _run(
         self,
         working_dir: str,
-        username: str,
         selected_hosts: List[AnsibleHost],
         playbook_path: str,
-        password: Optional[str] = None,
-        ssh_private_key_file_path: Optional[str] = None,
         ansible_vars: Optional[List[str]] = None,
         ansible_tags: Optional[List[str]] = None,
         extra_modules_paths: Optional[List[str]] = None,
@@ -135,18 +139,10 @@ class AnsibleRunner:
         ansible_tags_items_list = self._generate_call_parameter_list("ansible_tag", ansible_tags)
         extra_modules_paths_items_list = self._generate_call_parameter_list("extra_module_path", extra_modules_paths)
 
-        auth_param = ""
-        if password:
-            auth_param = f"password: {password}"
-        elif ssh_private_key_file_path:
-            auth_param = f"ssh_private_key_file_path: {ssh_private_key_file_path}"
-
         run_cmd = [
             "bash",
             f"{self._ansible_shell_runner_path}",
             f"working_dir: {working_dir}",
-            f"username: {username}",
-            auth_param,
             f"playbook_path: {playbook_path}",
         ]
 

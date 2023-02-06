@@ -158,7 +158,7 @@ class RemoteMachineNetworkConfigureTestShould(unittest.TestCase):
         )
 
         Assertion.expect_call_argument(
-            self, run_call, arg_name="host_ip_pairs", expected_value=ssh_conn_info.ansible_hosts
+            self, run_call, arg_name="ansible_hosts", expected_value=ssh_conn_info.ansible_hosts
         )
         Assertion.expect_call_argument(
             self, run_call, arg_name="static_ip_address", expected_value=args.static_ip_address
@@ -193,11 +193,8 @@ class RemoteMachineNetworkConfigureTestShould(unittest.TestCase):
             .ansible_runner()
             .assert_command(
                 working_dir=env.get_test_env_root_path(),
-                username=TestDataRemoteConnector.TEST_DATA_SSH_USERNAME_1,
                 selected_hosts=TestDataRemoteConnector.TEST_DATA_SSH_ANSIBLE_HOSTS,
                 playbook_path=f"{env.get_test_env_root_path()}{ARG_ANSIBLE_PLAYBOOK_RELATIVE_PATH_FROM_ROOT}",
-                password=TestDataRemoteConnector.TEST_DATA_SSH_PASSWORD_1,
-                ssh_private_key_file_path=TestDataRemoteConnector.TEST_DATA_SSH_PRIVATE_KEY_FILE_PATH_1,
                 ansible_vars=[
                     f"host_name={TestDataRemoteConnector.TEST_DATA_SSH_HOSTNAME_1}",
                     f"static_ip={TestDataRemoteConnector.TEST_DATA_DHCP_STATIC_IP_ADDRESS}",
@@ -212,6 +209,7 @@ class RemoteMachineNetworkConfigureTestShould(unittest.TestCase):
 
     def test_add_hosts_file_entry_upon_prompt(self) -> None:
         env = TestEnv.create()
+        env.get_collaborators().prompter().mock_yes_no_response("Add entry", True)
         RemoteMachineNetworkConfigureRunner()._maybe_add_hosts_file_entry(
             env.get_context(),
             (

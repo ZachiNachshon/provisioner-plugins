@@ -122,9 +122,6 @@ class RemoteMachineNetworkConfigureRunner:
         output = collaborators.printer().progress_indicator.status.long_running_process_fn(
             call=lambda: collaborators.ansible_runner().run_fn(
                 working_dir=collaborators.paths().get_path_from_exec_module_root_fn(),
-                username=ssh_conn_info.username,
-                password=ssh_conn_info.password,
-                ssh_private_key_file_path=ssh_conn_info.ssh_private_key_file_path,
                 playbook_path=collaborators.paths().get_path_relative_from_module_root_fn(
                     __name__, args.ansible_playbook_relative_path_from_root
                 ),
@@ -198,19 +195,15 @@ class RemoteMachineNetworkConfigureRunner:
         self, ctx: Context, tuple_info: tuple[SSHConnectionInfo, DHCPCDConfigurationInfo]
     ):
         ssh_conn_info = tuple_info[0]
-        ssh_username = ssh_conn_info.username
-
-        hostname_ip_tuple = self._extract_host_ip_tuple(ctx, ssh_conn_info)
-        ssh_hostname = hostname_ip_tuple[0]
-        ssh_ip_address = hostname_ip_tuple[1]
+        ansible_host = ssh_conn_info.ansible_hosts[0]
 
         dhcpcd_configure_info = tuple_info[1]
         static_ip_address = dhcpcd_configure_info.static_ip_address
 
         return RemoteMachineNetworkConfigureRunner.NetworkInfoBundle(
-            ssh_username=ssh_username,
-            ssh_hostname=ssh_hostname,
-            ssh_ip_address=ssh_ip_address,
+            ssh_username=ansible_host.username,
+            ssh_hostname=ansible_host.host,
+            ssh_ip_address=ansible_host.ip_address,
             static_ip_address=static_ip_address,
         )
 

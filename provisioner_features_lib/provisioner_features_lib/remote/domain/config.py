@@ -48,12 +48,12 @@ class RemoteConfig:
                 self.password = password
                 self.ssh_private_key_file_path = ssh_private_key_file_path
 
-        host: str
+        name: str
         address: str
         auth: Auth
 
-        def __init__(self, host: str = None, address: str = None, auth: Auth = Auth()) -> None:
-            self.host = host
+        def __init__(self, name: str = None, address: str = None, auth: Auth = Auth()) -> None:
+            self.name = name
             self.address = address
             self.auth = auth
 

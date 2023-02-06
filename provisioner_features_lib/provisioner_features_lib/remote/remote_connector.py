@@ -59,18 +59,16 @@ class RemoteMachineConnector:
         force_single_conn_info: Optional[bool] = False,
     ) -> SSHConnectionInfo:
 
-        # TODO: consider for removal
-
-        # if ctx.is_dry_run():
-        #     return SSHConnectionInfo(
-        #         ansible_hosts=[
-        #             AnsibleHost(
-        #                 host="DRY_RUN_RESPONSE",
-        #                 ip_address="DRY_RUN_RESPONSE",
-        #                 username="DRY_RUN_RESPONSE",
-        #                 password="DRY_RUN_RESPONSE",
-        #                 ssh_private_key_file_path="DRY_RUN_RESPONSE")],
-        #     )
+        if ctx.is_dry_run():
+            return SSHConnectionInfo(
+                ansible_hosts=[
+                    AnsibleHost(
+                        host="DRY_RUN_RESPONSE",
+                        ip_address="DRY_RUN_RESPONSE",
+                        username="DRY_RUN_RESPONSE",
+                        password="DRY_RUN_RESPONSE",
+                        ssh_private_key_file_path="DRY_RUN_RESPONSE")],
+            )
 
         """
         Prompt the user for required remote SSH connection parameters
