@@ -18,17 +18,14 @@ class ImageBurnerArgs:
         self.image_download_url = image_download_url
         self.image_download_path = image_download_path
 
+
 class ImageBurnerCmdRunner:
     def run(self, ctx: Context, args: ImageBurnerArgs, collaborators: CoreCollaborators) -> None:
         logger.debug("Inside ImageBurner run()")
         self._prerequisites(ctx=ctx, checks=collaborators.checks())
         self._print_pre_run_instructions(collaborators)
         block_device_name = self._select_block_device(ctx, collaborators)
-        image_file_path = self._download_image(
-            ctx, 
-            args.image_download_url, 
-            args.image_download_path, 
-            collaborators)
+        image_file_path = self._download_image(ctx, args.image_download_url, args.image_download_path, collaborators)
         self._burn_image_by_os(ctx, block_device_name, image_file_path, collaborators)
 
     def _prerequisites(self, ctx: Context, checks: Checks) -> None:
@@ -53,11 +50,10 @@ class ImageBurnerCmdRunner:
         collaborators.printer().new_line_fn()
         block_devices_output = self._print_and_return_block_devices_output(ctx, collaborators)
         return self._ask_user_to_select_block_devices(
-            ctx=ctx, 
-            collaborators=collaborators, 
-            block_devices_output=block_devices_output)
+            ctx=ctx, collaborators=collaborators, block_devices_output=block_devices_output
+        )
 
-    def _print_and_return_block_devices_output(self, ctx: Context, collaborators: CoreCollaborators) -> str: 
+    def _print_and_return_block_devices_output(self, ctx: Context, collaborators: CoreCollaborators) -> str:
         block_devices = Evaluator.eval_step_with_return_throw_on_failure(
             call=lambda: self._read_block_devices(ctx=ctx, collaborators=collaborators),
             ctx=ctx,
@@ -83,10 +79,9 @@ class ImageBurnerCmdRunner:
 
         return output
 
-    def _ask_user_to_select_block_devices(self, 
-        ctx: Context, 
-        collaborators: CoreCollaborators,
-        block_devices_output: str) -> str: 
+    def _ask_user_to_select_block_devices(
+        self, ctx: Context, collaborators: CoreCollaborators, block_devices_output: str
+    ) -> str:
 
         block_device_name = Evaluator.eval_step_with_return_throw_on_failure(
             call=lambda: self._prompt_for_block_device_name(collaborators=collaborators),
@@ -135,7 +130,8 @@ class ImageBurnerCmdRunner:
                 url=image_download_url,
                 download_folder=image_download_path,
                 verify_already_downloaded=True,
-                progress_bar=True),
+                progress_bar=True,
+            ),
             ctx=ctx,
             err_msg="Failed to download image to burn",
         )
@@ -169,7 +165,9 @@ class ImageBurnerCmdRunner:
     def _run_pre_burn_approval_flow(self, ctx: Context, block_device_name: str, collaborators: CoreCollaborators):
         collaborators.summary().show_summary_and_prompt_for_enter(f"Burning image to {block_device_name}")
         Evaluator.eval_step_with_return_throw_on_failure(
-            call=lambda: self._ask_to_verify_block_device(block_device_name=block_device_name, collaborators=collaborators),
+            call=lambda: self._ask_to_verify_block_device(
+                block_device_name=block_device_name, collaborators=collaborators
+            ),
             ctx=ctx,
             err_msg="Aborted upon user request",
         )
@@ -183,12 +181,7 @@ class ImageBurnerCmdRunner:
             post_yes_message="Block device was approved by user",
         )
 
-    def _burn_image_linux(
-        self, 
-        block_device_name: str, 
-        burn_image_file_path: str, 
-        collaborators: CoreCollaborators
-    ):
+    def _burn_image_linux(self, block_device_name: str, burn_image_file_path: str, collaborators: CoreCollaborators):
 
         logger.debug(
             f"About to format device and copy image to SD-Card. device: {block_device_name}, image: {burn_image_file_path}"
@@ -207,12 +200,7 @@ class ImageBurnerCmdRunner:
 
         collaborators.printer().print_fn("It is now safe to remove the SD-Card !")
 
-    def _burn_image_darwin(
-        self, 
-        block_device_name: str, 
-        burn_image_file_path: str, 
-        collaborators: CoreCollaborators
-    ):
+    def _burn_image_darwin(self, block_device_name: str, burn_image_file_path: str, collaborators: CoreCollaborators):
 
         logger.debug(
             f"About to format device and copy image to SD-Card. device: {block_device_name}, image: {burn_image_file_path}"
@@ -229,7 +217,9 @@ class ImageBurnerCmdRunner:
         collaborators.printer().print_fn("Unmounting selected block device (SD-Card)...")
         collaborators.process().run_fn(args=["diskutil", "unmountDisk", block_device_name])
 
-        collaborators.printer().print_fn("Formatting block device and burning a new image (Press Ctrl+T to show progress)...")
+        collaborators.printer().print_fn(
+            "Formatting block device and burning a new image (Press Ctrl+T to show progress)..."
+        )
 
         blk_device_name = raw_block_device_name if raw_block_device_name else block_device_name
         format_bs_cmd = [f"unzip -p {burn_image_file_path} | sudo dd of={blk_device_name} bs=1m"]
@@ -257,6 +247,7 @@ class ImageBurnerCmdRunner:
         collaborators.printer().print_fn(generate_logo_image_burner())
         collaborators.printer().print_with_rich_table_fn(generate_instructions_pre_image_burn())
         collaborators.prompter().prompt_for_enter_fn()
+
 
 def generate_logo_image_burner() -> str:
     return f"""

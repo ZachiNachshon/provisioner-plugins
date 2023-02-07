@@ -12,6 +12,7 @@ from provisioner_features_lib.remote.remote_connector_fakes import (
 )
 from python_core_lib.errors.cli_errors import MissingUtilityException
 from python_core_lib.infra.context import Context
+from python_core_lib.runner.ansible.ansible import AnsibleRunner
 from python_core_lib.test_lib.assertions import Assertion
 from python_core_lib.test_lib.test_env import TestEnv
 from python_core_lib.utils.checks_fakes import FakeChecks
@@ -44,7 +45,7 @@ class RemoteMachineNetworkConfigureTestShould(unittest.TestCase):
             gw_ip_address=ARG_GW_IP_ADDRESS,
             dns_ip_address=ARG_DNS_IP_ADDRESS,
             static_ip_address=ARG_STATIC_IP_ADDRESS,
-            ansible_playbook_relative_path_from_root=ARG_ANSIBLE_PLAYBOOK_RELATIVE_PATH_FROM_ROOT,
+            ansible_playbook_relative_path_from_module=ARG_ANSIBLE_PLAYBOOK_RELATIVE_PATH_FROM_ROOT,
             remote_opts=None,
         )
 
@@ -192,9 +193,12 @@ class RemoteMachineNetworkConfigureTestShould(unittest.TestCase):
             method_to_run=lambda: env.get_collaborators()
             .ansible_runner()
             .assert_command(
-                working_dir=env.get_test_env_root_path(),
                 selected_hosts=TestDataRemoteConnector.TEST_DATA_SSH_ANSIBLE_HOSTS,
-                playbook_path=f"{env.get_test_env_root_path()}{ARG_ANSIBLE_PLAYBOOK_RELATIVE_PATH_FROM_ROOT}",
+                with_paths=AnsibleRunner.WithPaths.create_custom(
+                    working_dir=env.get_test_env_root_path(),
+                    playbook_path=f"{env.get_test_env_root_path()}{ARG_ANSIBLE_PLAYBOOK_RELATIVE_PATH_FROM_ROOT}",
+                    extra_modules_paths=[env.get_test_env_root_path()],
+                ),
                 ansible_vars=[
                     f"host_name={TestDataRemoteConnector.TEST_DATA_SSH_HOSTNAME_1}",
                     f"static_ip={TestDataRemoteConnector.TEST_DATA_DHCP_STATIC_IP_ADDRESS}",
@@ -202,7 +206,6 @@ class RemoteMachineNetworkConfigureTestShould(unittest.TestCase):
                     f"dns_address={TestDataRemoteConnector.TEST_DATA_DHCP_DNS_IP_ADDRESS}",
                 ],
                 ansible_tags=["configure_rpi_network", "define_static_ip", "reboot"],
-                extra_modules_paths=[env.get_test_env_root_path()],
                 force_dockerized=False,
             ),
         )

@@ -7,8 +7,9 @@ from python_core_lib.errors.cli_errors import ExternalDependencyFileNotFound, In
 from python_core_lib.infra.context import Context
 from python_core_lib.utils.io_utils import IOUtils
 from python_core_lib.utils.io_utils_fakes import FakeIOUtils
+from python_core_lib.utils.paths import Paths
 from python_core_lib.utils.process import Process
-from python_core_lib.runner.ansible import AnsibleRunner, HostIpPair
+from python_core_lib.runner.ansible.ansible import AnsibleRunner, AnsibleHost
 
 
 class AnsibleRunnerTestShould(unittest.TestCase):
@@ -18,12 +19,12 @@ class AnsibleRunnerTestShould(unittest.TestCase):
         username = "test-user"
         password = "test-pass"
         working_dir = "/path/to/working/dir"
-        selected_hosts = [HostIpPair("localhost", "ansible_connection=local")]
+        selected_hosts = [AnsibleHost("localhost", "ansible_connection=local")]
         playbook_path = "/path/to/playbook/folder"
         ansible_vars = ["key1=value1", "key2=value2"]
         force_dockerized = True
 
-        ansible_runner = AnsibleRunner.create(ctx=ctx, io_utils=FakeIOUtils.create(ctx), process=Process.create(ctx))
+        ansible_runner = AnsibleRunner.create(ctx=ctx, io_utils=FakeIOUtils.create(ctx), process=Process.create(ctx), paths=Paths.create(ctx))
 
         output = ansible_runner.run_fn(
             username=username,
@@ -58,6 +59,7 @@ ansible_var: key2=value2 \
             ctx=ctx,
             io_utils=FakeIOUtils.create(ctx),
             process=Process.create(ctx),
+            paths=Paths.create(ctx),
             ansible_shell_runner_path=ansible_shell_runner_path,
         )
 
@@ -83,6 +85,7 @@ ansible_var: key2=value2 \
             ctx=ctx,
             io_utils=IOUtils.create(ctx),
             process=Process.create(ctx),
+            paths=Paths.create(ctx),
             ansible_shell_runner_path="/invalid/ansible/shell/runner/ansible.sh",
         )
 
@@ -103,6 +106,7 @@ ansible_var: key2=value2 \
             ctx=ctx,
             io_utils=FakeIOUtils.create(ctx),
             process=Process.create(ctx),
+            paths=Paths.create(ctx),
         )
 
         with self.assertRaises(InvalidAnsibleHostPair):
@@ -110,7 +114,7 @@ ansible_var: key2=value2 \
                 username="",
                 password="",
                 working_dir="",
-                selected_hosts=[HostIpPair("localhost", None)],
+                selected_hosts=[AnsibleHost("localhost", None)],
                 playbook_path="",
                 ansible_vars="",
                 force_dockerized="",
@@ -123,13 +127,13 @@ ansible_var: key2=value2 \
         username = "test-user"
         password = "test-pass"
         working_dir = os.getcwd()
-        selected_hosts = [HostIpPair("localhost", "ansible_connection=local")]
+        selected_hosts = [AnsibleHost("localhost", "ansible_connection=local")]
         playbook_path = "external/shell_scripts_lib/runner/ansible/test_data/test_playbook.yaml"
         ansible_vars = ["key1=value1", "key2=value2"]
         force_dockerized = False
 
         ansible_runner = AnsibleRunner.create(
-            ctx=ansible_ctx, io_utils=IOUtils.create(ctx), process=Process.create(ctx)
+            ctx=ansible_ctx, io_utils=IOUtils.create(ctx), process=Process.create(ctx), paths=Paths.create(ctx)
         )
 
         output = ansible_runner.run_fn(

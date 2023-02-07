@@ -7,6 +7,7 @@ from loguru import logger
 from python_core_lib.errors.cli_errors import ExternalDependencyFileNotFound, InvalidAnsibleHostPair
 from python_core_lib.infra.context import Context
 from python_core_lib.utils.io_utils import IOUtils
+from python_core_lib.utils.paths import Paths
 from python_core_lib.utils.process import Process
 
 ANSIBLE_SHELL_RUNNER_PATH = "external/shell_scripts_lib/runner/ansible/ansible.sh"
@@ -43,18 +44,69 @@ class AnsibleHost:
 
 class AnsibleRunner:
 
+    class WithPaths:
+        _working_dir: str
+        _playbook_path: str
+        _extra_modules_paths: Optional[List[str]]
+
+        def __init__(self, 
+            working_dir: str, 
+            playbook_path: str, 
+            extra_modules_paths: Optional[List[str]] = None) -> None:
+            self._working_dir = working_dir
+            self._playbook_path = playbook_path
+            self._extra_modules_paths = extra_modules_paths
+
+        def __eq__(self, other):
+            # print("=========== COMPARE ============")
+            # print(f"this: " + str(self.__dict__))
+            # print(f"that: " + str(other.__dict__))
+            if isinstance(other, self.__class__):
+                return hash(self) == hash(other)
+            return False
+
+        def __hash__(self):
+            return hash((
+                self._working_dir, 
+                self._playbook_path,
+                tuple(self._extra_modules_paths),
+                ))
+
+        @staticmethod
+        def create(paths: Paths, script_import_name_var, playbook_path: str) -> "AnsibleRunner.WithPaths":
+            return AnsibleRunner.WithPaths(
+                working_dir=paths.get_path_from_exec_module_root_fn(),
+                playbook_path=paths.get_path_relative_from_module_root_fn(
+                    script_import_name_var, playbook_path
+                ),
+                extra_modules_paths=[paths.get_path_abs_to_module_root_fn(script_import_name_var)],
+            )
+
+        @staticmethod
+        def create_custom(
+            working_dir: str, 
+            playbook_path: str, 
+            extra_modules_paths: Optional[List[str]] = None) -> "AnsibleRunner.WithPaths":
+            return AnsibleRunner.WithPaths(
+                working_dir=working_dir,
+                playbook_path=playbook_path,
+                extra_modules_paths=extra_modules_paths,
+            )
+
     _dry_run: bool = None
     _verbose: bool = None
+    _paths: Paths = None
     _process: Process = None
     _io_utils: IOUtils = None
     _ansible_shell_runner_path: str = None
 
     def __init__(
-        self, io_utils: IOUtils, process: Process, dry_run: bool, verbose: bool, ansible_shell_runner_path: str
+        self, io_utils: IOUtils, process: Process, paths: Paths, dry_run: bool, verbose: bool, ansible_shell_runner_path: str
     ) -> None:
 
         self._io_utils = io_utils
         self._process = process
+        self.paths = paths
         self._dry_run = dry_run
         self._verbose = verbose
         self._ansible_shell_runner_path = ansible_shell_runner_path
@@ -64,13 +116,14 @@ class AnsibleRunner:
         ctx: Context,
         io_utils: IOUtils,
         process: Process,
+        paths: Paths, 
         ansible_shell_runner_path: Optional[str] = ANSIBLE_SHELL_RUNNER_PATH,
     ) -> "AnsibleRunner":
 
         dry_run = ctx.is_dry_run()
         verbose = ctx.is_verbose()
         logger.debug(f"Creating Ansible runner (dry_run: {dry_run}, verbose: {verbose})...")
-        return AnsibleRunner(io_utils, process, dry_run, verbose, ansible_shell_runner_path)
+        return AnsibleRunner(io_utils, process, paths, dry_run, verbose, ansible_shell_runner_path)
 
     def _generate_call_parameter_list(self, param_name: str, params: List[str]) -> List[str]:
         result_list = []
@@ -115,13 +168,11 @@ class AnsibleRunner:
 
     def _run(
         self,
-        working_dir: str,
         selected_hosts: List[AnsibleHost],
-        playbook_path: str,
+        with_paths: WithPaths,
         ansible_vars: Optional[List[str]] = None,
         ansible_tags: Optional[List[str]] = None,
-        extra_modules_paths: Optional[List[str]] = None,
-        force_dockerized: Optional[bool] = False
+        force_dockerized: Optional[bool] = False,
     ) -> str:
 
         """
@@ -137,13 +188,13 @@ class AnsibleRunner:
         selected_hosts_items_list = self._generate_call_parameter_list("selected_host", ansible_hosts_list)
         ansible_vars_items_list = self._generate_call_parameter_list("ansible_var", ansible_vars)
         ansible_tags_items_list = self._generate_call_parameter_list("ansible_tag", ansible_tags)
-        extra_modules_paths_items_list = self._generate_call_parameter_list("extra_module_path", extra_modules_paths)
+        extra_modules_paths_items_list = self._generate_call_parameter_list("extra_module_path", with_paths._extra_modules_paths)
 
         run_cmd = [
             "bash",
             f"{self._ansible_shell_runner_path}",
-            f"working_dir: {working_dir}",
-            f"playbook_path: {playbook_path}",
+            f"working_dir: {with_paths._working_dir}",
+            f"playbook_path: {with_paths._playbook_path}",
         ]
 
         if len(selected_hosts_items_list) > 0:

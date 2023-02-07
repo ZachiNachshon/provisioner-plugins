@@ -100,7 +100,7 @@ class CoreCollaborators:
     def ansible_runner(self) -> AnsibleRunner:
         def create_ansible_runner():
             if not self.__ansible_runner:
-                self.__ansible_runner = AnsibleRunner.create(self.__ctx, self.io_utils(), self.process())
+                self.__ansible_runner = AnsibleRunner.create(self.__ctx, self.io_utils(), self.process(), self.paths())
             return self.__ansible_runner
         return self._lock_and_get(callback=create_ansible_runner)
 

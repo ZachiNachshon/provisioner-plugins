@@ -57,9 +57,9 @@ class Paths:
         path = os.path.dirname(sys.modules[package_name].__file__)
         module_root = self._calculate_static_file_path_from_project(path)
         module_name = os.path.basename(module_root)
-        if not relative_path.startswith("/"):
-            relative_path += f"/{relative_path}"
-        return f"{module_name}/{relative_path}"
+        if relative_path:
+            return f"{module_name}{relative_path}" if relative_path.startswith("/") else f"{module_name}/{relative_path}"
+        return module_name
 
     def _calculate_static_file_path_from_project(self, file_path, relative_path: Optional[str] = None) -> str:
         result_path = None
@@ -74,10 +74,7 @@ class Paths:
             parent_path = parent_path.parent
 
         if result_path and relative_path:
-            if not relative_path.startswith("/"):
-                relative_path += f"/{relative_path}"
-            return f"{result_path}{relative_path}"
-        
+            return f"{result_path}{relative_path}" if relative_path.startswith("/") else f"{result_path}/{relative_path}"
         return result_path
 
     # def _relative_path_to_abs_path(self, relative_path: str) -> str:

@@ -20,15 +20,20 @@ class AnchorCliTestShould(unittest.TestCase):
         expected_repository_name = "test-repo"
         expected_branch_name = "test-branch"
         expected_github_access_token = "test-github-access-token"
-        
+
         result = runner.invoke(
             get_fake_app(),
-            ["--dry-run", "--verbose", "examples", "anchor", "run-command", 
-            f"--anchor-run-command={expected_anchor_run_command}",
-            f"--github-organization={expected_github_organization}",
-            f"--repository-name={expected_repository_name}",
-            f"--branch-name={expected_branch_name}",
-            f"--github-access-token={expected_github_access_token}",
+            [
+                "--dry-run",
+                "--verbose",
+                "examples",
+                "anchor",
+                "run-command",
+                f"--anchor-run-command={expected_anchor_run_command}",
+                f"--github-organization={expected_github_organization}",
+                f"--repository-name={expected_repository_name}",
+                f"--branch-name={expected_branch_name}",
+                f"--github-access-token={expected_github_access_token}",
             ],
         )
         self.assertEqual(1, run_call.call_count)

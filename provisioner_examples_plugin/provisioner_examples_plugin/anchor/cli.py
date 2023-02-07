@@ -3,13 +3,15 @@
 
 import typer
 from loguru import logger
+from provisioner_features_lib.config.config_resolver import ConfigResolver
+from provisioner_features_lib.remote.typer_remote_opts import CliRemoteOpts
 from python_core_lib.infra.context import CliContextManager
 from python_core_lib.infra.evaluator import Evaluator
-from provisioner_features_lib.config.config_resolver import ConfigResolver
 
 from provisioner_examples_plugin.anchor.anchor_cmd import AnchorCmd, AnchorCmdArgs
 
 example_anchor_cli_app = typer.Typer()
+
 
 def register_anchor_commands(app: typer.Typer, callback_remote_args):
     app.add_typer(
@@ -55,6 +57,7 @@ def run_anchor_command(
                 repository_name=repository_name,
                 branch_name=branch_name,
                 github_access_token=github_access_token,
+                remote_opts=CliRemoteOpts.maybe_get(),
             ),
         ),
     )

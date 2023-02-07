@@ -20,7 +20,7 @@ class RPiOsConfigureCmdArgs:
 
     remote_opts: CliRemoteOpts
 
-    def __init__(self, remote_opts: CliRemoteOpts = CliRemoteOpts.maybe_get()) -> None:
+    def __init__(self, remote_opts: CliRemoteOpts = None) -> None:
         self.remote_opts = remote_opts
 
     def print(self) -> None:
@@ -38,7 +38,7 @@ class RPiOsConfigureCmd:
             ctx=ctx,
             args=RemoteMachineOsConfigureArgs(
                 remote_opts=args.remote_opts,
-                ansible_playbook_relative_path_from_root=RpiConfigureOsAnsiblePlaybookRelativePathFromRoot,
+                ansible_playbook_relative_path_from_module=RpiConfigureOsAnsiblePlaybookRelativePathFromRoot,
             ),
             collaborators=CoreCollaborators(ctx),
         )

@@ -28,7 +28,7 @@
     SPI: "{{ spi | default('') }}"
     MEMORY_SPLIT: "{{ memory_split | default('') }}"
     I2C: "{{ i2c | default('') }}"
-    SERIAL: "{{ serial | default('') }}"
+    SERIAL_BUS: "{{ serial_bus | default('') }}"
     BOOT_BEHAVIOUR: "{{ boot_behaviour | default('') }}"
     ONEWIRE: "{{ onewire | default('') }}"
     AUDIO: "{{ audio | default('') }}"

@@ -8,6 +8,7 @@ from provisioner_features_lib.remote.remote_connector_fakes import (
 )
 from python_core_lib.errors.cli_errors import MissingUtilityException
 from python_core_lib.infra.context import Context
+from python_core_lib.runner.ansible.ansible import AnsibleRunner
 from python_core_lib.test_lib.assertions import Assertion
 from python_core_lib.test_lib.test_env import TestEnv
 from python_core_lib.utils.checks_fakes import FakeChecks
@@ -37,7 +38,7 @@ class RemoteMachineConfigureTestShould(unittest.TestCase):
 
     def create_fake_configure_args(self) -> RemoteMachineOsConfigureArgs:
         return RemoteMachineOsConfigureArgs(
-            ansible_playbook_relative_path_from_root=ARG_ANSIBLE_PLAYBOOK_RELATIVE_PATH_FROM_ROOT,
+            ansible_playbook_relative_path_from_module=ARG_ANSIBLE_PLAYBOOK_RELATIVE_PATH_FROM_ROOT,
             remote_opts=None,
         )
 
@@ -134,19 +135,22 @@ class RemoteMachineConfigureTestShould(unittest.TestCase):
             args=self.create_fake_configure_args(),
             get_ssh_conn_info_fn=TestDataRemoteConnector.create_fake_ssh_conn_info_fn(),
         )
+
         Assertion.expect_success(
             self,
             method_to_run=lambda: env.get_collaborators()
             .ansible_runner()
             .assert_command(
-                working_dir=env.get_test_env_root_path(),
                 selected_hosts=TestDataRemoteConnector.TEST_DATA_SSH_ANSIBLE_HOSTS,
-                playbook_path=f"{env.get_test_env_root_path()}{ARG_ANSIBLE_PLAYBOOK_RELATIVE_PATH_FROM_ROOT}",
+                with_paths=AnsibleRunner.WithPaths.create_custom(
+                    working_dir=env.get_test_env_root_path(),
+                    playbook_path=f"{env.get_test_env_root_path()}{ARG_ANSIBLE_PLAYBOOK_RELATIVE_PATH_FROM_ROOT}",
+                    extra_modules_paths=[env.get_test_env_root_path()],
+                ),
                 ansible_vars=[
                     f"host_name={TestDataRemoteConnector.TEST_DATA_SSH_HOSTNAME_1}",
                 ],
                 ansible_tags=["configure_remote_node", "reboot"],
-                extra_modules_paths=[env.get_test_env_root_path()],
                 force_dockerized=False,
             ),
         )

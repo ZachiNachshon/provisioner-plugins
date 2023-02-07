@@ -1,40 +1,41 @@
 #!/usr/bin/env python3
 
 from typing import Callable
+
 from loguru import logger
+from provisioner_features_lib.remote.remote_connector import SSHConnectionInfo
+from provisioner_features_lib.remote.typer_remote_opts import CliRemoteOpts
 from python_core_lib.infra.context import Context
 from python_core_lib.runner.ansible.ansible import AnsibleHost
 from python_core_lib.shared.collaborators import CoreCollaborators
 from python_core_lib.utils.checks import Checks
 from python_core_lib.utils.printer import Printer
 from python_core_lib.utils.prompter import Prompter
-from provisioner_features_lib.remote.remote_connector import SSHConnectionInfo
-from provisioner_features_lib.remote.typer_remote_opts import CliRemoteOpts
+
 
 class HelloWorldRunnerArgs:
 
     username: str
-    ansible_playbook_relative_path_from_root: str
+    ansible_playbook_relative_path_from_module: str
     remote_opts: CliRemoteOpts
 
     def __init__(
-        self, username: str, ansible_playbook_relative_path_from_root: str, remote_opts: CliRemoteOpts
+        self, username: str, ansible_playbook_relative_path_from_module: str, remote_opts: CliRemoteOpts
     ) -> None:
         self.username = username
-        self.ansible_playbook_relative_path_from_root = ansible_playbook_relative_path_from_root
+        self.ansible_playbook_relative_path_from_module = ansible_playbook_relative_path_from_module
         self.remote_opts = remote_opts
 
-class HelloWorldRunner:
 
+class HelloWorldRunner:
     def run(self, ctx: Context, args: HelloWorldRunnerArgs, collaborators: CoreCollaborators) -> None:
         logger.debug("Inside HelloWorldRunner run()")
 
         self._prerequisites(ctx=ctx, checks=collaborators.checks())
         self._print_pre_run_instructions(collaborators.printer(), collaborators.prompter())
         self._run_ansible_hello_playbook_with_progress_bar(
-                get_ssh_conn_info_fn=self._get_ssh_conn_info,
-                collaborators=collaborators,
-                args=args)
+            get_ssh_conn_info_fn=self._get_ssh_conn_info, collaborators=collaborators, args=args
+        )
 
     def _get_ssh_conn_info(self) -> SSHConnectionInfo:
         return SSHConnectionInfo(
@@ -47,7 +48,8 @@ class HelloWorldRunner:
         self,
         get_ssh_conn_info_fn: Callable[..., SSHConnectionInfo],
         collaborators: CoreCollaborators,
-        args: HelloWorldRunnerArgs) -> str:
+        args: HelloWorldRunnerArgs,
+    ) -> str:
 
         ssh_conn_info = get_ssh_conn_info_fn()
         output = collaborators.printer().progress_indicator.status.long_running_process_fn(
@@ -56,7 +58,9 @@ class HelloWorldRunner:
                 username=ssh_conn_info.username,
                 password=ssh_conn_info.password,
                 ssh_private_key_file_path=ssh_conn_info.ssh_private_key_file_path,
-                playbook_path=collaborators.paths().get_path_relative_from_module_root_fn(__name__, args.ansible_playbook_relative_path_from_root),
+                playbook_path=collaborators.paths().get_path_relative_from_module_root_fn(
+                    __name__, args.ansible_playbook_relative_path_from_module
+                ),
                 extra_modules_paths=[collaborators.paths().get_path_abs_to_module_root_fn(__name__)],
                 ansible_vars=[f"\"username='{args.username}'\""],
                 ansible_tags=["hello"],

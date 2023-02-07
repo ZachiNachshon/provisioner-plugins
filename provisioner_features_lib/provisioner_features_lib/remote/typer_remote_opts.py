@@ -197,5 +197,5 @@ class CliRemoteOpts:
             + f"  node_password: {self.node_password}\n"
             + f"  ip_discovery_range: {self.ip_discovery_range}\n"
             + f"  ssh_private_key_file_path: {self.ssh_private_key_file_path}\n"
-            + f"  host_ip_pairs: {'supplied via CLI arguments or user config' if self.ansible_hosts is not None else None}\n"
+            + f"  ansible_hosts: {'supplied via CLI arguments or user config' if self.ansible_hosts is not None else None}\n"
         )

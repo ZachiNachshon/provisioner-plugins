@@ -4,10 +4,10 @@ import unittest
 from typing import List
 from unittest import mock
 
-from ..domain.serialize import SerializationBase
-from ..infra.context import Context
-from ..utils.io_utils import IOUtils
-from ..utils.yaml_util import YamlUtil
+from python_core_lib.domain.serialize import SerializationBase
+from python_core_lib.infra.context import Context
+from python_core_lib.utils.io_utils import IOUtils
+from python_core_lib.utils.yaml_util import YamlUtil
 
 YAML_TEST_DATA_FILE_PATH = "python_scripts_lib/test_data/internal_config.yaml"
 

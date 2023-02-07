@@ -2,8 +2,9 @@
 
 from provisioner_examples_plugin.domain.config import DummyConfig
 
+
 class TestDataExamplesConfig:
-    TEST_DATA_HELLO_WORLD_USERNAME= "test-username"
+    TEST_DATA_HELLO_WORLD_USERNAME = "test-username"
 
     @staticmethod
     def create_fake_dummy_config() -> DummyConfig:

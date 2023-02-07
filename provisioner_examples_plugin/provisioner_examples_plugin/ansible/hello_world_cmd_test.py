@@ -2,9 +2,15 @@
 
 import unittest
 from unittest import mock
-from provisioner_examples_plugin.ansible.hello_world_cmd import HelloWorldCmd, HelloWorldCmdArgs
+
 from provisioner_features_lib.remote.typer_remote_opts import CliRemoteOpts
 from python_core_lib.test_lib.test_env import TestEnv
+
+from provisioner_examples_plugin.ansible.hello_world_cmd import (
+    HelloWorldCmd,
+    HelloWorldCmdArgs,
+)
+
 
 #
 # To run these directly from the terminal use:
@@ -19,15 +25,13 @@ class HelloWorldCmdTestShould(unittest.TestCase):
         ctx = self.env.get_context()
 
         expected_username = "test-user"
-        expected_ansible_playbook_relative_path_from_root = "provisioner_examples_plugin/ansible/playbooks/hello_world.yaml"
+        expected_ansible_playbook_relative_path_from_module = (
+            "provisioner_examples_plugin/ansible/playbooks/hello_world.yaml"
+        )
         expected_remote_opts = CliRemoteOpts.maybe_get()
 
         HelloWorldCmd().run(
-            ctx=ctx, 
-            args=HelloWorldCmdArgs(
-                username=expected_username, 
-                remote_opts=expected_remote_opts
-            )
+            ctx=ctx, args=HelloWorldCmdArgs(username=expected_username, remote_opts=expected_remote_opts)
         )
 
         run_call_kwargs = run_call.call_args.kwargs
@@ -36,6 +40,8 @@ class HelloWorldCmdTestShould(unittest.TestCase):
 
         self.assertEqual(ctx, ctx_call_arg)
         self.assertEqual(expected_username, cmd_call_args.username)
-        self.assertEqual(expected_ansible_playbook_relative_path_from_root, cmd_call_args.ansible_playbook_relative_path_from_root)
+        self.assertEqual(
+            expected_ansible_playbook_relative_path_from_module,
+            cmd_call_args.ansible_playbook_relative_path_from_module,
+        )
         self.assertEqual(expected_remote_opts.environment, cmd_call_args.remote_opts.environment)
-

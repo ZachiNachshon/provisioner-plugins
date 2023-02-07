@@ -4,6 +4,9 @@ import os
 from typing import List, Optional
 
 from loguru import logger
+from provisioner_features_lib.remote.domain.config import RunEnvironment
+from provisioner_features_lib.remote.remote_connector import RemoteMachineConnector
+from provisioner_features_lib.remote.typer_remote_opts import CliRemoteOpts
 from python_core_lib.errors.cli_errors import (
     FailedToResolveLatestVersionFromGitHub,
     InstallerUtilityNotSupported,
@@ -17,9 +20,6 @@ from python_core_lib.utils.printer import Printer
 from python_core_lib.utils.process import Process
 from python_core_lib.utils.prompter import Prompter
 from python_core_lib.utils.summary import Summary
-from provisioner_features_lib.remote.domain.config import RunEnvironment
-from provisioner_features_lib.remote.remote_connector import RemoteMachineConnector
-from provisioner_features_lib.remote.typer_remote_opts import CliRemoteOpts
 
 from provisioner_installers_plugin.installer.installables import (
     Installables,
@@ -96,7 +96,11 @@ class UtilityInstallerCmdRunner:
             # TODO: check if tool exists locally
 
             self._print_pre_install_summary(
-                utility.name, ctx.is_auto_prompt(), collaborators.printer(), collaborators.prompter(), collaborators.summary()
+                utility.name,
+                ctx.is_auto_prompt(),
+                collaborators.printer(),
+                collaborators.prompter(),
+                collaborators.summary(),
             )
             self._install_utility_locally(
                 ctx=ctx,
@@ -167,7 +171,11 @@ class UtilityInstallerCmdRunner:
 
         for utility in utilities:
             self._print_pre_install_summary(
-                utility.name, ctx.is_auto_prompt(), collaborators.printer(), collaborators.prompter(), collaborators.summary()
+                utility.name,
+                ctx.is_auto_prompt(),
+                collaborators.printer(),
+                collaborators.prompter(),
+                collaborators.summary(),
             )
 
             ansible_vars = [f"\"provisioner_command='provisioner -y install cli --environment=Local {utility.name}'\""]
@@ -222,6 +230,7 @@ class UtilityInstallerCmdRunner:
 
     def _print_pre_install_summary(self, name: str, summary: Summary) -> None:
         summary.show_summary_and_prompt_for_enter(f"Installing Utility: {name}")
+
 
 def generate_installer_welcome(utilities_to_install: List[str], environment: Optional[RunEnvironment]) -> str:
     selected_utils_names = ""

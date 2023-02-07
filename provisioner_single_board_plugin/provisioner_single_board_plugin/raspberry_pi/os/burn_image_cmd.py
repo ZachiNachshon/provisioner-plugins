@@ -35,6 +35,8 @@ class RPiOsBurnImageCmd:
 
         ImageBurnerCmdRunner().run(
             ctx=ctx,
-            args=ImageBurnerArgs(image_download_url=args.image_download_url, image_download_path=args.image_download_path),
+            args=ImageBurnerArgs(
+                image_download_url=args.image_download_url, image_download_path=args.image_download_path
+            ),
             collaborators=CoreCollaborators(ctx),
         )

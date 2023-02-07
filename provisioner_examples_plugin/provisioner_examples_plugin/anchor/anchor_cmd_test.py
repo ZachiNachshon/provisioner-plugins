@@ -8,6 +8,7 @@ from python_core_lib.utils.os import MAC_OS, OsArch
 
 from provisioner_examples_plugin.anchor.anchor_cmd import AnchorCmd, AnchorCmdArgs
 
+
 #
 # To run these directly from the terminal use:
 #  poetry run coverage run -m pytest provisioner_examples_plugin/anchor/anchor_cmd_test.py
@@ -24,11 +25,12 @@ class AnchorCmdTestShould(unittest.TestCase):
         expected_github_access_token = "test-github-access-token"
 
         args = AnchorCmdArgs(
-            anchor_run_command=expected_anchor_run_command, 
+            anchor_run_command=expected_anchor_run_command,
             github_organization=expected_github_organization,
             repository_name=expected_repository_name,
             branch_name=expected_branch_name,
-            github_access_token=expected_github_access_token)
+            github_access_token=expected_github_access_token,
+        )
 
         cmd = AnchorCmd()
         cmd.run(ctx=ctx, args=args)
@@ -41,5 +43,5 @@ class AnchorCmdTestShould(unittest.TestCase):
         self.assertEqual(expected_anchor_run_command, cmd_call_args.anchor_run_command)
         self.assertEqual(expected_github_organization, cmd_call_args.github_organization)
         self.assertEqual(expected_repository_name, cmd_call_args.repository_name)
-        self.assertEqual(expected_branch_name, cmd_call_args.branch_name )
+        self.assertEqual(expected_branch_name, cmd_call_args.branch_name)
         self.assertEqual(expected_github_access_token, cmd_call_args.github_access_token)

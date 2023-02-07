@@ -6,14 +6,14 @@
         "url": "git@github.com:ZachiNachshon/shell-scripts-lib.git",
         "branch": "master",
         "revision": "1d7748f6a87b99355091bb34d0022936bd6d0d75",
-        "includes": ["runner*/", "runner/base*", "runner/poetry*", "runner/ansible*"],
+        "includes": ["runner*/", "runner/base*", "runner/poetry*", "runner/ansible*", "runner/ansible/config*", "runner/ansible/config/callbacks*"],
         "excludes": ["*_test*", "*/"]
       },
       {
         "name": "ansible_playbooks",
         "url": "git@github.com:ZachiNachshon/ansible-playbooks.git",
         "branch": "master",
-        "revision": "a9d3cea042a05fb44dea957fa5f14fe71bbc0720"
+        "revision": "147945c3a25b321defdd5b51ba68cd5dbf6e752d"
       }
     ]
   },

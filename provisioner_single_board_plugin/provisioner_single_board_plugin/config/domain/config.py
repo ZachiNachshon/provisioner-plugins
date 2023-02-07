@@ -34,10 +34,12 @@ class SingleBoardConfig:
             self.gw_ip_address = gw_ip_address
             self.dns_ip_address = dns_ip_address
 
-    def __init__(self, 
-        os: SingleBoardOsConfig = SingleBoardOsConfig(), 
-        network: SingleBoardNetworkConfig = SingleBoardNetworkConfig()) -> None:
-        
+    def __init__(
+        self,
+        os: SingleBoardOsConfig = SingleBoardOsConfig(),
+        network: SingleBoardNetworkConfig = SingleBoardNetworkConfig(),
+    ) -> None:
+
         self.os = os
         self.network = network
 

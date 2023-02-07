@@ -67,7 +67,9 @@ class RemoteMachineConnector:
                         ip_address="DRY_RUN_RESPONSE",
                         username="DRY_RUN_RESPONSE",
                         password="DRY_RUN_RESPONSE",
-                        ssh_private_key_file_path="DRY_RUN_RESPONSE")],
+                        ssh_private_key_file_path="DRY_RUN_RESPONSE",
+                    )
+                ],
             )
 
         """

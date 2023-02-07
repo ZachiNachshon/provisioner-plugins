@@ -5,6 +5,7 @@ from typing import Optional
 import typer
 from loguru import logger
 from provisioner_features_lib.config.config_resolver import ConfigResolver
+from provisioner_features_lib.remote.typer_remote_opts import CliRemoteOpts
 from python_core_lib.cli.state import CliGlobalArgs
 from python_core_lib.errors.cli_errors import (
     CliApplicationException,
@@ -32,7 +33,9 @@ def configure() -> None:
     Configuration is aimed for an optimal headless Raspberry Pi used as a Kubernetes cluster node.
     """
     try:
-        RPiOsConfigureCmd().run(ctx=CliContextManager.create(), args=RPiOsConfigureCmdArgs())
+        RPiOsConfigureCmd().run(
+            ctx=CliContextManager.create(), args=RPiOsConfigureCmdArgs(remote_opts=CliRemoteOpts.maybe_get())
+        )
     except StepEvaluationFailure as sef:
         logger.critical("Failed to configure Raspbian OS. ex: {}, message: {}", sef.__class__.__name__, str(sef))
     except Exception as e:
@@ -65,7 +68,10 @@ def network(
         RPiNetworkConfigureCmd().run(
             ctx=CliContextManager.create(),
             args=RPiNetworkConfigureCmdArgs(
-                gw_ip_address=gw_ip_address, dns_ip_address=dns_ip_address, static_ip_address=static_ip_address
+                gw_ip_address=gw_ip_address,
+                dns_ip_address=dns_ip_address,
+                static_ip_address=static_ip_address,
+                remote_opts=CliRemoteOpts.maybe_get(),
             ),
         )
     except StepEvaluationFailure as sef:

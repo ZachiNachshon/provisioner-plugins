@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 
 from loguru import logger
-from python_core_lib.infra.context import Context
-from python_core_lib.shared.collaborators import CoreCollaborators
 from provisioner_features_lib.anchor.anchor_runner import (
     AnchorCmdRunner,
     AnchorRunnerCmdArgs,
 )
 from provisioner_features_lib.remote.typer_remote_opts import CliRemoteOpts
+from python_core_lib.infra.context import Context
+from python_core_lib.shared.collaborators import CoreCollaborators
 
 
 class AnchorCmdArgs:
@@ -26,7 +26,7 @@ class AnchorCmdArgs:
         repository_name: str,
         branch_name: str,
         github_access_token: str,
-        remote_opts: CliRemoteOpts = CliRemoteOpts.maybe_get()
+        remote_opts: CliRemoteOpts = None,
     ) -> None:
 
         self.anchor_run_command = anchor_run_command

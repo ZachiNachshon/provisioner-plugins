@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 
 import typer
-from provisioner_features_lib.remote.typer_remote_opts_callback import remote_args_callback
+from provisioner_features_lib.remote.typer_remote_opts_callback import (
+    remote_args_callback,
+)
 
 
 def append_examples(app: typer.Typer):

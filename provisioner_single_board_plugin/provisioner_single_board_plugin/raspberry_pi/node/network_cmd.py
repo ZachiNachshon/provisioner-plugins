@@ -29,7 +29,7 @@ class RPiNetworkConfigureCmdArgs:
         gw_ip_address: Optional[str] = None,
         dns_ip_address: Optional[str] = None,
         static_ip_address: Optional[str] = None,
-        remote_opts: CliRemoteOpts = CliRemoteOpts.maybe_get(),
+        remote_opts: CliRemoteOpts = None,
     ) -> None:
         self.gw_ip_address = gw_ip_address
         self.dns_ip_address = dns_ip_address
@@ -59,7 +59,7 @@ class RPiNetworkConfigureCmd:
                 gw_ip_address=args.gw_ip_address,
                 dns_ip_address=args.dns_ip_address,
                 static_ip_address=args.static_ip_address,
-                ansible_playbook_relative_path_from_root=RpiNetworkConfigureAnsiblePlaybookRelativePathFromRoot,
+                ansible_playbook_relative_path_from_module=RpiNetworkConfigureAnsiblePlaybookRelativePathFromRoot,
             ),
             collaborators=CoreCollaborators(ctx),
         )

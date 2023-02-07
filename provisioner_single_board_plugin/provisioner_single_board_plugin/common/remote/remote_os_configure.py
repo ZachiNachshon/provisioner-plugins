@@ -10,19 +10,19 @@ from provisioner_features_lib.remote.remote_connector import (
 from provisioner_features_lib.remote.typer_remote_opts import CliRemoteOpts
 from python_core_lib.infra.context import Context
 from python_core_lib.infra.evaluator import Evaluator
-from python_core_lib.runner.ansible.ansible import AnsibleHost
+from python_core_lib.runner.ansible.ansible import AnsibleHost, AnsibleRunner
 from python_core_lib.shared.collaborators import CoreCollaborators
 from python_core_lib.utils.checks import Checks
 
 
 class RemoteMachineOsConfigureArgs:
 
-    ansible_playbook_relative_path_from_root: str
+    ansible_playbook_relative_path_from_module: str
     remote_opts: CliRemoteOpts
 
-    def __init__(self, ansible_playbook_relative_path_from_root: str, remote_opts: CliRemoteOpts) -> None:
+    def __init__(self, ansible_playbook_relative_path_from_module: str, remote_opts: CliRemoteOpts) -> None:
         self.remote_opts = remote_opts
-        self.ansible_playbook_relative_path_from_root = ansible_playbook_relative_path_from_root
+        self.ansible_playbook_relative_path_from_module = ansible_playbook_relative_path_from_module
 
 
 class RemoteMachineOsConfigureRunner:
@@ -54,14 +54,14 @@ class RemoteMachineOsConfigureRunner:
 
         output = collaborators.printer().progress_indicator.status.long_running_process_fn(
             call=lambda: collaborators.ansible_runner().run_fn(
-                working_dir=collaborators.paths().get_path_from_exec_module_root_fn(),
-                playbook_path=collaborators.paths().get_path_relative_from_module_root_fn(
-                    __name__, args.ansible_playbook_relative_path_from_root
+                selected_hosts=ssh_conn_info.ansible_hosts,
+                with_paths=AnsibleRunner.WithPaths.create(
+                    paths=collaborators.paths(),
+                    script_import_name_var=__name__,
+                    playbook_path=args.ansible_playbook_relative_path_from_module,
                 ),
-                extra_modules_paths=[collaborators.paths().get_path_abs_to_module_root_fn(__name__)],
                 ansible_vars=[f"host_name={ansible_host.host}"],
                 ansible_tags=["configure_remote_node", "reboot"],
-                selected_hosts=ssh_conn_info.ansible_hosts,
             ),
             desc_run="Running Ansible playbook (Configure OS)",
             desc_end="Ansible playbook finished (Configure OS).",
@@ -95,9 +95,7 @@ class RemoteMachineOsConfigureRunner:
         ansible_host: AnsibleHost,
         collaborators: CoreCollaborators,
     ):
-        collaborators.printer().print_with_rich_table_fn(
-            generate_instructions_post_configure(ansible_host)
-        )
+        collaborators.printer().print_with_rich_table_fn(generate_instructions_post_configure(ansible_host))
 
     def _prerequisites(self, ctx: Context, checks: Checks) -> None:
         if ctx.os_arch.is_linux():

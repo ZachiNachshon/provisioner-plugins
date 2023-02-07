@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 
 import typer
-from provisioner_features_lib.remote.typer_remote_opts_callback import remote_args_callback
+from provisioner_features_lib.remote.typer_remote_opts_callback import (
+    remote_args_callback,
+)
 
 
 def append_installers(app: typer.Typer):
@@ -12,6 +14,8 @@ def append_installers(app: typer.Typer):
 
     register_cli_commands(app=installers_cli, callback_remote_args=remote_args_callback)
 
-    from provisioner_installers_plugin.kubernetes.cli import register_kubernetes_commands
+    from provisioner_installers_plugin.kubernetes.cli import (
+        register_kubernetes_commands,
+    )
 
     register_kubernetes_commands(app=installers_cli)

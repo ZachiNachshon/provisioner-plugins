@@ -14,9 +14,7 @@ from provisioner_single_board_plugin.raspberry_pi.os.burn_image_cmd import (
 ARG_IMAGE_DOWNLOAD_URL = "https://test-image-download-url.com"
 ARG_IMAGE_DOWNLOAD_PATH = "/test/image/download/path"
 
-IMAGE_BURNER_COMMAND_RUNNER_PATH = (
-    "provisioner_features_lib.sd_card.image_burner.ImageBurnerCmdRunner"
-)
+IMAGE_BURNER_COMMAND_RUNNER_PATH = "provisioner_features_lib.sd_card.image_burner.ImageBurnerCmdRunner"
 
 #
 # To run these directly from the terminal use:
@@ -28,8 +26,7 @@ class RPiOsInstallTestShould(unittest.TestCase):
 
     def create_fake_burn_image_cmd_args(self) -> RPiOsBurnImageCmdArgs:
         return RPiOsBurnImageCmdArgs(
-            image_download_url=ARG_IMAGE_DOWNLOAD_URL,
-            image_download_path=ARG_IMAGE_DOWNLOAD_PATH
+            image_download_url=ARG_IMAGE_DOWNLOAD_URL, image_download_path=ARG_IMAGE_DOWNLOAD_PATH
         )
 
     @mock.patch(f"{IMAGE_BURNER_COMMAND_RUNNER_PATH}.run")

@@ -12,6 +12,7 @@ from provisioner_features_lib.remote.typer_remote_opts import CliRemoteOpts
 from python_core_lib.colors import color
 from python_core_lib.infra.context import Context
 from python_core_lib.infra.evaluator import Evaluator
+from python_core_lib.runner.ansible.ansible import AnsibleRunner
 from python_core_lib.shared.collaborators import CoreCollaborators
 from python_core_lib.utils.checks import Checks
 
@@ -20,7 +21,7 @@ class RemoteMachineNetworkConfigureArgs:
     gw_ip_address: str
     dns_ip_address: str
     static_ip_address: str
-    ansible_playbook_relative_path_from_root: str
+    ansible_playbook_relative_path_from_module: str
     remote_opts: CliRemoteOpts
 
     def __init__(
@@ -28,13 +29,13 @@ class RemoteMachineNetworkConfigureArgs:
         gw_ip_address: str,
         dns_ip_address: str,
         static_ip_address: str,
-        ansible_playbook_relative_path_from_root: str,
+        ansible_playbook_relative_path_from_module: str,
         remote_opts: CliRemoteOpts,
     ) -> None:
         self.gw_ip_address = gw_ip_address
         self.dns_ip_address = dns_ip_address
         self.static_ip_address = static_ip_address
-        self.ansible_playbook_relative_path_from_root = ansible_playbook_relative_path_from_root
+        self.ansible_playbook_relative_path_from_module = ansible_playbook_relative_path_from_module
         self.remote_opts = remote_opts
 
 
@@ -121,11 +122,12 @@ class RemoteMachineNetworkConfigureRunner:
 
         output = collaborators.printer().progress_indicator.status.long_running_process_fn(
             call=lambda: collaborators.ansible_runner().run_fn(
-                working_dir=collaborators.paths().get_path_from_exec_module_root_fn(),
-                playbook_path=collaborators.paths().get_path_relative_from_module_root_fn(
-                    __name__, args.ansible_playbook_relative_path_from_root
+                selected_hosts=ssh_conn_info.ansible_hosts,
+                with_paths=AnsibleRunner.WithPaths.create(
+                    paths=collaborators.paths(),
+                    script_import_name_var=__name__,
+                    playbook_path=args.ansible_playbook_relative_path_from_module,
                 ),
-                extra_modules_paths=[collaborators.paths().get_path_abs_to_module_root_fn(__name__)],
                 ansible_vars=[
                     f"host_name={network_info.ssh_hostname}",
                     f"static_ip={dhcpcd_configure_info.static_ip_address}",
@@ -133,7 +135,6 @@ class RemoteMachineNetworkConfigureRunner:
                     f"dns_address={dhcpcd_configure_info.dns_ip_address}",
                 ],
                 ansible_tags=["configure_rpi_network", "define_static_ip", "reboot"],
-                selected_hosts=ssh_conn_info.ansible_hosts,
             ),
             desc_run="Running Ansible playbook (Configure Network)",
             desc_end="Ansible playbook finished (Configure Network).",
