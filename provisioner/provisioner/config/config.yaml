@@ -2,6 +2,8 @@ provisioner:
   remote:
     # TODO: auth section to each host
     hosts:
+      - name: localhost
+        address: ansible_connection=local
       - name: kmaster
         address: 192.168.1.200
       - name: knode1

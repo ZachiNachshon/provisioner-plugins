@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from typing import List
+
 from python_core_lib.infra.context import Context
 from python_core_lib.test_lib.test_errors import FakeEnvironmentAssertionError
 from python_core_lib.utils.httpclient import HttpClient, HttpResponse
@@ -56,7 +57,9 @@ class FakeHttpClient(HttpClient):
 
     def assert_download_file(self, download_url: str) -> None:
         if download_url not in self.__registered_downloaded_files:
-            raise FakeEnvironmentAssertionError(f"HTTP client expected a download file request but it never called. message: {download_url}")
+            raise FakeEnvironmentAssertionError(
+                f"HTTP client expected a download file request but it never called. message: {download_url}"
+            )
 
     def mock_get_response(self, download_url: str, expected_response: HttpResponse):
         self.__mocked_get_response[download_url] = expected_response
@@ -69,7 +72,9 @@ class FakeHttpClient(HttpClient):
 
     def assert_get_request(self, download_url: str) -> None:
         if download_url not in self.__registered_get_requests:
-            raise FakeEnvironmentAssertionError(f"HTTP client expected a GET request but it never called. message: {download_url}")
+            raise FakeEnvironmentAssertionError(
+                f"HTTP client expected a GET request but it never called. message: {download_url}"
+            )
 
     def mock_post_response(self, download_url: str, expected_response: HttpResponse):
         self.__mocked_post_response[download_url] = expected_response
@@ -82,4 +87,6 @@ class FakeHttpClient(HttpClient):
 
     def assert_post_request(self, download_url: str) -> None:
         if download_url not in self.__registered_post_requests:
-            raise FakeEnvironmentAssertionError(f"HTTP client expected a POST request but it never called. message: {download_url}")
+            raise FakeEnvironmentAssertionError(
+                f"HTTP client expected a POST request but it never called. message: {download_url}"
+            )

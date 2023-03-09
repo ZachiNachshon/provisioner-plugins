@@ -3,7 +3,6 @@
 import os
 import pathlib
 import sys
-
 from pathlib import Path
 from typing import Optional
 
@@ -13,7 +12,6 @@ from python_core_lib.infra.context import Context
 
 
 class Paths:
-
     def __init__(self, ctx: Context) -> None:
         pass
 
@@ -33,7 +31,7 @@ class Paths:
     def _get_path_from_exec_module_root(self, relative_path: Optional[str] = None) -> str:
         """
         Return the root folder path of the current executing project, requires a __file__ parameter
-        so the starting CWD will be the actual Python file within the virtual env or pip-pkg 
+        so the starting CWD will be the actual Python file within the virtual env or pip-pkg
         and not from this IO utility file
         """
         exec_path = self._get_exec_main_path()
@@ -58,13 +56,15 @@ class Paths:
         module_root = self._calculate_static_file_path_from_project(path)
         module_name = os.path.basename(module_root)
         if relative_path:
-            return f"{module_name}{relative_path}" if relative_path.startswith("/") else f"{module_name}/{relative_path}"
+            return (
+                f"{module_name}{relative_path}" if relative_path.startswith("/") else f"{module_name}/{relative_path}"
+            )
         return module_name
 
     def _calculate_static_file_path_from_project(self, file_path, relative_path: Optional[str] = None) -> str:
         result_path = None
         parent_path = pathlib.Path(file_path).parent
-        while(True):
+        while True:
             basename = os.path.basename(parent_path)
             if os.path.exists(f"{parent_path}/pyproject.toml") or os.path.exists(f"{parent_path}/setup.py"):
                 result_path = parent_path
@@ -74,7 +74,9 @@ class Paths:
             parent_path = parent_path.parent
 
         if result_path and relative_path:
-            return f"{result_path}{relative_path}" if relative_path.startswith("/") else f"{result_path}/{relative_path}"
+            return (
+                f"{result_path}{relative_path}" if relative_path.startswith("/") else f"{result_path}/{relative_path}"
+            )
         return result_path
 
     # def _relative_path_to_abs_path(self, relative_path: str) -> str:
@@ -87,7 +89,7 @@ class Paths:
         This is an internal method, not exposed from this utility class
         """
         try:
-            sFile = os.path.abspath(sys.modules['__main__'].__file__)
+            sFile = os.path.abspath(sys.modules["__main__"].__file__)
         except:
             sFile = sys.executable
         return os.path.dirname(sFile)

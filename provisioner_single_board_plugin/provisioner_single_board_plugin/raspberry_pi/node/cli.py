@@ -1,16 +1,12 @@
 #!/usr/bin/env python3
 
 from typing import Optional
+from python_core_lib.infra.evaluator import Evaluator
 
 import typer
 from loguru import logger
 from provisioner_features_lib.config.config_resolver import ConfigResolver
 from provisioner_features_lib.remote.typer_remote_opts import CliRemoteOpts
-from python_core_lib.cli.state import CliGlobalArgs
-from python_core_lib.errors.cli_errors import (
-    CliApplicationException,
-    StepEvaluationFailure,
-)
 from python_core_lib.infra.context import CliContextManager
 
 from provisioner_single_board_plugin.raspberry_pi.node.configure_cmd import (
@@ -32,18 +28,14 @@ def configure() -> None:
     Select a remote Raspberry Pi node to configure Raspbian OS software and hardware settings.
     Configuration is aimed for an optimal headless Raspberry Pi used as a Kubernetes cluster node.
     """
-    try:
-        RPiOsConfigureCmd().run(
+    Evaluator.eval_cli_entrypoint_step(
+        name="Raspbian OS Configure",
+        call=lambda: RPiOsConfigureCmd().run(
             ctx=CliContextManager.create(), args=RPiOsConfigureCmdArgs(remote_opts=CliRemoteOpts.maybe_get())
-        )
-    except StepEvaluationFailure as sef:
-        logger.critical("Failed to configure Raspbian OS. ex: {}, message: {}", sef.__class__.__name__, str(sef))
-    except Exception as e:
-        logger.critical("Failed to configure Raspbian OS. ex: {}, message: {}", e.__class__.__name__, str(e))
-        if CliGlobalArgs.is_verbose():
-            raise CliApplicationException(e)
-
-
+        ),
+        error_message="Failed to configure Raspbian OS"
+    )
+    
 @rpi_node_cli_app.command(name="network")
 @logger.catch(reraise=True)
 def network(
@@ -64,8 +56,9 @@ def network(
     """
     Select a remote Raspberry Pi node on the ethernet network to configure a static IP address.
     """
-    try:
-        RPiNetworkConfigureCmd().run(
+    Evaluator.eval_cli_entrypoint_step(
+        name="Raspbian Network Configure",
+        call=lambda: RPiNetworkConfigureCmd().run(
             ctx=CliContextManager.create(),
             args=RPiNetworkConfigureCmdArgs(
                 gw_ip_address=gw_ip_address,
@@ -73,10 +66,6 @@ def network(
                 static_ip_address=static_ip_address,
                 remote_opts=CliRemoteOpts.maybe_get(),
             ),
-        )
-    except StepEvaluationFailure as sef:
-        logger.critical("Failed to configure RPi network. ex: {}, message: {}", sef.__class__.__name__, str(sef))
-    except Exception as e:
-        logger.critical("Failed to configure RPi network. ex: {}, message: {}", e.__class__.__name__, str(e))
-        if CliGlobalArgs.is_verbose():
-            raise CliApplicationException(e)
+        ),
+        error_message="Failed to configure RPi network"
+    )

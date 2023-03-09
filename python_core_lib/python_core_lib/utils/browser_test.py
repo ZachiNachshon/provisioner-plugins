@@ -3,7 +3,7 @@
 import unittest
 from unittest import mock
 
-from ..utils.browser import open_browser
+from python_core_lib.utils.browser import open_browser
 
 
 class BrowserTestShould(unittest.TestCase):

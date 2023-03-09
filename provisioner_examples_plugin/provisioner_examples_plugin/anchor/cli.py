@@ -47,8 +47,7 @@ def run_anchor_command(
     Run a dummy anchor run scenario locally or on remote machine via Ansible playbook
     """
     Evaluator.eval_cli_entrypoint_step(
-        ctx=CliContextManager.create(),
-        err_msg="Failed to run anchor command",
+        name="Run Anchor Command",
         call=lambda: AnchorCmd().run(
             ctx=CliContextManager.create(),
             args=AnchorCmdArgs(
@@ -60,4 +59,5 @@ def run_anchor_command(
                 remote_opts=CliRemoteOpts.maybe_get(),
             ),
         ),
+        error_message="Failed to run anchor command",
     )

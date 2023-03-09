@@ -11,7 +11,8 @@ from python_core_lib.colors.color import *
 from python_core_lib.infra.context import Context
 from python_core_lib.utils.progress_indicator import ProgressIndicator
 
-FIXED_CONSOLE_WIDTH=100
+FIXED_CONSOLE_WIDTH = 100
+
 
 class Printer:
 
@@ -33,13 +34,14 @@ class Printer:
         logger.debug(f"Creating output printer (dry_run: {dry_run}, verbose: {verbose})...")
         return Printer(progress_indicator, dry_run, verbose)
 
-    def _print(self, message: str) -> None:
+    def _print(self, message: str) -> "Printer":
         if self._dry_run and message:
             message = f"{color.BOLD}{color.MAGENTA}[DRY-RUN]{color.NONE} {message}"
 
         print(message)
+        return self
 
-    def _print_with_rich_table(self, message: str, border_color: Optional[str] = "green") -> None:
+    def _print_with_rich_table(self, message: str, border_color: Optional[str] = "green") -> "Printer":
         """
         Message text supports Python rich format i.e. [green]Hello[/green]
         List of colors can be found on the following link:
@@ -48,19 +50,27 @@ class Printer:
         if self._dry_run and message:
             message = f"[bold magenta][DRY-RUN][/bold magenta] {message}"
 
-        table = Table(show_edge=True, show_header=False, caption_justify="left", border_style=border_color, width=FIXED_CONSOLE_WIDTH)
+        table = Table(
+            show_edge=True,
+            show_header=False,
+            caption_justify="left",
+            border_style=border_color,
+            width=FIXED_CONSOLE_WIDTH,
+        )
         table.add_column(no_wrap=True, justify="left")
         table.add_row(message, end_section=True)
         self.console.print()
         self.console.print(table, justify="left")
         self.console.print()
+        return self
 
     def _print_horizontal_line(self, message: str, line_color: Optional[str] = "green") -> None:
         self.console.rule(f"[bold {line_color}]{message}", align="center")
 
-    def _new_line(self, count: Optional[int] = 1) -> None:
+    def _new_line(self, count: Optional[int] = 1) -> "Printer":
         for i in range(count):
             self.console.print()
+        return self
 
     print_fn = _print
     print_with_rich_table_fn = _print_with_rich_table

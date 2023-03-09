@@ -10,10 +10,17 @@ install-sdist: ## Install a source distribution locally
 
 .PHONY: fmt-all
 fmt-all: ## Format Python code using Black style and sort imports
+	@echo "\n\n========= PROVISIONER ===============================\n\n"
 	@cd provisioner; make fmt; cd ..
+	@echo "\n\n========= PROVISIONER PLUGIN: EXAMPLES ==============\n\n"
 	@cd provisioner_examples_plugin; make fmt; cd ..
+	@echo "\n\n========= PROVISIONER LIBRARY: CORE ==================\n\n"
+	@cd python_core_lib; make fmt; cd ..
+	@echo "\n\n========= PROVISIONER LIBRARY: FEATURES =============\n\n"
 	@cd provisioner_features_lib; make fmt; cd ..
+	@echo "\n\n========= PROVISIONER PLUGIN: INSTALLERS ============\n\n"
 	@cd provisioner_installers_plugin; make fmt; cd ..
+	@echo "\n\n========= PROVISIONER PLUGIN: SINGLE BOARD ==========\n\n"
 	@cd provisioner_single_board_plugin; make fmt; cd ..
 
 .PHONY: fmtcheck-all
@@ -35,10 +42,17 @@ typecheck-all: ## Check for Python static types errors (https://mypy.readthedocs
 .PHONY: test-all
 # test: fmtcheck ## Run Unit/E2E/IT tests
 test-all: ## Run Unit/E2E/IT tests
+	@echo "\n\n========= PROVISIONER ===============================\n\n"
 	@cd provisioner; make test; cd ..
+	@echo "\n\n========= PROVISIONER PLUGIN: EXAMPLES ==============\n\n"
 	@cd provisioner_examples_plugin; make test; cd ..
+	# @echo "\n\n========= PROVISIONER LIBRARY: CORE ==================\n\n"
+	# @cd python_core_lib; make test; cd ..
+	@echo "\n\n========= PROVISIONER LIBRARY: FEATURES =============\n\n"
 	@cd provisioner_features_lib; make test; cd ..
+	@echo "\n\n========= PROVISIONER PLUGIN: INSTALLERS ============\n\n"
 	@cd provisioner_installers_plugin; make test; cd ..
+	@echo "\n\n========= PROVISIONER PLUGIN: SINGLE BOARD ==========\n\n"
 	@cd provisioner_single_board_plugin; make test; cd ..
 
 # @cd python_core_lib; make test; cd ..

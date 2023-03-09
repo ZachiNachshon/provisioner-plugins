@@ -9,6 +9,7 @@ from python_core_lib.infra.log import LoggerManager
 
 STATIC_VERSION_FILE_PATH = None
 
+
 def main_runner(
     verbose: Optional[bool] = typer.Option(False, "--verbose", "-v", help="Run command with DEBUG verbosity"),
     auto_prompt: Optional[bool] = typer.Option(
@@ -41,6 +42,7 @@ def main_runner(
     logger_mgr = LoggerManager()
     logger_mgr.initialize(verbose, dry_run)
 
+
 def try_read_version() -> str:
     content = "no version"
     try:
@@ -51,13 +53,14 @@ def try_read_version() -> str:
         pass
     return content
 
-class EntryPoint:
 
+class EntryPoint:
     @staticmethod
     def create_typer(
-        title: str, 
-        config_resolver_fn: Optional[Callable] = None, 
-        version_file_path: Optional[str] = "resources/version.txt") -> typer.Typer:
+        title: str,
+        config_resolver_fn: Optional[Callable] = None,
+        version_file_path: Optional[str] = "resources/version.txt",
+    ) -> typer.Typer:
 
         global STATIC_VERSION_FILE_PATH
         STATIC_VERSION_FILE_PATH = version_file_path
@@ -68,8 +71,5 @@ class EntryPoint:
         # Use invoke_without_command=True to allow usage of --version flags which are NoOp commands
         # Use also no_args_is_help=True to print the help menu if no arguments were supplied
         return typer.Typer(
-            help=title,
-            callback=main_runner, 
-            invoke_without_command=True, 
-            no_args_is_help=True, 
-            rich_markup_mode=None)
+            help=title, callback=main_runner, invoke_without_command=True, no_args_is_help=True, rich_markup_mode=None
+        )

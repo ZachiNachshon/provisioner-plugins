@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from shutil import which
+from typing import Optional
 
 from loguru import logger
 
@@ -26,7 +27,7 @@ class Checks:
 
     def _is_tool_exist(self, name: str) -> bool:
         if self._dry_run:
-            return True
+            return False
 
         return which(name) is not None
 

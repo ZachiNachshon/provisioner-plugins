@@ -4,15 +4,15 @@ import unittest
 from typing import List
 from unittest import mock
 
+from python_core_lib.config.config_reader import ConfigReader
 from python_core_lib.domain.serialize import SerializationBase
 from python_core_lib.errors.cli_errors import FailedToReadConfigurationFile
 from python_core_lib.infra.context import Context
 from python_core_lib.utils.io_utils import IOUtils
 from python_core_lib.utils.yaml_util import YamlUtil
-from python_core_lib.config.config_reader import ConfigReader
 
-INTERNAL_CONFIG_TEST_DATA_FILE_PATH = "python_scripts_lib/test_data/internal_config.yaml"
-USER_CONFIG_TEST_DATA_FILE_PATH = "python_scripts_lib/test_data/user_config.yaml"
+INTERNAL_CONFIG_TEST_DATA_FILE_PATH = "python_core_lib/test_data/internal_config.yaml"
+USER_CONFIG_TEST_DATA_FILE_PATH = "python_core_lib/test_data/user_config.yaml"
 
 
 class FakeDomainObj(SerializationBase):
@@ -147,7 +147,7 @@ class ConfigReaderTestShould(unittest.TestCase):
         self.assertEqual(len(output.utilities), 3)
 
     @mock.patch(
-        "python_scripts_lib.config.config_reader_test.FakeDomainObj.merge",
+        "python_core_lib.config.config_reader_test.FakeDomainObj.merge",
         side_effect=Exception("test merge exception"),
     )
     def test_fail_to_merge_user_config(self, merge_config_call: mock.MagicMock):

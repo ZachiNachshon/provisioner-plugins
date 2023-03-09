@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 
 from typing import Any, List
+
+from python_core_lib.infra.context import Context
 from python_core_lib.test_lib.test_errors import FakeEnvironmentAssertionError
 from python_core_lib.utils.json_util import JsonUtil
 from python_core_lib.utils.summary import Summary
-from python_core_lib.infra.context import Context
 
 
 class FakeSummary(Summary):
@@ -13,7 +14,9 @@ class FakeSummary(Summary):
     __registered_titles: List[str] = None
 
     def __init__(self, json_util: JsonUtil):
-        super().__init__(dry_run=True, verbose=False, auto_prompt=False, json_util=json_util, printer=None, prompter=None) 
+        super().__init__(
+            dry_run=True, verbose=False, auto_prompt=False, json_util=json_util, printer=None, prompter=None
+        )
         self.__registered_values = {}
         self.__registered_titles = []
 
@@ -36,12 +39,16 @@ class FakeSummary(Summary):
 
     def assert_value(self, attribute_name: str, value: Any) -> None:
         if attribute_name not in self.__registered_values:
-            raise FakeEnvironmentAssertionError(f"Summary expected to have an attribute name which never met. name: {attribute_name}")
-        
+            raise FakeEnvironmentAssertionError(
+                f"Summary expected to have an attribute name which never met. name: {attribute_name}"
+            )
+
         assert_hash = hash(self.__registered_values[attribute_name])
         value_hash = hash(value)
         if assert_hash != value_hash:
-            raise FakeEnvironmentAssertionError(f"Summary expected attribute value was not the same as expected. name: {attribute_name}")
+            raise FakeEnvironmentAssertionError(
+                f"Summary expected attribute value was not the same as expected. name: {attribute_name}"
+            )
 
     def _register_show_summary_title(self, title: str) -> None:
         self.__registered_titles.append(title)

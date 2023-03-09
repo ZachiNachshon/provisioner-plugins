@@ -35,10 +35,10 @@ def ansible_hello(
     Run a dummy hello world scenario locally via Ansible playbook
     """
     Evaluator.eval_cli_entrypoint_step(
-        ctx=CliContextManager.create(),
-        err_msg="Failed to run hello world command",
+        name="Ansible Hello World",
         call=lambda: HelloWorldCmd().run(
             ctx=CliContextManager.create(),
             args=HelloWorldCmdArgs(username=username, remote_opts=CliRemoteOpts.maybe_get()),
         ),
+        error_message="Failed to run hello world command",
     )

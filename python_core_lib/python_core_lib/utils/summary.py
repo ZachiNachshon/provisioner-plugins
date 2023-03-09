@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 
-from typing import Any
+from typing import Any, Callable
 
 from loguru import logger
 
+from python_core_lib.infra.context import Context
 from python_core_lib.utils.json_util import JsonUtil
 from python_core_lib.utils.printer import Printer
 from python_core_lib.utils.prompter import Prompter
-from python_core_lib.infra.context import Context
 
 
 class Summary:
-    
+
     _dry_run: bool = None
     _verbose: bool = None
     _auto_prompt: bool = None
@@ -21,13 +21,8 @@ class Summary:
     _summary_dict: dict = {}
 
     def __init__(
-        self, 
-        dry_run: bool, 
-        verbose: bool,
-        auto_prompt: bool, 
-        json_util: JsonUtil, 
-        printer: Printer, 
-        prompter: Prompter):
+        self, dry_run: bool, verbose: bool, auto_prompt: bool, json_util: JsonUtil, printer: Printer, prompter: Prompter
+    ):
 
         self._dry_run = dry_run
         self._verbose = verbose
@@ -46,6 +41,11 @@ class Summary:
 
     def append(self, attribute_name: str, value: Any) -> None:
         self._summary_dict[attribute_name] = value
+
+    def append_result(self, attribute_name: str, call: Callable[[], str]) -> Any:
+        result = call()
+        self.append(attribute_name, result)
+        return result
 
     def _get_text(self) -> str:
         result_dict = {}

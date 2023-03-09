@@ -108,7 +108,7 @@ class Prompter:
     def _prompt_user_single_selection(self, message: str, options: List[Any]) -> Any:
         if self._dry_run:
             logger.debug(f"{message}: Dry-run mode.")
-            return None
+            return options[0] if options and len(options) > 1 else None
 
         if not options or len(options) == 0:
             logger.warning("Not sufficient options to prompt for user selection.")
@@ -170,7 +170,9 @@ class Prompter:
         #   - Selectable lines
         lines_number = len(options) + 2
         self._clear_previous_line(lines_number)
-        self._overwrite_previous_line(color_in_use=color.GREEN, message=f"Selected :: {str(result)}", icon=CHECKMARK_ICON)
+        self._overwrite_previous_line(
+            color_in_use=color.GREEN, message=f"Selected :: {str(result)}", icon=CHECKMARK_ICON
+        )
         return result
 
     def _prompt_yes_no(

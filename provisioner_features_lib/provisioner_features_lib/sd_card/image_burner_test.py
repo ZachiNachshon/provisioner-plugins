@@ -133,7 +133,6 @@ class ImageBurnerTestShould(unittest.TestCase):
     def test_select_block_device_with_expected_prompt(
         self, print_block_devices_call: mock.MagicMock, ask_user_for_block_devices_call: mock.MagicMock
     ) -> None:
-
         env = TestEnv.create()
         ImageBurnerCmdRunner()._select_block_device(env.get_context(), env.get_collaborators())
         env.get_collaborators().printer().assert_output("Block device selection:")

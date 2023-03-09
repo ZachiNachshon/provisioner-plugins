@@ -5,12 +5,12 @@ from loguru import logger
 from python_core_lib.infra.context import Context
 from python_core_lib.utils.httpclient import HttpClient
 
-
 GitHubUrl = "https://github.com"
 GitHubApiUrl = "https://api.github.com"
 
 GitHubApiLatestReleaseUrl = "{git_hub_api_url}/repos/{owner}/{repo}/releases/latest"
 GitHubDownloadBinaryUrl = "{git_hub_url}/{owner}/{repo}/releases/download/{version}/{binary_name}"
+
 
 class GitHub:
 
@@ -49,7 +49,7 @@ class GitHub:
             return version
         return version
 
-    def _download_binary(self, owner: str, repo: str, version: str, binary_name: str, binary_path: str):
+    def _download_binary(self, owner: str, repo: str, version: str, binary_name: str, binary_folder_path: str) -> str:
         named_params = {
             "git_hub_url": GitHubUrl,
             "owner": owner,
@@ -58,11 +58,9 @@ class GitHub:
             "binary_name": binary_name,
         }
         url = GitHubDownloadBinaryUrl.format(**named_params)
-        response = self.http_client.download_file_fn(
-            url=url, 
-            progress_bar=True, 
-            download_folder=binary_path, 
-            verify_already_downloaded=True)
-        
+        return self.http_client.download_file_fn(
+            url=url, progress_bar=True, download_folder=binary_folder_path, verify_already_downloaded=True
+        )
+
     get_latest_version_fn = _get_latest_version
     download_binary_fn = _download_binary

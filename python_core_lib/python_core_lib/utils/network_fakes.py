@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from typing import Any, List
+
 from python_core_lib.infra.context import Context
 from python_core_lib.test_lib.test_errors import FakeEnvironmentAssertionError
 from python_core_lib.utils.network import NetworkUtil
@@ -20,8 +21,8 @@ class FakeNetworkUtil(NetworkUtil):
     @staticmethod
     def _create_fake(dry_run: bool, verbose: bool) -> "FakeNetworkUtil":
         network_util = FakeNetworkUtil(dry_run=dry_run, verbose=verbose)
-        network_util.get_all_lan_network_devices_fn = (
-            lambda ip_range, filter_str=None, show_progress=False: network_util.__register_lan_network_scanned_ip_ranges(ip_range)
+        network_util.get_all_lan_network_devices_fn = lambda ip_range, filter_str=None, show_progress=False: network_util.__register_lan_network_scanned_ip_ranges(
+            ip_range
         )
         return network_util
 
@@ -38,7 +39,9 @@ class FakeNetworkUtil(NetworkUtil):
 
     def assert_lan_network_scanned_ip_range(self, ip_range: str) -> None:
         if ip_range not in self.__registered_lan_network_scanned_ip_ranges:
-            raise FakeEnvironmentAssertionError(f"Network util expected a specific IP range which never fulfilled. ip_range: {ip_range}")
+            raise FakeEnvironmentAssertionError(
+                f"Network util expected a specific IP range which never fulfilled. ip_range: {ip_range}"
+            )
 
     def __register_lan_network_scanned_ip_ranges(self, ip_range: str) -> dict:
         if ip_range in self.__mocked_lan_network_devices_response:

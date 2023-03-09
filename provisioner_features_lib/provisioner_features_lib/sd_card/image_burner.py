@@ -54,7 +54,7 @@ class ImageBurnerCmdRunner:
         )
 
     def _print_and_return_block_devices_output(self, ctx: Context, collaborators: CoreCollaborators) -> str:
-        block_devices = Evaluator.eval_step_with_return_throw_on_failure(
+        block_devices = Evaluator.eval_step_return_value_throw_on_failure(
             call=lambda: self._read_block_devices(ctx=ctx, collaborators=collaborators),
             ctx=ctx,
             err_msg="Cannot read block devices",
@@ -83,13 +83,13 @@ class ImageBurnerCmdRunner:
         self, ctx: Context, collaborators: CoreCollaborators, block_devices_output: str
     ) -> str:
 
-        block_device_name = Evaluator.eval_step_with_return_throw_on_failure(
+        block_device_name = Evaluator.eval_step_return_value_throw_on_failure(
             call=lambda: self._prompt_for_block_device_name(collaborators=collaborators),
             ctx=ctx,
             err_msg="Block device was not selected, aborting",
         )
 
-        Evaluator.eval_step_with_return_throw_on_failure(
+        Evaluator.eval_step_return_value_throw_on_failure(
             call=lambda: self._verify_block_device_name(
                 block_devices=block_devices_output, selected_block_device=block_device_name
             ),
@@ -125,7 +125,7 @@ class ImageBurnerCmdRunner:
         collaborators: CoreCollaborators,
     ) -> str:
 
-        image_file_path = Evaluator.eval_step_with_return_throw_on_failure(
+        image_file_path = Evaluator.eval_step_return_value_throw_on_failure(
             call=lambda: collaborators.http_client().download_file_fn(
                 url=image_download_url,
                 download_folder=image_download_path,
@@ -164,7 +164,7 @@ class ImageBurnerCmdRunner:
 
     def _run_pre_burn_approval_flow(self, ctx: Context, block_device_name: str, collaborators: CoreCollaborators):
         collaborators.summary().show_summary_and_prompt_for_enter(f"Burning image to {block_device_name}")
-        Evaluator.eval_step_with_return_throw_on_failure(
+        Evaluator.eval_step_return_value_throw_on_failure(
             call=lambda: self._ask_to_verify_block_device(
                 block_device_name=block_device_name, collaborators=collaborators
             ),

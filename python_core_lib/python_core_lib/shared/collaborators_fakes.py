@@ -2,6 +2,7 @@
 
 import threading
 from typing import Any, Callable
+
 from python_core_lib.infra.context import Context
 from python_core_lib.runner.ansible.ansible import AnsibleRunner
 from python_core_lib.runner.ansible.ansible_fakes import FakeAnsibleRunner
@@ -30,8 +31,8 @@ from python_core_lib.utils.prompter_fakes import FakePrompter
 from python_core_lib.utils.summary import Summary
 from python_core_lib.utils.summary_fakes import FakeSummary
 
-class FakeCoreCollaborators(CoreCollaborators):
 
+class FakeCoreCollaborators(CoreCollaborators):
     def __init__(self, ctx: Context) -> None:
         # self.__lock = threading.Lock()
         self.__ctx: Context = ctx
@@ -60,6 +61,7 @@ class FakeCoreCollaborators(CoreCollaborators):
             if not self.__io:
                 self.__io = FakeIOUtils.create(self.__ctx)
             return self.__io
+
         return self._lock_and_get(callback=create_io_utils)
 
     def override_io_utils(self, io_utils: FakeIOUtils) -> None:
@@ -70,6 +72,7 @@ class FakeCoreCollaborators(CoreCollaborators):
             if not self.__paths:
                 self.__paths = FakePaths.create(self.__ctx)
             return self.__paths
+
         return self._lock_and_get(callback=create_paths)
 
     def override_paths(self, paths: FakePaths) -> None:
@@ -80,6 +83,7 @@ class FakeCoreCollaborators(CoreCollaborators):
             if not self.__checks:
                 self.__checks = FakeChecks.create(self.__ctx)
             return self.__checks
+
         return self._lock_and_get(callback=create_checks)
 
     def override_checks(self, checks: FakeChecks) -> None:
@@ -90,6 +94,7 @@ class FakeCoreCollaborators(CoreCollaborators):
             if not self.__json_util:
                 self.__json_util = JsonUtil.create(self.__ctx, self.io_utils())
             return self.__json_util
+
         return self._lock_and_get(callback=create_json_util)
 
     def override_json_util(self, json_util: JsonUtil) -> None:
@@ -100,6 +105,7 @@ class FakeCoreCollaborators(CoreCollaborators):
             if not self.__process:
                 self.__process = FakeProcess.create(self.__ctx)
             return self.__process
+
         return self._lock_and_get(callback=create_process)
 
     def override_process(self, process: FakeProcess) -> None:
@@ -110,6 +116,7 @@ class FakeCoreCollaborators(CoreCollaborators):
             if not self.__printer:
                 self.__printer = FakePrinter.create(self.__ctx, ProgressIndicator.create(self.__ctx, self.io_utils()))
             return self.__printer
+
         return self._lock_and_get(callback=create_printer)
 
     def override_printer(self, printer: FakePrinter) -> None:
@@ -120,6 +127,7 @@ class FakeCoreCollaborators(CoreCollaborators):
             if not self.__prompter:
                 self.__prompter = FakePrompter.create(self.__ctx)
             return self.__prompter
+
         return self._lock_and_get(callback=create_prompter)
 
     def override_prompter(self, prompter: FakePrompter) -> None:
@@ -130,6 +138,7 @@ class FakeCoreCollaborators(CoreCollaborators):
             if not self.__ansible_runner:
                 self.__ansible_runner = FakeAnsibleRunner.create(self.__ctx)
             return self.__ansible_runner
+
         return self._lock_and_get(callback=create_ansible_runner)
 
     def override_ansible_runner(self, ansible_runner: FakeAnsibleRunner) -> None:
@@ -140,6 +149,7 @@ class FakeCoreCollaborators(CoreCollaborators):
             if not self.__network_util:
                 self.__network_util = FakeNetworkUtil.create(self.__ctx)
             return self.__network_util
+
         return self._lock_and_get(callback=create_network_util)
 
     def override_network_util(self, network_util: FakeNetworkUtil) -> None:
@@ -150,6 +160,7 @@ class FakeCoreCollaborators(CoreCollaborators):
             if not self.__github:
                 self.__github = GitHub.create(self.__ctx, self.http_client())
             return self.__github
+
         return self._lock_and_get(callback=create_github)
 
     def override_github(self, github: GitHub) -> None:
@@ -160,6 +171,7 @@ class FakeCoreCollaborators(CoreCollaborators):
             if not self.__summary:
                 self.__summary = FakeSummary.create(self.__ctx)
             return self.__summary
+
         return self._lock_and_get(callback=create_summary)
 
     def override_summary(self, summary: FakeSummary) -> None:
@@ -170,6 +182,7 @@ class FakeCoreCollaborators(CoreCollaborators):
             if not self.__hosts_file:
                 self.__hosts_file = FakeHostsFile.create(self.__ctx)
             return self.__hosts_file
+
         return self._lock_and_get(callback=create_hosts_file)
 
     def override_hosts_file(self, hosts_file: FakeHostsFile) -> None:
@@ -180,6 +193,7 @@ class FakeCoreCollaborators(CoreCollaborators):
             if not self.__http_client:
                 self.__http_client = FakeHttpClient.create(self.__ctx, io_utils=self.io_utils(), printer=self.printer())
             return self.__http_client
+
         return self._lock_and_get(callback=create_http_client)
 
     def override_http_client(self, http_client: FakeHttpClient) -> None:

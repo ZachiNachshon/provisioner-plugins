@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 
 from typing import List
-from python_core_lib.test_lib.test_errors import FakeEnvironmentAssertionError
+
 from python_core_lib.infra.context import Context
+from python_core_lib.test_lib.test_errors import FakeEnvironmentAssertionError
 from python_core_lib.utils.printer import Printer
 from python_core_lib.utils.progress_indicator import ProgressIndicator
 
@@ -10,7 +11,7 @@ from python_core_lib.utils.progress_indicator import ProgressIndicator
 class FakePrinter(Printer):
 
     registered_output: List[str] = None
-    
+
     def __init__(self, progress_indicator: ProgressIndicator, dry_run: bool, verbose: bool):
         super().__init__(progress_indicator=progress_indicator, dry_run=dry_run, verbose=verbose)
         self.registered_output = []
@@ -40,7 +41,9 @@ class FakePrinter(Printer):
                 found = True
                 break
         if not found:
-            raise FakeEnvironmentAssertionError(f"Printer expected an output message but it never printed. message:\n{message}")            
+            raise FakeEnvironmentAssertionError(
+                f"Printer expected an output message but it never printed. message:\n{message}"
+            )
 
     def assert_outputs(self, messages: List[str]) -> None:
         for message in messages:

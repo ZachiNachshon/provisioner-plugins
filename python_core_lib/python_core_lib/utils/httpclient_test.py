@@ -5,10 +5,10 @@ from unittest import mock
 
 import requests
 
-from ..infra.context import Context
-from ..utils.httpclient import HttpClient, HttpResponse
-from ..utils.io_utils_fakes import FakeIOUtils
-from ..utils.printer_fakes import FakePrinter
+from python_core_lib.infra.context import Context
+from python_core_lib.utils.httpclient import HttpClient, HttpResponse
+from python_core_lib.utils.io_utils_fakes import FakeIOUtils
+from python_core_lib.utils.printer_fakes import FakePrinter
 
 
 class HttpClientTestShould(unittest.TestCase):
@@ -75,7 +75,7 @@ class HttpClientTestShould(unittest.TestCase):
         self.assertTrue(response.error.is_timeout)
 
     @mock.patch(
-        "python_scripts_lib.utils.httpclient.HttpClient._base_request",
+        "python_core_lib.utils.httpclient.HttpClient._base_request",
         side_effect=[HttpResponse(raw=None, content="test content")],
     )
     def test_get_arguments(self, base_req_call: mock.MagicMock):
@@ -90,7 +90,7 @@ class HttpClientTestShould(unittest.TestCase):
         self.assertEqual({"key": "value"}, get_call_kwargs["headers"])
 
     @mock.patch(
-        "python_scripts_lib.utils.httpclient.HttpClient._base_request",
+        "python_core_lib.utils.httpclient.HttpClient._base_request",
         side_effect=[HttpResponse(raw=None, content="test content")],
     )
     def test_post_arguments(self, base_req_call: mock.MagicMock):

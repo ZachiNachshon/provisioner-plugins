@@ -113,7 +113,7 @@ class NetworkUtil:
         list_scan_result_dict = None
         if show_progress:
             list_scan_result_dict = self._printer.progress_indicator.progress_bar.long_running_process_fn(
-                call=lambda: self._nmap.nmap_list_scan(target=ip_range), 
+                call=lambda: self._nmap.nmap_list_scan(target=ip_range),
                 desc="List Scanning",
                 expected_time=51,
                 increments=50,

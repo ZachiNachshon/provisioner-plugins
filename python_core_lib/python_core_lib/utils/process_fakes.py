@@ -44,12 +44,13 @@ class FakeProcess(Process):
     def assert_run_command(self, args: List[str]) -> None:
         cmd_str: str = self._prepare_command_str(args)
         if cmd_str not in self.__registered_run_commands:
-            raise FakeEnvironmentAssertionError(f"Process expected command args to be used but they were never provided. args: {args}")
-            
+            raise FakeEnvironmentAssertionError(
+                f"Process expected command args to be used but they were never provided. args: {args}"
+            )
+
     def assert_run_commands(self, args: List[List[str]]) -> None:
         for arg in args:
             self.assert_run_command(arg)
 
     def _prepare_command_str(self, args: List[str]) -> str:
         return " ".join(args) if type(args) == list else str(args)
-    

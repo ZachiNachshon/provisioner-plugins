@@ -66,7 +66,7 @@ class AnchorCmdRunner:
 
     def _start_remote_run_command_flow(self, ctx: Context, args: AnchorRunnerCmdArgs, collaborators: CoreCollaborators):
         remote_connector = RemoteMachineConnector(collaborators)
-        ssh_conn_info = Evaluator.eval_step_with_return_throw_on_failure(
+        ssh_conn_info = Evaluator.eval_step_return_value_throw_on_failure(
             call=lambda: remote_connector.collect_ssh_connection_info(ctx, args.remote_opts),
             ctx=ctx,
             err_msg="Could not resolve SSH connection info",

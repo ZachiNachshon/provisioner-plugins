@@ -9,7 +9,7 @@ from python_core_lib.infra.context import Context
 from python_core_lib.utils.io_utils import IOUtils
 from python_core_lib.utils.yaml_util import YamlUtil
 
-YAML_TEST_DATA_FILE_PATH = "python_scripts_lib/test_data/internal_config.yaml"
+YAML_TEST_DATA_FILE_PATH = "python_core_lib/test_data/internal_config.yaml"
 
 
 class FakeDomainObj(SerializationBase):

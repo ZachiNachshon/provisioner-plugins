@@ -71,7 +71,6 @@ class RemoteMachineConnector:
                     )
                 ],
             )
-
         """
         Prompt the user for required remote SSH connection parameters
         Possible sources for host/IP pairs:
@@ -83,7 +82,7 @@ class RemoteMachineConnector:
         network_device_selection_method = self._ask_for_network_device_selection_method()
 
         if network_device_selection_method == NetworkDeviceSelectionMethod.UserConfig:
-            selected_ansible_hosts = Evaluator.eval_step_with_return_throw_on_failure(
+            selected_ansible_hosts = Evaluator.eval_step_return_value_throw_on_failure(
                 call=lambda: remote_opts
                 and self._run_config_based_host_selection(
                     ansible_hosts=remote_opts.ansible_hosts, force_single_conn_info=force_single_conn_info
@@ -93,7 +92,7 @@ class RemoteMachineConnector:
             )
 
         elif network_device_selection_method == NetworkDeviceSelectionMethod.ScanLAN:
-            selected_ansible_hosts = Evaluator.eval_step_with_return_throw_on_failure(
+            selected_ansible_hosts = Evaluator.eval_step_return_value_throw_on_failure(
                 call=lambda: remote_opts
                 and self._run_scan_lan_host_selection(
                     ip_discovery_range=remote_opts.ip_discovery_range, force_single_conn_info=force_single_conn_info
@@ -103,8 +102,8 @@ class RemoteMachineConnector:
             )
 
         elif network_device_selection_method == NetworkDeviceSelectionMethod.UserPrompt:
-            selected_ansible_hosts = Evaluator.eval_step_with_return_throw_on_failure(
-                call=lambda: self._run_manual_host_selection(),
+            selected_ansible_hosts = Evaluator.eval_step_return_value_throw_on_failure(
+                call=lambda: self._run_manual_host_selection(ctx),
                 ctx=ctx,
                 err_msg="Failed to read a host IP address from user prompt",
             )
@@ -128,7 +127,7 @@ class RemoteMachineConnector:
             )
         )
 
-        selected_static_ip = Evaluator.eval_step_with_return_throw_on_failure(
+        selected_static_ip = Evaluator.eval_step_return_value_throw_on_failure(
             call=lambda: self.collaborators.prompter().prompt_user_input_fn(
                 message="Enter a desired remote static IP address (example: 192.168.1.2XX)",
                 default=static_ip_address,
@@ -138,7 +137,7 @@ class RemoteMachineConnector:
             err_msg="Failed to read static IP address",
         )
 
-        selected_gw_address = Evaluator.eval_step_with_return_throw_on_failure(
+        selected_gw_address = Evaluator.eval_step_return_value_throw_on_failure(
             call=lambda: self.collaborators.prompter().prompt_user_input_fn(
                 message="Enter the gateway address",
                 default=gw_ip_address,
@@ -148,7 +147,7 @@ class RemoteMachineConnector:
             err_msg="Failed to read gateway IP address",
         )
 
-        selected_dns_resolver_address = Evaluator.eval_step_with_return_throw_on_failure(
+        selected_dns_resolver_address = Evaluator.eval_step_return_value_throw_on_failure(
             call=lambda: self.collaborators.prompter().prompt_user_input_fn(
                 message="Enter the DNS resolver address",
                 default=dns_ip_address,
@@ -193,7 +192,7 @@ class RemoteMachineConnector:
         return None
 
     def _run_manual_host_selection(self, ctx: Context) -> List[AnsibleHost]:
-        ip_address = Evaluator.eval_step_with_return_throw_on_failure(
+        ip_address = Evaluator.eval_step_return_value_throw_on_failure(
             call=lambda: self.collaborators.prompter().prompt_user_input_fn(
                 message="Enter remote node IP address",
                 post_user_input_message="Selected IP address :: ",
@@ -202,7 +201,7 @@ class RemoteMachineConnector:
             err_msg="Failed to read node IP address",
         )
 
-        hostname = Evaluator.eval_step_with_return_throw_on_failure(
+        hostname = Evaluator.eval_step_return_value_throw_on_failure(
             call=lambda: self.collaborators.prompter().prompt_user_input_fn(
                 message="Enter remote node host name",
                 post_user_input_message="Selected remote hostname :: ",
@@ -225,7 +224,7 @@ class RemoteMachineConnector:
         )
 
         for host in ansible_hosts:
-            host.username = Evaluator.eval_step_with_return_throw_on_failure(
+            host.username = Evaluator.eval_step_return_value_throw_on_failure(
                 call=lambda: self.collaborators.prompter().prompt_user_input_fn(
                     message="Enter remote node user name",
                     default=remote_opts.node_username,
@@ -251,7 +250,7 @@ class RemoteMachineConnector:
             self.collaborators.printer().new_line_fn()
             self.collaborators.printer().print_fn("Identified SSH password from CLI argument.")
         else:
-            password = Evaluator.eval_step_with_return_throw_on_failure(
+            password = Evaluator.eval_step_return_value_throw_on_failure(
                 call=lambda: self.collaborators.prompter().prompt_user_input_fn(
                     message="Enter remote node password",
                     default=remote_opts.node_password,
@@ -270,7 +269,7 @@ class RemoteMachineConnector:
             self.collaborators.printer().new_line_fn()
             self.collaborators.printer().print_fn("Identified SSH private key path from CLI argument.")
         else:
-            ssh_private_key_path = Evaluator.eval_step_with_return_throw_on_failure(
+            ssh_private_key_path = Evaluator.eval_step_return_value_throw_on_failure(
                 call=lambda: self.collaborators.prompter().prompt_user_input_fn(
                     message="Enter SSH private key path",
                     default=remote_opts.node_password,

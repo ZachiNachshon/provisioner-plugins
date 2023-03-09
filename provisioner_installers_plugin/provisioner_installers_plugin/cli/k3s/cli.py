@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import typer
+from provisioner_features_lib.remote.typer_remote_opts import CliRemoteOpts
 from python_core_lib.infra.context import CliContextManager
 from python_core_lib.infra.evaluator import Evaluator
 
@@ -16,11 +17,11 @@ def k3s_server(
     """
     Lightweight Kubernetes Server
     """
-    Evaluator.eval_installer_cli_entrypoint_step(
-        ctx=CliContextManager.create(),
+    Evaluator.eval_installer_cli_entrypoint_pyfn_step(
         name="k3s-server",
         call=lambda: UtilityInstallerCmd().run(
-            ctx=CliContextManager.create(), args=UtilityInstallerCmdArgs(utilities=["k3s-server"])
+            ctx=CliContextManager.create(),
+            args=UtilityInstallerCmdArgs(utilities=["k3s-server"], remote_opts=CliRemoteOpts.maybe_get()),
         ),
     )
 
@@ -36,10 +37,10 @@ def k3s_agent(
     """
     Lightweight Kubernetes Agent
     """
-    Evaluator.eval_installer_cli_entrypoint_step(
-        ctx=CliContextManager.create(),
+    Evaluator.eval_installer_cli_entrypoint_pyfn_step(
         name="k3s-agent",
         call=lambda: UtilityInstallerCmd().run(
-            ctx=CliContextManager.create(), args=UtilityInstallerCmdArgs(utilities=["k3s-agent"])
+            ctx=CliContextManager.create(),
+            args=UtilityInstallerCmdArgs(utilities=["k3s-agent"], remote_opts=CliRemoteOpts.maybe_get()),
         ),
     )

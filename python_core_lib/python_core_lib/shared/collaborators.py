@@ -2,6 +2,7 @@
 
 import threading
 from typing import Any, Callable
+
 from python_core_lib.infra.context import Context
 from python_core_lib.runner.ansible.ansible import AnsibleRunner
 from python_core_lib.utils.checks import Checks
@@ -18,8 +19,8 @@ from python_core_lib.utils.progress_indicator import ProgressIndicator
 from python_core_lib.utils.prompter import Prompter
 from python_core_lib.utils.summary import Summary
 
-class CoreCollaborators:
 
+class CoreCollaborators:
     def __init__(self, ctx: Context) -> None:
         self.__lock = threading.Lock()
         self.__ctx: Context = ctx
@@ -53,6 +54,7 @@ class CoreCollaborators:
             if not self.__io:
                 self.__io = IOUtils.create(self.__ctx)
             return self.__io
+
         return self._lock_and_get(callback=create_io_utils)
 
     def paths(self) -> Paths:
@@ -60,6 +62,7 @@ class CoreCollaborators:
             if not self.__paths:
                 self.__paths = Paths.create(self.__ctx)
             return self.__paths
+
         return self._lock_and_get(callback=create_paths)
 
     def checks(self) -> Checks:
@@ -67,6 +70,7 @@ class CoreCollaborators:
             if not self.__checks:
                 self.__checks = Checks.create(self.__ctx)
             return self.__checks
+
         return self._lock_and_get(callback=create_checks)
 
     def json_util(self) -> JsonUtil:
@@ -74,6 +78,7 @@ class CoreCollaborators:
             if not self.__json_util:
                 self.__json_util = JsonUtil.create(self.__ctx, self.io_utils())
             return self.__json_util
+
         return self._lock_and_get(callback=create_json_util)
 
     def process(self) -> Process:
@@ -81,6 +86,7 @@ class CoreCollaborators:
             if not self.__process:
                 self.__process = Process.create(self.__ctx)
             return self.__process
+
         return self._lock_and_get(callback=create_process)
 
     def printer(self) -> Printer:
@@ -88,6 +94,7 @@ class CoreCollaborators:
             if not self.__printer:
                 self.__printer = Printer.create(self.__ctx, ProgressIndicator.create(self.__ctx, self.io_utils()))
             return self.__printer
+
         return self._lock_and_get(callback=create_printer)
 
     def prompter(self) -> Prompter:
@@ -95,6 +102,7 @@ class CoreCollaborators:
             if not self.__prompter:
                 self.__prompter = Prompter.create(self.__ctx)
             return self.__prompter
+
         return self._lock_and_get(callback=create_prompter)
 
     def ansible_runner(self) -> AnsibleRunner:
@@ -102,6 +110,7 @@ class CoreCollaborators:
             if not self.__ansible_runner:
                 self.__ansible_runner = AnsibleRunner.create(self.__ctx, self.io_utils(), self.process(), self.paths())
             return self.__ansible_runner
+
         return self._lock_and_get(callback=create_ansible_runner)
 
     def network_util(self) -> NetworkUtil:
@@ -109,6 +118,7 @@ class CoreCollaborators:
             if not self.__network_util:
                 self.__network_util = NetworkUtil.create(self.__ctx, self.printer())
             return self.__network_util
+
         return self._lock_and_get(callback=create_network_util)
 
     def github(self) -> GitHub:
@@ -116,6 +126,7 @@ class CoreCollaborators:
             if not self.__github:
                 self.__github = GitHub.create(self.__ctx, self.http_client())
             return self.__github
+
         return self._lock_and_get(callback=create_github)
 
     def summary(self) -> Summary:
@@ -123,6 +134,7 @@ class CoreCollaborators:
             if not self.__summary:
                 self.__summary = Summary.create(self.__ctx, self.json_util(), self.printer(), self.prompter())
             return self.__summary
+
         return self._lock_and_get(callback=create_summary)
 
     def hosts_file(self) -> HostsFile:
@@ -130,6 +142,7 @@ class CoreCollaborators:
             if not self.__hosts_file:
                 self.__hosts_file = HostsFile.create(self.__ctx, self.process())
             return self.__hosts_file
+
         return self._lock_and_get(callback=create_hosts_file)
 
     def http_client(self) -> HttpClient:
@@ -137,4 +150,5 @@ class CoreCollaborators:
             if not self.__http_client:
                 self.__http_client = HttpClient.create(self.__ctx, io_utils=self.io_utils(), printer=self.printer())
             return self.__http_client
+
         return self._lock_and_get(callback=create_http_client)

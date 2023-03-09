@@ -75,7 +75,7 @@ class RemoteMachineOsConfigureRunner:
         self, ctx: Context, collaborators: CoreCollaborators, remote_opts: Optional[CliRemoteOpts] = None
     ) -> SSHConnectionInfo:
 
-        ssh_conn_info = Evaluator.eval_step_with_return_throw_on_failure(
+        ssh_conn_info = Evaluator.eval_step_return_value_throw_on_failure(
             call=lambda: RemoteMachineConnector(collaborators=collaborators).collect_ssh_connection_info(
                 ctx, remote_opts, force_single_conn_info=True
             ),

@@ -2,9 +2,8 @@
 
 from typing import Any, List, Set
 
-from python_core_lib.test_lib.test_errors import FakeEnvironmentAssertionError
-
 from python_core_lib.infra.context import Context
+from python_core_lib.test_lib.test_errors import FakeEnvironmentAssertionError
 from python_core_lib.utils.prompter import Prompter, PromptLevel
 
 
@@ -36,8 +35,12 @@ class FakePrompter(Prompter):
     @staticmethod
     def _create_fake(auto_prompt: bool, dry_run: bool) -> "FakePrompter":
         prompter = FakePrompter(auto_prompt, dry_run)
-        prompter.prompt_user_multi_selection_fn = lambda message, options: prompter._register_user_multi_selection_prompt(message)
-        prompter.prompt_user_single_selection_fn = lambda message, options: prompter._register_user_single_selection_prompt(message)
+        prompter.prompt_user_multi_selection_fn = (
+            lambda message, options: prompter._register_user_multi_selection_prompt(message)
+        )
+        prompter.prompt_user_single_selection_fn = (
+            lambda message, options: prompter._register_user_single_selection_prompt(message)
+        )
         prompter.prompt_user_input_fn = lambda message, default=None, redact_value=False, level=PromptLevel.HIGHLIGHT, post_user_input_message=None: prompter._register_user_input_prompt(
             message
         )
@@ -54,10 +57,12 @@ class FakePrompter(Prompter):
     def _register_enter_prompt(self) -> bool:
         self.__registered_enter_prompt_counts += 1
         return True
-    
+
     def assert_enter_prompt_count(self, count: int) -> None:
         if count != self.__registered_enter_prompt_counts:
-            raise FakeEnvironmentAssertionError(f"Prompter expected a specific number of enter prompts which never fulfilled. count: {count}")
+            raise FakeEnvironmentAssertionError(
+                f"Prompter expected a specific number of enter prompts which never fulfilled. count: {count}"
+            )
 
     def mock_yes_no_response(self, prompt_str: str, response: bool):
         self.__mocked_yes_no_response[prompt_str] = response
@@ -78,7 +83,9 @@ class FakePrompter(Prompter):
                 found = True
                 break
         if not found:
-            raise FakeEnvironmentAssertionError("Prompter expected a yes/no message but it never triggered. message: " + message)
+            raise FakeEnvironmentAssertionError(
+                "Prompter expected a yes/no message but it never triggered. message: " + message
+            )
 
     def mock_user_input_response(self, prompt_str: str, response: Any):
         self.__mocked_user_input_response[prompt_str] = response
@@ -91,7 +98,9 @@ class FakePrompter(Prompter):
 
     def assert_user_input_prompt(self, message: str) -> None:
         if message not in self.__registered_user_input_prompts:
-            raise FakeEnvironmentAssertionError("Prompter expected a user input message but it never triggered. message: " + message)
+            raise FakeEnvironmentAssertionError(
+                "Prompter expected a user input message but it never triggered. message: " + message
+            )
 
     def mock_user_single_selection_response(self, prompt_str: str, response: Any):
         self.__mocked_user_single_selection_response[prompt_str] = response
@@ -104,7 +113,9 @@ class FakePrompter(Prompter):
 
     def assert_user_single_selection_prompt(self, message: str) -> None:
         if message not in self.__registered_user_single_selection_prompts:
-            raise FakeEnvironmentAssertionError("Prompter expected a user single selection message but it never triggered. message: " + message)
+            raise FakeEnvironmentAssertionError(
+                "Prompter expected a user single selection message but it never triggered. message: " + message
+            )
 
     def mock_user_multi_selection_response(self, prompt_str: str, responses: List[Any]):
         self.__mocked_user_multi_selection_response[prompt_str] = responses
@@ -117,4 +128,6 @@ class FakePrompter(Prompter):
 
     def assert_user_multi_selection_prompt(self, message: str) -> None:
         if message not in self.__registered_user_multi_selection_prompts:
-            raise FakeEnvironmentAssertionError("Prompter expected a user multi selection message but it never triggered. message: " + message)
+            raise FakeEnvironmentAssertionError(
+                "Prompter expected a user multi selection message but it never triggered. message: " + message
+            )

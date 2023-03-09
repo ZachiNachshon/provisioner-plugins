@@ -3,13 +3,16 @@
 import os
 import unittest
 
-from python_core_lib.errors.cli_errors import ExternalDependencyFileNotFound, InvalidAnsibleHostPair
+from python_core_lib.errors.cli_errors import (
+    ExternalDependencyFileNotFound,
+    InvalidAnsibleHostPair,
+)
 from python_core_lib.infra.context import Context
+from python_core_lib.runner.ansible.ansible import AnsibleHost, AnsibleRunner
 from python_core_lib.utils.io_utils import IOUtils
 from python_core_lib.utils.io_utils_fakes import FakeIOUtils
 from python_core_lib.utils.paths import Paths
 from python_core_lib.utils.process import Process
-from python_core_lib.runner.ansible.ansible import AnsibleRunner, AnsibleHost
 
 
 class AnsibleRunnerTestShould(unittest.TestCase):
@@ -24,7 +27,9 @@ class AnsibleRunnerTestShould(unittest.TestCase):
         ansible_vars = ["key1=value1", "key2=value2"]
         force_dockerized = True
 
-        ansible_runner = AnsibleRunner.create(ctx=ctx, io_utils=FakeIOUtils.create(ctx), process=Process.create(ctx), paths=Paths.create(ctx))
+        ansible_runner = AnsibleRunner.create(
+            ctx=ctx, io_utils=FakeIOUtils.create(ctx), process=Process.create(ctx), paths=Paths.create(ctx)
+        )
 
         output = ansible_runner.run_fn(
             username=username,

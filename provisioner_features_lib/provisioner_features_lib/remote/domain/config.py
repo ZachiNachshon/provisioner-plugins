@@ -7,6 +7,15 @@ class RunEnvironment(str, Enum):
     Local = "Local"
     Remote = "Remote"
 
+    @staticmethod
+    def from_str(label):
+        if label in ("Local"):
+            return RunEnvironment.Local
+        elif label in ("Remote"):
+            return RunEnvironment.Remote
+        else:
+            raise NotImplementedError(f"RunEnvironment enum does not support label '{label}'")
+
 
 class RemoteConfig:
     """

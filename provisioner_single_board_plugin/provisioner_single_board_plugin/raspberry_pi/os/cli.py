@@ -1,15 +1,11 @@
 #!/usr/bin/env python3
 
 from typing import Optional
+from python_core_lib.infra.evaluator import Evaluator
 
 import typer
 from loguru import logger
 from provisioner_features_lib.config.config_resolver import ConfigResolver
-from python_core_lib.cli.state import CliGlobalArgs
-from python_core_lib.errors.cli_errors import (
-    CliApplicationException,
-    StepEvaluationFailure,
-)
 from python_core_lib.infra.context import CliContextManager
 
 from provisioner_single_board_plugin.raspberry_pi.os.burn_image_cmd import (
@@ -32,17 +28,14 @@ def burn_image(
     """
     Select an available block device to burn a Raspbian OS image (SD-Card / HDD)
     """
-    try:
-        RPiOsBurnImageCmd().run(
+    Evaluator.eval_cli_entrypoint_step(
+        name="Raspbian OS Image Burn",
+        call=lambda: RPiOsBurnImageCmd().run(
             ctx=CliContextManager.create(),
             args=RPiOsBurnImageCmdArgs(
                 image_download_url=image_download_url,
                 image_download_path=ConfigResolver.get_config().single_board.os.download_path,
             ),
-        )
-    except StepEvaluationFailure as sef:
-        logger.critical("Failed to burn Raspbian OS. ex: {}, message: {}", sef.__class__.__name__, str(sef))
-    except Exception as e:
-        logger.critical("Failed to burn Raspbian OS. ex: {}, message: {}", e.__class__.__name__, str(e))
-        if CliGlobalArgs.is_verbose():
-            raise CliApplicationException(e)
+        ),
+        error_message="Failed to burn Raspbian OS"
+    )

@@ -157,7 +157,6 @@ class ProgressIndicator:
                 return self._inc_based_progress_bar(future, expected_time, increments, desc)
 
         def _inc_based_download_file_progress_bar(self, response: Response, download_folder: str) -> Any:
-
             def _read_base_url_if_redirect(resp: Response) -> str:
                 if resp.history:
                     for resp in resp.history:

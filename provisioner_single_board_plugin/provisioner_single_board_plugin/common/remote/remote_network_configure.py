@@ -71,7 +71,7 @@ class RemoteMachineNetworkConfigureRunner:
         self, ctx: Context, collaborators: CoreCollaborators, remote_opts: Optional[CliRemoteOpts] = None
     ) -> SSHConnectionInfo:
 
-        ssh_conn_info = Evaluator.eval_step_with_return_throw_on_failure(
+        ssh_conn_info = Evaluator.eval_step_return_value_throw_on_failure(
             call=lambda: RemoteMachineConnector(collaborators=collaborators).collect_ssh_connection_info(
                 ctx, remote_opts, force_single_conn_info=True
             ),
@@ -89,7 +89,7 @@ class RemoteMachineNetworkConfigureRunner:
         ssh_conn_info: SSHConnectionInfo,
     ) -> DHCPCDConfigurationInfo:
 
-        dhcpcd_configure_info = Evaluator.eval_step_with_return_throw_on_failure(
+        dhcpcd_configure_info = Evaluator.eval_step_return_value_throw_on_failure(
             call=lambda: RemoteMachineConnector(collaborators=collaborators).collect_dhcpcd_configuration_info(
                 ctx=ctx,
                 ansible_hosts=ssh_conn_info.ansible_hosts,

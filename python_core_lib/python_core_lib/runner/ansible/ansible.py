@@ -4,13 +4,17 @@ from typing import List, Optional
 
 from loguru import logger
 
-from python_core_lib.errors.cli_errors import ExternalDependencyFileNotFound, InvalidAnsibleHostPair
+from python_core_lib.errors.cli_errors import (
+    ExternalDependencyFileNotFound,
+    InvalidAnsibleHostPair,
+)
 from python_core_lib.infra.context import Context
 from python_core_lib.utils.io_utils import IOUtils
 from python_core_lib.utils.paths import Paths
 from python_core_lib.utils.process import Process
 
 ANSIBLE_SHELL_RUNNER_PATH = "external/shell_scripts_lib/runner/ansible/ansible.sh"
+
 
 class AnsibleHost:
     host: str
@@ -19,12 +23,14 @@ class AnsibleHost:
     password: str
     ssh_private_key_file_path: str
 
-    def __init__(self, 
-        host: str, 
-        ip_address: str, 
-        username: str = None, 
+    def __init__(
+        self,
+        host: str,
+        ip_address: str,
+        username: str = None,
         password: Optional[str] = None,
-        ssh_private_key_file_path: Optional[str] = None) -> None:
+        ssh_private_key_file_path: Optional[str] = None,
+    ) -> None:
 
         self.host = host
         self.ip_address = ip_address
@@ -35,24 +41,25 @@ class AnsibleHost:
     @staticmethod
     def from_dict(ansible_host_dict: dict) -> "AnsibleHost":
         return AnsibleHost(
-            host=ansible_host_dict["hostname"], 
+            host=ansible_host_dict["hostname"],
             ip_address=ansible_host_dict["ip_address"],
             username=ansible_host_dict["username"] if "username" in ansible_host_dict else None,
             password=ansible_host_dict["password"] if "password" in ansible_host_dict else None,
-            ssh_private_key_file_path=ansible_host_dict["ssh_private_key_file_path"] if "ssh_private_key_file_path" in ansible_host_dict else None
+            ssh_private_key_file_path=ansible_host_dict["ssh_private_key_file_path"]
+            if "ssh_private_key_file_path" in ansible_host_dict
+            else None,
         )
 
-class AnsibleRunner:
 
+class AnsibleRunner:
     class WithPaths:
         _working_dir: str
         _playbook_path: str
         _extra_modules_paths: Optional[List[str]]
 
-        def __init__(self, 
-            working_dir: str, 
-            playbook_path: str, 
-            extra_modules_paths: Optional[List[str]] = None) -> None:
+        def __init__(
+            self, working_dir: str, playbook_path: str, extra_modules_paths: Optional[List[str]] = None
+        ) -> None:
             self._working_dir = working_dir
             self._playbook_path = playbook_path
             self._extra_modules_paths = extra_modules_paths
@@ -66,27 +73,26 @@ class AnsibleRunner:
             return False
 
         def __hash__(self):
-            return hash((
-                self._working_dir, 
-                self._playbook_path,
-                tuple(self._extra_modules_paths),
-                ))
+            return hash(
+                (
+                    self._working_dir,
+                    self._playbook_path,
+                    tuple(self._extra_modules_paths),
+                )
+            )
 
         @staticmethod
         def create(paths: Paths, script_import_name_var, playbook_path: str) -> "AnsibleRunner.WithPaths":
             return AnsibleRunner.WithPaths(
                 working_dir=paths.get_path_from_exec_module_root_fn(),
-                playbook_path=paths.get_path_relative_from_module_root_fn(
-                    script_import_name_var, playbook_path
-                ),
+                playbook_path=paths.get_path_relative_from_module_root_fn(script_import_name_var, playbook_path),
                 extra_modules_paths=[paths.get_path_abs_to_module_root_fn(script_import_name_var)],
             )
 
         @staticmethod
         def create_custom(
-            working_dir: str, 
-            playbook_path: str, 
-            extra_modules_paths: Optional[List[str]] = None) -> "AnsibleRunner.WithPaths":
+            working_dir: str, playbook_path: str, extra_modules_paths: Optional[List[str]] = None
+        ) -> "AnsibleRunner.WithPaths":
             return AnsibleRunner.WithPaths(
                 working_dir=working_dir,
                 playbook_path=playbook_path,
@@ -101,7 +107,13 @@ class AnsibleRunner:
     _ansible_shell_runner_path: str = None
 
     def __init__(
-        self, io_utils: IOUtils, process: Process, paths: Paths, dry_run: bool, verbose: bool, ansible_shell_runner_path: str
+        self,
+        io_utils: IOUtils,
+        process: Process,
+        paths: Paths,
+        dry_run: bool,
+        verbose: bool,
+        ansible_shell_runner_path: str,
     ) -> None:
 
         self._io_utils = io_utils
@@ -116,7 +128,7 @@ class AnsibleRunner:
         ctx: Context,
         io_utils: IOUtils,
         process: Process,
-        paths: Paths, 
+        paths: Paths,
         ansible_shell_runner_path: Optional[str] = ANSIBLE_SHELL_RUNNER_PATH,
     ) -> "AnsibleRunner":
 
@@ -147,7 +159,9 @@ class AnsibleRunner:
 
         for host in ansible_hosts:
             if not host.host or not host.ip_address and not self._dry_run:
-                err_msg = f"Ansible selected host is missing a manadatory arguments. host: {host.host}, ip: {host.ip_address}"
+                err_msg = (
+                    f"Ansible selected host is missing a manadatory arguments. host: {host.host}, ip: {host.ip_address}"
+                )
                 logger.error(err_msg)
                 raise InvalidAnsibleHostPair(err_msg)
 
@@ -174,7 +188,6 @@ class AnsibleRunner:
         ansible_tags: Optional[List[str]] = None,
         force_dockerized: Optional[bool] = False,
     ) -> str:
-
         """
         Call the ansible shell runner to trigger an ansible playbook.
         Selected hosts are pairs of (hostname ip_address)
@@ -188,7 +201,9 @@ class AnsibleRunner:
         selected_hosts_items_list = self._generate_call_parameter_list("selected_host", ansible_hosts_list)
         ansible_vars_items_list = self._generate_call_parameter_list("ansible_var", ansible_vars)
         ansible_tags_items_list = self._generate_call_parameter_list("ansible_tag", ansible_tags)
-        extra_modules_paths_items_list = self._generate_call_parameter_list("extra_module_path", with_paths._extra_modules_paths)
+        extra_modules_paths_items_list = self._generate_call_parameter_list(
+            "extra_module_path", with_paths._extra_modules_paths
+        )
 
         run_cmd = [
             "bash",
