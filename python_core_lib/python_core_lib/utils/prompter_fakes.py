@@ -39,7 +39,7 @@ class FakePrompter(Prompter):
             lambda message, options: prompter._register_user_multi_selection_prompt(message)
         )
         prompter.prompt_user_single_selection_fn = (
-            lambda message, options: prompter._register_user_single_selection_prompt(message)
+            lambda message, options: prompter._register_user_single_selection_prompt(message, options)
         )
         prompter.prompt_user_input_fn = lambda message, default=None, redact_value=False, level=PromptLevel.HIGHLIGHT, post_user_input_message=None: prompter._register_user_input_prompt(
             message
@@ -105,11 +105,11 @@ class FakePrompter(Prompter):
     def mock_user_single_selection_response(self, prompt_str: str, response: Any):
         self.__mocked_user_single_selection_response[prompt_str] = response
 
-    def _register_user_single_selection_prompt(self, prompt_str: str) -> Any:
+    def _register_user_single_selection_prompt(self, prompt_str: str, options: List[Any]) -> Any:
         self.__registered_user_single_selection_prompts.append(prompt_str)
         if prompt_str in self.__mocked_user_single_selection_response:
             return self.__mocked_user_single_selection_response[prompt_str]
-        return None
+        return options[0] if len(options) > 0 else None
 
     def assert_user_single_selection_prompt(self, message: str) -> None:
         if message not in self.__registered_user_single_selection_prompts:

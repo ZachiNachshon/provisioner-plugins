@@ -5,7 +5,10 @@ from typing import Any, Callable
 from loguru import logger
 
 from python_core_lib.cli.state import CliGlobalArgs
-from python_core_lib.errors.cli_errors import CliApplicationException, StepEvaluationFailure
+from python_core_lib.errors.cli_errors import (
+    CliApplicationException,
+    StepEvaluationFailure,
+)
 from python_core_lib.infra.context import Context
 
 
@@ -36,13 +39,9 @@ class Evaluator:
         try:
             call()
         except StepEvaluationFailure as sef:
-            logger.critical(
-                f"{error_message}. name: {name}, ex: {sef.__class__.__name__}, message: {str(sef)}"
-            )
+            logger.critical(f"{error_message}. name: {name}, ex: {sef.__class__.__name__}, message: {str(sef)}")
         except Exception as e:
-            logger.critical(
-                f"{error_message}. name: {name}, ex: {e.__class__.__name__}, message: {str(e)}"
-            )
+            logger.critical(f"{error_message}. name: {name}, ex: {e.__class__.__name__}, message: {str(e)}")
             if CliGlobalArgs.is_verbose():
                 raise CliApplicationException(e)
 

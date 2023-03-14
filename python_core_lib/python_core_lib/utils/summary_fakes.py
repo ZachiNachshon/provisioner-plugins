@@ -43,11 +43,16 @@ class FakeSummary(Summary):
                 f"Summary expected to have an attribute name which never met. name: {attribute_name}"
             )
 
-        assert_hash = hash(self.__registered_values[attribute_name])
-        value_hash = hash(value)
+        # To prevent an error of type "TypeError: unhashable type: 'list'" we need to cast to tuple
+        # only if the value is of type list
+        registered_value = self.__registered_values[attribute_name]
+        assert_hash = hash(registered_value) if type(registered_value) is not list else hash(tuple(registered_value))
+        value_hash = hash(value) if type(value) is not list else hash(tuple(value))
         if assert_hash != value_hash:
             raise FakeEnvironmentAssertionError(
-                f"Summary expected attribute value was not the same as expected. name: {attribute_name}"
+                f"Summary attribute value was not the same as expected.\n"
+                + f"Actual:\nname: {attribute_name}, value: {registered_value}\n"
+                + f"Expected:\nname: {attribute_name}, value: {value}"
             )
 
     def _register_show_summary_title(self, title: str) -> None:

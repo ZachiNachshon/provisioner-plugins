@@ -67,3 +67,11 @@ class FailedToResolveLatestVersionFromGitHub(Exception):
 
 class OsArchNotSupported(Exception):
     pass
+
+
+class InstallerSourceNotSupported(Exception):
+    pass
+
+
+class MissingInstallerSource(Exception):
+    pass

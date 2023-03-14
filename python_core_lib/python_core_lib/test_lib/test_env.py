@@ -42,9 +42,13 @@ class TestEnv:
         )
 
     def create(
-        ctx: Context = create_test_default_context(), enable_test_env_paths=True, dry_run: bool = False
+        ctx: Context = create_test_default_context(),
+        enable_test_env_paths=True,
+        dry_run: bool = False,
+        verbose: bool = False,
     ) -> "TestEnv":
         ctx._dry_run = dry_run
+        ctx._verbose = verbose
         return TestEnv._create_env(ctx, enable_test_env_paths)
 
     def get_test_env_root_path(self) -> str:

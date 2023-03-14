@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from functools import reduce
 from typing import Any, Callable, Generic, List, NoReturn, Type, TypeVar, Union
 
 from loguru import logger
@@ -36,7 +37,9 @@ class PyFnEvaluator(Generic[ENV, ERR1]):
     def eval(self, arg: "PyFn[ENV, ERR1, VAL1]") -> VAL1:
         # This is the actual evaluation of the PyFn call chain
         return arg._run(self._environment).fold(
-            lambda error: raise_exception(RaiseLeft(error)), lambda success: success
+            # lambda error: raise_exception(RaiseLeft(error)), lambda success: success
+            lambda error: raise_exception(error),
+            lambda success: success,
         )
 
     def new(env: ENV) -> "PyFnEvaluator[ENV, ERR1]":
@@ -109,15 +112,29 @@ class PyFn(Generic[ENV, ERR, VAL]):
     def filter(self, func: Callable[[VAL1], bool]) -> "PyFn[ENV1, ERR1, List[VAL1]]":
         return PyFn(lambda env: self._run(env).flat_map(lambda iterable: self._filter(iter(iterable), func)._run(env)))
 
-    def _for_each(self, iterator, func: Callable[[VAL1], VAL2]) -> "PyFn[ENV1, ERR1, List[VAL2]]":
-        result = []
-        for item in iterator:
-            result.append(func(item))
-        return PyFn.success(result)
+    def _for_each(
+        self, env: ENV, iterable, func: Callable[[VAL1], "PyFn[ENV1, ERR2, VAL2]"]
+    ) -> "PyFn[ENV1, ERR1, List[VAL1]]":
+        result: List[VAL2] = []
 
-    def for_each(self, func: Callable[[VAL1], VAL2]) -> "PyFn[ENV1, ERR1, List[VAL2]]":
+        def collect_and_return_value(value):
+            if env.ctx.is_verbose():
+                print(f"for_each iteration: {value}")
+            result.append(value)
+            return value
+
+        chain_list = map(lambda item: func(item), iterable)
+        call_chain = reduce(
+            lambda call_1, call_2: call_1.flat_map(lambda value: PyFn.of(collect_and_return_value(value))).flat_map(
+                lambda _: call_2
+            ),
+            chain_list,
+        )
+        return call_chain.flat_map(lambda value: PyFn.of(collect_and_return_value(value))).map(lambda _: result)
+
+    def for_each(self, func: Callable[[VAL1], "PyFn[ENV1, ERR1, VAL2]"]) -> "PyFn[ENV1, ERR1, List[VAL1]]":
         return PyFn(
-            lambda env: self._run(env).flat_map(lambda iterable: self._for_each(iter(iterable), func)._run(env))
+            lambda env: self._run(env).flat_map(lambda iterable: self._for_each(env, iter(iterable), func)._run(env))
         )
 
     def _log_and_return_value(self, message: str, value: VAL1) -> "PyFn[ENV1, ERR1, VAL1]":
@@ -171,32 +188,6 @@ class PyFn(Generic[ENV, ERR, VAL]):
                 return if_false(value)
             case _:
                 raise TypeError(f"Type matching expected bool but recieved {type(value)}")
-
-    # def if_then_else(
-    #     self,
-    #     predicate: Callable[[VAL], bool],
-    #     if_true: Callable[[VAL], "PyFn[ENV1, ERR1, VAL1]"],
-    #     if_false: Callable[[VAL], "PyFn[ENV1, ERR2, VAL2]"],
-    # ) -> "PyFn[ENV1, Union[ERR1, ERR2], Union[VAL1, VAL2]]":
-    #     return PyFn(
-    #         lambda env: self._run(env)
-    #         .map(predicate)
-    #         .flat_map(lambda value: self._match_bool(value, if_true, if_false)._run(env))
-    #     )
-
-    # def _match_bool(
-    #     self,
-    #     value: bool,
-    #     if_true: Callable[[VAL], "PyFn[ENV1, ERR1, VAL1]"],
-    #     if_false: Callable[[VAL], "PyFn[ENV1, ERR2, VAL2]"],
-    # ):
-    #     match value:
-    #         case True:
-    #             return if_true(value)
-    #         case False:
-    #             return if_false(value)
-    #         case _:
-    #             raise TypeError(f"Type matching expected bool but recieved {type(value)}")
 
     def catch(self: "PyFn[ENV, ERR, VAL1]", exception: Type[EX]) -> "PyFn[ENV, Union[ERR, EX], VAL1]":
         def _maybe_fail_fn(env: ENV) -> Either[Union[ERR, EX], VAL1]:

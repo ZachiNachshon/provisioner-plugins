@@ -5,13 +5,14 @@ import traceback
 from provisioner_features_lib.config.config_resolver import ConfigResolver
 from provisioner_features_lib.remote.domain.config import RemoteConfig
 from provisioner_features_lib.remote.typer_remote_opts import TyperRemoteOpts
-from provisioner_features_lib.remote.typer_remote_opts_fakes import \
-    TestDataRemoteOpts
-from provisioner_installers_plugin.installer.domain.config import \
-    InstallerConfig
-from provisioner_installers_plugin.installer.domain.config_fakes import TestDataclassInstallerConfig
+from provisioner_features_lib.remote.typer_remote_opts_fakes import TestDataRemoteOpts
 from python_core_lib.cli.entrypoint import EntryPoint
 from python_core_lib.domain.serialize import SerializationBase
+
+from provisioner_installers_plugin.installer.domain.config import InstallerConfig
+from provisioner_installers_plugin.installer.domain.config_fakes import (
+    TestDataclassInstallerConfig,
+)
 
 FAKE_APP_TITLE = "Fake Utility Installer Test App"
 
@@ -48,8 +49,9 @@ def generate_fake_config():
 
 
 def register_remote_cli_args():
-    from provisioner_features_lib.remote.typer_remote_opts_callback import \
-        remote_args_callback
+    from provisioner_features_lib.remote.typer_remote_opts_callback import (
+        remote_args_callback,
+    )
 
     remote_args_callback(
         environment=TestDataRemoteOpts.TEST_DATA_ENVIRONMENT,

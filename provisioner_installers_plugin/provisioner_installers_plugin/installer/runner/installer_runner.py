@@ -13,7 +13,9 @@ from provisioner_features_lib.remote.remote_connector import (
 from provisioner_features_lib.remote.typer_remote_opts import CliRemoteOpts
 from python_core_lib.errors.cli_errors import (
     FailedToResolveLatestVersionFromGitHub,
+    InstallerSourceNotSupported,
     InstallerUtilityNotSupported,
+    MissingInstallerSource,
     OsArchNotSupported,
 )
 from python_core_lib.func.pyfn import Environment, PyFn, PyFnEnvBase, PyFnEvaluator
@@ -78,7 +80,7 @@ class UtilityInstallerRunnerCmdArgs:
         self.github_access_token = github_access_token
 
 
-class Env:
+class InstallerEnv:
 
     ctx: Context
     collaborators: CoreCollaborators
@@ -103,7 +105,7 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
         super().__init__(ctx=ctx)
 
     def _verify_selected_utilities(
-        self, env: Env
+        self, env: InstallerEnv
     ) -> PyFn["UtilityInstallerCmdRunner", InstallerUtilityNotSupported, None]:
         for name in env.args.utilities:
             if name not in env.supported_utilities:
@@ -113,7 +115,7 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
         return PyFn.empty()
 
     def _map_to_utilities_list(
-        self, env: Env
+        self, env: InstallerEnv
     ) -> PyFn["UtilityInstallerCmdRunner", Exception, List[Installable.Utility]]:
         return PyFn.effect(
             lambda: env.collaborators.summary().append_result(
@@ -125,7 +127,7 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
         )
 
     def _print_installer_welcome(
-        self, env: Env, utilities: List[Installable.Utility]
+        self, env: InstallerEnv, utilities: List[Installable.Utility]
     ) -> PyFn["UtilityInstallerCmdRunner", None, List[Installable.Utility]]:
         return PyFn.effect(
             lambda: env.collaborators.printer().print_with_rich_table_fn(
@@ -135,7 +137,7 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
 
     def _resolve_run_environment(
         self,
-        env: Env,
+        env: InstallerEnv,
         utilities: List[Installable.Utility],
     ) -> PyFn["UtilityInstallerCmdRunner", Exception, RunEnv_Utilities_Tuple]:
         return (
@@ -157,50 +159,46 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
         )
 
     def _run_installation(
-        self, env: Env, run_env_utils_tuple: RunEnv_Utilities_Tuple
+        self, env: InstallerEnv, run_env_utils_tuple: RunEnv_Utilities_Tuple
     ) -> PyFn["UtilityInstallerCmdRunner", Exception, List[Installable.Utility]]:
         match run_env_utils_tuple.run_env:
             case RunEnvironment.Local:
                 return PyFn.of(run_env_utils_tuple.utilities).flat_map(
-                    lambda utilities: self._run_local_utilities_installation(env, utilities)
+                    lambda utilities: self._run_local_utilities_installation(env=env, utilities=utilities)
                 )
             case RunEnvironment.Remote:
                 # We are guranteed by previous step that the RunEnvironment argument is valid
                 return PyFn.of(run_env_utils_tuple.utilities).flat_map(
-                    lambda utilities: self._run_remote_installation(env, utilities)
+                    lambda utilities: self._run_remote_installation(env=env, utilities=utilities)
                 )
 
-    def install_utility(
-        self, env: Env, maybe_utility: Optional[Installable.Utility]
+    def _install_utility(
+        self, env: InstallerEnv, maybe_utility: Optional[Installable.Utility]
     ) -> PyFn["UtilityInstallerCmdRunner", Exception, Installable.Utility]:
         if maybe_utility:
             return PyFn.effect(
                 lambda: env.collaborators.summary().show_summary_and_prompt_for_enter(
                     f"Installing Utility: {maybe_utility.display_name}"
                 )
-            ).flat_map(lambda _: self._install_utility_locally(env, maybe_utility))
+            ).flat_map(lambda _: self._install_utility_locally(env=env, utility=maybe_utility))
         else:
             return PyFn.empty()
 
     def _run_local_utilities_installation(
-        self, env: Env, utilities: List[Installable.Utility]
+        self, env: InstallerEnv, utilities: List[Installable.Utility]
     ) -> PyFn["UtilityInstallerCmdRunner", Exception, List[Installable.Utility]]:
-        chain = PyFn.empty()
-        for utility in utilities:
-            chain = (
-                chain.map(lambda _: utility)
-                .flat_map(lambda utility: self._check_if_utility_already_installed(env, utility))
-                .flat_map(
-                    lambda utility_install_tuple: self._notify_if_utility_already_installed(
-                        env, utility_install_tuple.utility, utility_install_tuple.installed
-                    )
+        return PyFn.of(utilities).for_each(
+            lambda utility: self._check_if_utility_already_installed(env, utility)
+            .flat_map(
+                lambda utility_install_tuple: self._notify_if_utility_already_installed(
+                    env, utility_install_tuple.utility, utility_install_tuple.installed
                 )
-                .flat_map(lambda maybe_utility: self.install_utility(env, maybe_utility))
             )
-        return chain.map(lambda _: utilities)
+            .flat_map(lambda maybe_utility: self._install_utility(env, maybe_utility))
+        )
 
     def _check_if_utility_already_installed(
-        self, env: Env, utility: Installable.Utility
+        self, env: InstallerEnv, utility: Installable.Utility
     ) -> PyFn["UtilityInstallerCmdRunner", Exception, Utility_InstallStatus_Tuple]:
         return PyFn.effect(
             lambda: Utility_InstallStatus_Tuple(
@@ -209,7 +207,7 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
         )
 
     def _notify_if_utility_already_installed(
-        self, env: Env, utility: Installable.Utility, exists: bool
+        self, env: InstallerEnv, utility: Installable.Utility, exists: bool
     ) -> PyFn["UtilityInstallerCmdRunner", Exception, Optional[Installable.Utility]]:
         if exists:
             return PyFn.effect(
@@ -221,22 +219,26 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
             return PyFn.of(utility)
 
     def _install_utility_locally(
-        self, env: Env, utility: Installable.Utility
-    ) -> PyFn["UtilityInstallerCmdRunner", Exception, Installable.Utility]:
+        self, env: InstallerEnv, utility: Installable.Utility
+    ) -> PyFn["UtilityInstallerCmdRunner", InstallerSourceNotSupported, Installable.Utility]:
         match utility.active_source:
             case ActiveInstallSource.Script:
                 return PyFn.of(utility).flat_map(lambda _: self._install_from_script(env, utility))
             case ActiveInstallSource.GitHub:
                 return PyFn.of(utility).flat_map(lambda _: self._install_from_github(env, utility))
             case _:
-                return PyFn.fail(error=Exception(f"Invalid installation active source. value: {utility.active_source}"))
+                return PyFn.fail(
+                    error=InstallerSourceNotSupported(
+                        f"Invalid installation active source. value: {utility.active_source}"
+                    )
+                )
 
     def _install_from_script(
-        self, env: Env, utility: Installable.Utility
-    ) -> PyFn["UtilityInstallerCmdRunner", Exception, Installable.Utility]:
+        self, env: InstallerEnv, utility: Installable.Utility
+    ) -> PyFn["UtilityInstallerCmdRunner", MissingInstallerSource, Installable.Utility]:
         # TODO: for custom command lines args we need to support additional install args
         if not utility.sources.script:
-            return PyFn.fail(error=Exception(f"Missing installation source. name: Script"))
+            return PyFn.fail(error=MissingInstallerSource(f"Missing installation source. name: Script"))
         else:
             return PyFn.effect(
                 lambda: env.collaborators.process().run_fn(
@@ -245,9 +247,12 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
             ).map(lambda _: utility)
 
     def _try_resolve_utility_version(
-        self, env: Env, utility: Installable.Utility
+        self, env: InstallerEnv, utility: Installable.Utility
     ) -> PyFn["UtilityInstallerCmdRunner", FailedToResolveLatestVersionFromGitHub, Utility_Version_Tuple]:
         if not utility.version:
+
+            # TODO:  If not GitHub then raise an error - cannot resolve from script !!
+
             return PyFn.effect(
                 lambda: env.collaborators.github().get_latest_version_fn(
                     owner=utility.sources.github.owner, repo=utility.sources.github.repo
@@ -265,7 +270,7 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
             return PyFn.success(Utility_Version_Tuple(utility, utility.version))
 
     def _try_get_release_name_by_os_arch(
-        self, env: Env, util_ver_tuple: Utility_Version_Tuple
+        self, env: InstallerEnv, util_ver_tuple: Utility_Version_Tuple
     ) -> PyFn["UtilityInstallerCmdRunner", OsArchNotSupported, Utility_Version_ReleaseName_Tuple]:
         release_filename = util_ver_tuple.utility.sources.github.generate_binary_url(
             env.ctx.os_arch, util_ver_tuple.version
@@ -281,20 +286,22 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
         )
 
     def _print_before_downloading(
-        self, env: Env, util_ver_name_tuple: Utility_Version_ReleaseName_Tuple
+        self, env: InstallerEnv, util_ver_name_tuple: Utility_Version_ReleaseName_Tuple
     ) -> PyFn["UtilityInstallerCmdRunner", None, Utility_Version_ReleaseName_Tuple]:
         return PyFn.effect(lambda: self._print_github_binary_info(env, util_ver_name_tuple)).map(
             lambda _: util_ver_name_tuple
         )
 
-    def _print_github_binary_info(self, env: Env, util_ver_name_tuple: Utility_Version_ReleaseName_Tuple) -> None:
+    def _print_github_binary_info(
+        self, env: InstallerEnv, util_ver_name_tuple: Utility_Version_ReleaseName_Tuple
+    ) -> None:
         env.collaborators.printer().new_line_fn()
         env.collaborators.printer().print_fn(
             f"Downloading from GitHub. owner: {util_ver_name_tuple.utility.sources.github.owner}, repo: {util_ver_name_tuple.utility.sources.github.repo}, name: {util_ver_name_tuple.release_filename}, version: {util_ver_name_tuple.version}"
         )
 
     def _download_binary_by_version(
-        self, env: Env, util_ver_name_tuple: Utility_Version_ReleaseName_Tuple
+        self, env: InstallerEnv, util_ver_name_tuple: Utility_Version_ReleaseName_Tuple
     ) -> PyFn["UtilityInstallerCmdRunner", Exception, ReleaseName_ReleaseFilePath_Utility_Tuple]:
         return PyFn.effect(
             lambda: env.collaborators.github().download_binary_fn(
@@ -315,7 +322,7 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
         )
 
     def _maybe_extract_downloaded_binary(
-        self, env: Env, releasename_filepath_util_tuple: ReleaseName_ReleaseFilePath_Utility_Tuple
+        self, env: InstallerEnv, releasename_filepath_util_tuple: ReleaseName_ReleaseFilePath_Utility_Tuple
     ) -> PyFn["UtilityInstallerCmdRunner", Exception, ReleaseName_ReleaseFolderPath_Utility_Tuple]:
         # Download path is: ~/.config/provisioner/binaries/<binary-cli-name>/<version>/<archive-file>
         return (
@@ -337,7 +344,7 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
         )
 
     def _elevate_permission_and_symlink(
-        self, env: Env, releasename_folderpath_util_tuple: ReleaseName_ReleaseFolderPath_Utility_Tuple
+        self, env: InstallerEnv, releasename_folderpath_util_tuple: ReleaseName_ReleaseFolderPath_Utility_Tuple
     ) -> PyFn["UtilityInstallerCmdRunner", Exception, str]:
         return (
             PyFn.of(releasename_folderpath_util_tuple)
@@ -355,7 +362,7 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
         )
 
     def _install_from_github(
-        self, env: Env, utility: Installable.Utility
+        self, env: InstallerEnv, utility: Installable.Utility
     ) -> PyFn["UtilityInstallerCmdRunner", Exception, Installable.Utility]:
         if not utility.sources.github:
             return PyFn.fail(error=Exception(f"Missing installation source. name: GitHub"))
@@ -380,7 +387,7 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
             )
 
     @staticmethod
-    def run(env: Env) -> bool:
+    def run(env: InstallerEnv) -> bool:
         logger.debug("Inside UtilityInstallerCmdRunner run()")
         eval = PyFnEvaluator[UtilityInstallerCmdRunner, Exception].new(UtilityInstallerCmdRunner(ctx=env.ctx))
         chain = eval << Environment[UtilityInstallerCmdRunner]()
@@ -400,7 +407,7 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
         return f"{ProvisionerInstallableSymlinksPath}/{binary_name}"
 
     def _collect_ssh_connection_info(
-        self, env: Env, connector: RemoteMachineConnector
+        self, env: InstallerEnv, connector: RemoteMachineConnector
     ) -> PyFn["UtilityInstallerCmdRunner", Exception, SSHConnectionInfo]:
         return PyFn.effect(
             lambda: env.collaborators.summary().append_result(
@@ -412,19 +419,19 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
         )
 
     def _install_on_remote_machine(
-        self, env: Env, sshconninfo_utils_info: SSHConnInfo_Utility_Tuple
-    ) -> PyFn["UtilityInstallerCmdRunner", Exception, SSHConnectionInfo]:
+        self, env: InstallerEnv, sshconninfo_utility_info: SSHConnInfo_Utility_Tuple
+    ) -> PyFn["UtilityInstallerCmdRunner", Exception, str]:
         return PyFn.effect(
             lambda: env.collaborators.printer().progress_indicator.status.long_running_process_fn(
                 call=lambda: env.collaborators.ansible_runner().run_fn(
-                    selected_hosts=sshconninfo_utils_info.ssh_conn_info.ansible_hosts,
+                    selected_hosts=sshconninfo_utility_info.ssh_conn_info.ansible_hosts,
                     with_paths=AnsibleRunner.WithPaths.create(
                         paths=env.collaborators.paths(),
                         script_import_name_var=__name__,
                         playbook_path=ProvisionerRunAnsiblePlaybookRelativePath,
                     ),
                     ansible_vars=[
-                        f"\"provisioner_command='provisioner -y install cli --environment=Local {sshconninfo_utils_info.utility.binary_name}'\""
+                        f"\"provisioner_command='provisioner -y install cli --environment=Local {sshconninfo_utility_info.utility.binary_name}'\""
                     ],
                     ansible_tags=["provisioner_run"],
                 ),
@@ -434,7 +441,7 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
         )
 
     def _run_remote_installation(
-        self, env: Env, utilities: List[Installable.Utility]
+        self, env: InstallerEnv, utilities: List[Installable.Utility]
     ) -> PyFn["UtilityInstallerCmdRunner", Exception, List[Installable.Utility]]:
         chain = PyFn.of(RemoteMachineConnector(collaborators=env.collaborators)).flat_map(
             lambda connector: self._collect_ssh_connection_info(env, connector)
@@ -443,7 +450,9 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
         for utility in utilities:
             chain = (
                 chain.map(lambda ssh_conn_info: SSHConnInfo_Utility_Tuple(ssh_conn_info, utility))
-                .flat_map(lambda sshconninfo_utils_info: self._install_on_remote_machine(env, sshconninfo_utils_info))
+                .flat_map(
+                    lambda sshconninfo_utility_info: self._install_on_remote_machine(env, sshconninfo_utility_info)
+                )
                 .map(lambda output: env.collaborators.printer().new_line_fn().print_fn(output))
             )
         return chain.map(lambda _: utilities)

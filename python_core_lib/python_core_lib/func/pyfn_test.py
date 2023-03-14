@@ -70,11 +70,12 @@ class PyFnTestShould(unittest.TestCase):
     def test_pyfn_for_each(self):
         items = [1, 2, 3, 4, 5]
         result = [2, 4, 6, 8, 10]
-        chain = PyFn.of(items).for_each(lambda item: item * 2)
-        pyfn = PyFnEvaluator.new(env=self.create_fake_env())
+        chain = PyFn.of(items).for_each(lambda item: PyFn.of(item * 2))
+        pyfn = PyFnEvaluator.new(env=self.create_fake_env(verbose=True))
         var = pyfn << chain
         self.assertIsInstance(chain, PyFn)
         self.assertEqual(var, result)
+        # self.assertTrue(False)
 
     def test_pyfn_filter(self):
         items = [1, 2, 3, 4, 5, 6]
@@ -103,7 +104,7 @@ class PyFnTestShould(unittest.TestCase):
         self.assertIsNotNone(var)
         self.assertIsInstance(chain, PyFn)
         self.assertEqual(var, 3)
-        self.assertTrue(False)
+        # self.assertTrue(False)
 
     # def test_pyfn_if_then_else_with_for_each(self):
     #     items = [1, 2, 3, 4, 5]

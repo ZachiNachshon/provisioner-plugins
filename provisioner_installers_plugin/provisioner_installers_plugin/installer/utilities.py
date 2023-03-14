@@ -20,7 +20,7 @@ SupportedToolings = {
             github=InstallSources.GitHub(
                 owner="ZachiNachshon",
                 repo="anchor",
-                supported_releases=["darwin_amd64", "darwin_arm64", "linux_amd64","linux_arm", "linux_arm64"],
+                supported_releases=["darwin_amd64", "darwin_arm64", "linux_amd64", "linux_arm", "linux_arm64"],
                 release_name_resolver=lambda version, os, arch: f"anchor_{version.removeprefix('v')}_{os}_{arch}.tar.gz",
             ),
         ),
@@ -52,7 +52,7 @@ SupportedToolings = {
             github=InstallSources.GitHub(
                 owner="helm",
                 repo="helm",
-                supported_releases=["darwin_amd64", "darwin_arm64", "linux_amd64","linux_arm", "linux_arm64"],
+                supported_releases=["darwin_amd64", "darwin_arm64", "linux_amd64", "linux_arm", "linux_arm64"],
                 release_name_resolver=lambda version, os, arch: f"helm-{version}-{os}-{arch}.tar.gz",
             ),
         ),

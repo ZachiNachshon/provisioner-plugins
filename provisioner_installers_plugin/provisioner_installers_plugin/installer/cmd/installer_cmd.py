@@ -8,7 +8,7 @@ from python_core_lib.infra.context import Context
 from python_core_lib.shared.collaborators import CoreCollaborators
 
 from provisioner_installers_plugin.installer.runner.installer_runner import (
-    Env,
+    InstallerEnv,
     UtilityInstallerCmdRunner,
     UtilityInstallerRunnerCmdArgs,
 )
@@ -45,7 +45,7 @@ class UtilityInstallerCmd:
         logger.debug("Inside UtilityInstallerCmd run()")
         args.print()
         return UtilityInstallerCmdRunner.run(
-            env=Env(
+            env=InstallerEnv(
                 ctx=ctx,
                 collaborators=CoreCollaborators(ctx),
                 supported_utilities=SupportedToolings,

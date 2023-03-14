@@ -28,14 +28,14 @@ class IOUtils:
     def _create_directory(self, folder_path) -> None:
         if self._dry_run:
             return None
-        
+
         if not os.path.exists(folder_path) or not os.path.isdir(folder_path):
             os.makedirs(folder_path, exist_ok=True)
 
     def _copy_file_or_dir(self, from_path: str, to_path: str):
         if self._dry_run:
             return None
-        
+
         copy2(from_path, to_path)
 
     def _write_file(
@@ -43,7 +43,7 @@ class IOUtils:
     ) -> str:
         if self._dry_run:
             return "DRY_RUN_RESPONSE"
-        
+
         path = dir_path if dir_path else tempfile.mkdtemp(prefix="python-lib-files-")
         path = "{}/{}".format(path, file_name)
         try:
@@ -64,7 +64,7 @@ class IOUtils:
     def _delete_file(self, file_path: str) -> bool:
         if self._dry_run:
             return True
-        
+
         if os.path.exists(file_path):
             os.remove(file_path)
             return True
@@ -75,7 +75,7 @@ class IOUtils:
     def _read_file_safe(self, file_path: str) -> str:
         if self._dry_run:
             return "DRY_RUN_RESPONSE"
-        
+
         content = None
         try:
             with open(file_path, "r+") as opened_file:

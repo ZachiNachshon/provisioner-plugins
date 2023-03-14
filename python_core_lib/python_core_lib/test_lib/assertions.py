@@ -53,6 +53,9 @@ class Assertion:
                 testObj.assertEqual(exception_class, ex_type)
         except Exception as ex:
             failed = True
+            print(type(ex))
+            print(type(ex))
+            print(type(ex))
             testObj.assertIsInstance(ex, ex_type)
 
         testObj.assertTrue(failed)
