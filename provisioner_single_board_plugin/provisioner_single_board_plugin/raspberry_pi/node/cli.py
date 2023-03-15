@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 
 from typing import Optional
-from python_core_lib.infra.evaluator import Evaluator
 
 import typer
 from loguru import logger
 from provisioner_features_lib.config.config_resolver import ConfigResolver
 from provisioner_features_lib.remote.typer_remote_opts import CliRemoteOpts
 from python_core_lib.infra.context import CliContextManager
+from python_core_lib.infra.evaluator import Evaluator
 
 from provisioner_single_board_plugin.raspberry_pi.node.configure_cmd import (
     RPiOsConfigureCmd,
@@ -33,9 +33,10 @@ def configure() -> None:
         call=lambda: RPiOsConfigureCmd().run(
             ctx=CliContextManager.create(), args=RPiOsConfigureCmdArgs(remote_opts=CliRemoteOpts.maybe_get())
         ),
-        error_message="Failed to configure Raspbian OS"
+        error_message="Failed to configure Raspbian OS",
     )
-    
+
+
 @rpi_node_cli_app.command(name="network")
 @logger.catch(reraise=True)
 def network(
@@ -67,5 +68,5 @@ def network(
                 remote_opts=CliRemoteOpts.maybe_get(),
             ),
         ),
-        error_message="Failed to configure RPi network"
+        error_message="Failed to configure RPi network",
     )

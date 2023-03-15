@@ -9,7 +9,7 @@ from python_core_lib.runner.ansible.ansible_fakes import FakeAnsibleRunner
 from python_core_lib.shared.collaborators import CoreCollaborators
 from python_core_lib.utils.checks import Checks
 from python_core_lib.utils.checks_fakes import FakeChecks
-from python_core_lib.utils.github import GitHub
+from python_core_lib.utils.github_fakes import FakeGitHub
 from python_core_lib.utils.hosts_file import HostsFile
 from python_core_lib.utils.hosts_file_fakes import FakeHostsFile
 from python_core_lib.utils.httpclient import HttpClient
@@ -46,7 +46,7 @@ class FakeCoreCollaborators(CoreCollaborators):
         self.__process: Process = None
         self.__ansible_runner: AnsibleRunner = None
         self.__network_util: NetworkUtil = None
-        self.__github: GitHub = None
+        self.__github: FakeGitHub = None
         self.__hosts_file: HostsFile = None
         self.__http_client: HttpClient = None
 
@@ -155,15 +155,15 @@ class FakeCoreCollaborators(CoreCollaborators):
     def override_network_util(self, network_util: FakeNetworkUtil) -> None:
         self.__network_util = network_util
 
-    def github(self) -> GitHub:
+    def github(self) -> FakeGitHub:
         def create_github():
             if not self.__github:
-                self.__github = GitHub.create(self.__ctx, self.http_client())
+                self.__github = FakeGitHub.create(self.__ctx)
             return self.__github
 
         return self._lock_and_get(callback=create_github)
 
-    def override_github(self, github: GitHub) -> None:
+    def override_github(self, github: FakeGitHub) -> None:
         self.__github = github
 
     def summary(self) -> FakeSummary:

@@ -61,7 +61,7 @@ class MissingCliArgument(Exception):
     pass
 
 
-class FailedToResolveLatestVersionFromGitHub(Exception):
+class VersionResolverError(Exception):
     pass
 
 
@@ -69,9 +69,5 @@ class OsArchNotSupported(Exception):
     pass
 
 
-class InstallerSourceNotSupported(Exception):
-    pass
-
-
-class MissingInstallerSource(Exception):
+class InstallerSourceError(Exception):
     pass

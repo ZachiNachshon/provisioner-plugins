@@ -44,11 +44,10 @@ class InstallSources:
             os_arch_pair = os_arch.as_pair(mapping={"x86_64": "amd64"})
             return self.supported_releases and os_arch_pair in self.supported_releases
 
-        def generate_binary_url(self, os_arch: OsArch, version: str) -> str:
+        def resolve_binary_release_name(self, os_arch: OsArch, version: str) -> str:
             if not self._is_binary_supported_by_os_arch(os_arch):
                 return None
-            release_filename = self.release_name_resolver(version, os_arch.os, os_arch.arch)
-            return f"https://github.com/{self.owner}/{self.repo}/releases/download/{version}/{release_filename}"
+            return self.release_name_resolver(version, os_arch.os, os_arch.arch)
 
     def __init__(self, github: "InstallSources.GitHub" = None, script: "InstallSources.Script" = None) -> None:
         self.github = github

@@ -20,7 +20,7 @@ class FakePrinter(Printer):
     def _create_fake(progress_indicator: ProgressIndicator, dry_run: bool, verbose: bool) -> "FakePrinter":
         printer = FakePrinter(progress_indicator=progress_indicator, dry_run=dry_run, verbose=verbose)
         printer.print_fn = lambda message: printer._register_message(message)
-        printer.new_line_fn = lambda count=1: None
+        printer.new_line_fn = lambda count=1: printer
         printer.print_horizontal_line_fn = lambda message, line_color="green": printer._register_message(message)
         printer.print_with_rich_table_fn = lambda message, border_color="green": printer._register_message(message)
         return printer
@@ -31,8 +31,9 @@ class FakePrinter(Printer):
             progress_indicator=progress_indicator, dry_run=ctx.is_dry_run(), verbose=ctx.is_verbose()
         )
 
-    def _register_message(self, message: str) -> None:
+    def _register_message(self, message: str) -> "FakePrinter":
         self.registered_output.append(message)
+        return self
 
     def assert_output(self, message: str) -> None:
         found = False

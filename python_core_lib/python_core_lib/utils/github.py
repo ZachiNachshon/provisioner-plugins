@@ -49,7 +49,7 @@ class GitHub:
             return version
         return version
 
-    def _download_binary(self, owner: str, repo: str, version: str, binary_name: str, binary_folder_path: str) -> str:
+    def _download_release_binary(self, owner: str, repo: str, version: str, binary_name: str, binary_folder_path: str) -> str:
         named_params = {
             "git_hub_url": GitHubUrl,
             "owner": owner,
@@ -63,4 +63,4 @@ class GitHub:
         )
 
     get_latest_version_fn = _get_latest_version
-    download_binary_fn = _download_binary
+    download_release_binary_fn = _download_release_binary

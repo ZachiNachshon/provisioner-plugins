@@ -40,6 +40,7 @@ TEST_REMOTE_HOSTS_DICT = {
     ),
 }
 
+
 class TestDataRemoteOpts:
     @staticmethod
     def create_fake_remote_opts() -> TyperRemoteOpts:
@@ -51,8 +52,7 @@ class TestDataRemoteOpts:
         )
 
     @staticmethod
-    def create_fake_cli_remote_opts(
-        environment: RunEnvironment = TEST_DATA_ENVIRONMENT) -> CliRemoteOpts:
+    def create_fake_cli_remote_opts(environment: RunEnvironment = TEST_DATA_ENVIRONMENT) -> CliRemoteOpts:
         return CliRemoteOpts(
             environment=environment,
             node_username=TEST_DATA_REMOTE_NODE_USERNAME_1,

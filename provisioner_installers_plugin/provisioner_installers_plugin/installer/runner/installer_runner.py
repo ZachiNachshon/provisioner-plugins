@@ -12,11 +12,10 @@ from provisioner_features_lib.remote.remote_connector import (
 )
 from provisioner_features_lib.remote.typer_remote_opts import CliRemoteOpts
 from python_core_lib.errors.cli_errors import (
-    FailedToResolveLatestVersionFromGitHub,
-    InstallerSourceNotSupported,
+    InstallerSourceError,
     InstallerUtilityNotSupported,
-    MissingInstallerSource,
     OsArchNotSupported,
+    VersionResolverError,
 )
 from python_core_lib.func.pyfn import Environment, PyFn, PyFnEnvBase, PyFnEvaluator
 from python_core_lib.infra.context import Context
@@ -46,15 +45,15 @@ class Utility_Version_Tuple(NamedTuple):
     version: str
 
 
-class Utility_Version_ReleaseName_Tuple(NamedTuple):
+class Utility_Version_ReleaseFileName_Tuple(NamedTuple):
     utility: Installable.Utility
     version: str
     release_filename: str
 
 
-class ReleaseName_ReleaseFilePath_Utility_Tuple(NamedTuple):
+class ReleaseFilename_ReleaseDownloadFilePath_Utility_Tuple(NamedTuple):
     release_filename: str
-    release_filepath: str
+    release_download_filepath: str
     utility: Installable.Utility
 
 
@@ -220,7 +219,7 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
 
     def _install_utility_locally(
         self, env: InstallerEnv, utility: Installable.Utility
-    ) -> PyFn["UtilityInstallerCmdRunner", InstallerSourceNotSupported, Installable.Utility]:
+    ) -> PyFn["UtilityInstallerCmdRunner", InstallerSourceError, Installable.Utility]:
         match utility.active_source:
             case ActiveInstallSource.Script:
                 return PyFn.of(utility).flat_map(lambda _: self._install_from_script(env, utility))
@@ -228,17 +227,15 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
                 return PyFn.of(utility).flat_map(lambda _: self._install_from_github(env, utility))
             case _:
                 return PyFn.fail(
-                    error=InstallerSourceNotSupported(
-                        f"Invalid installation active source. value: {utility.active_source}"
-                    )
+                    error=InstallerSourceError(f"Invalid installation active source. value: {utility.active_source}")
                 )
 
     def _install_from_script(
         self, env: InstallerEnv, utility: Installable.Utility
-    ) -> PyFn["UtilityInstallerCmdRunner", MissingInstallerSource, Installable.Utility]:
+    ) -> PyFn["UtilityInstallerCmdRunner", InstallerSourceError, Installable.Utility]:
         # TODO: for custom command lines args we need to support additional install args
         if not utility.sources.script:
-            return PyFn.fail(error=MissingInstallerSource(f"Missing installation source. name: Script"))
+            return PyFn.fail(error=InstallerSourceError(f"Missing installation source. name: Script"))
         else:
             return PyFn.effect(
                 lambda: env.collaborators.process().run_fn(
@@ -248,31 +245,40 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
 
     def _try_resolve_utility_version(
         self, env: InstallerEnv, utility: Installable.Utility
-    ) -> PyFn["UtilityInstallerCmdRunner", FailedToResolveLatestVersionFromGitHub, Utility_Version_Tuple]:
+    ) -> PyFn["UtilityInstallerCmdRunner", VersionResolverError, Utility_Version_Tuple]:
         if not utility.version:
-
-            # TODO:  If not GitHub then raise an error - cannot resolve from script !!
-
-            return PyFn.effect(
-                lambda: env.collaborators.github().get_latest_version_fn(
-                    owner=utility.sources.github.owner, repo=utility.sources.github.repo
-                )
-            ).if_then_else(
-                predicate=lambda version: version is not None and len(version) > 0,
-                if_true=lambda version: PyFn.success(Utility_Version_Tuple(utility, version)),
-                if_false=lambda _: PyFn.fail(
-                    FailedToResolveLatestVersionFromGitHub(
-                        f"Failed to resolve latest version from GitHub. owner: {utility.sources.github.owner}, repo: {utility.sources.github.repo}"
+            if not utility.has_github_active_source():
+                return PyFn.fail(
+                    error=InstallerSourceError(
+                        f"GitHub install source is not active or is missing, cannot resolve utility version. name: {utility.display_name}"
                     )
-                ),
-            )
+                )
+            else:
+                return self._try_resolve_version_from_github(env=env, utility=utility)
         else:
             return PyFn.success(Utility_Version_Tuple(utility, utility.version))
 
-    def _try_get_release_name_by_os_arch(
+    def _try_resolve_version_from_github(
+        self, env: InstallerEnv, utility: Installable.Utility
+    ) -> PyFn["UtilityInstallerCmdRunner", VersionResolverError, Utility_Version_Tuple]:
+        return PyFn.effect(
+            lambda: env.collaborators.github().get_latest_version_fn(
+                owner=utility.sources.github.owner, repo=utility.sources.github.repo
+            )
+        ).if_then_else(
+            predicate=lambda version: version is not None and len(version) > 0,
+            if_true=lambda version: PyFn.success(Utility_Version_Tuple(utility, version)),
+            if_false=lambda _: PyFn.fail(
+                VersionResolverError(
+                    f"Failed to resolve latest version from GitHub. owner: {utility.sources.github.owner}, repo: {utility.sources.github.repo}"
+                )
+            ),
+        )
+
+    def _try_get_github_release_name_by_os_arch(
         self, env: InstallerEnv, util_ver_tuple: Utility_Version_Tuple
-    ) -> PyFn["UtilityInstallerCmdRunner", OsArchNotSupported, Utility_Version_ReleaseName_Tuple]:
-        release_filename = util_ver_tuple.utility.sources.github.generate_binary_url(
+    ) -> PyFn["UtilityInstallerCmdRunner", OsArchNotSupported, Utility_Version_ReleaseFileName_Tuple]:
+        release_filename = util_ver_tuple.utility.sources.github.resolve_binary_release_name(
             env.ctx.os_arch, util_ver_tuple.version
         )
         if not release_filename:
@@ -282,29 +288,30 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
                 )
             )
         return PyFn.success(
-            Utility_Version_ReleaseName_Tuple(util_ver_tuple.utility, util_ver_tuple.version, release_filename)
+            Utility_Version_ReleaseFileName_Tuple(
+                util_ver_tuple.utility, util_ver_tuple.version, release_filename
+            )
         )
 
     def _print_before_downloading(
-        self, env: InstallerEnv, util_ver_name_tuple: Utility_Version_ReleaseName_Tuple
-    ) -> PyFn["UtilityInstallerCmdRunner", None, Utility_Version_ReleaseName_Tuple]:
-        return PyFn.effect(lambda: self._print_github_binary_info(env, util_ver_name_tuple)).map(
-            lambda _: util_ver_name_tuple
-        )
+        self, env: InstallerEnv, util_ver_name_tuple: Utility_Version_ReleaseFileName_Tuple
+    ) -> PyFn["UtilityInstallerCmdRunner", None, Utility_Version_ReleaseFileName_Tuple]:
+        return PyFn.effect(
+            lambda: self._print_github_binary_info(env=env, util_ver_name_tuple=util_ver_name_tuple)
+        ).map(lambda _: util_ver_name_tuple)
 
     def _print_github_binary_info(
-        self, env: InstallerEnv, util_ver_name_tuple: Utility_Version_ReleaseName_Tuple
+        self, env: InstallerEnv, util_ver_name_tuple: Utility_Version_ReleaseFileName_Tuple
     ) -> None:
-        env.collaborators.printer().new_line_fn()
-        env.collaborators.printer().print_fn(
+        env.collaborators.printer().new_line_fn().print_fn(
             f"Downloading from GitHub. owner: {util_ver_name_tuple.utility.sources.github.owner}, repo: {util_ver_name_tuple.utility.sources.github.repo}, name: {util_ver_name_tuple.release_filename}, version: {util_ver_name_tuple.version}"
         )
 
     def _download_binary_by_version(
-        self, env: InstallerEnv, util_ver_name_tuple: Utility_Version_ReleaseName_Tuple
-    ) -> PyFn["UtilityInstallerCmdRunner", Exception, ReleaseName_ReleaseFilePath_Utility_Tuple]:
+        self, env: InstallerEnv, util_ver_name_tuple: Utility_Version_ReleaseFileName_Tuple
+    ) -> PyFn["UtilityInstallerCmdRunner", Exception, ReleaseFilename_ReleaseDownloadFilePath_Utility_Tuple]:
         return PyFn.effect(
-            lambda: env.collaborators.github().download_binary_fn(
+            lambda: env.collaborators.github().download_release_binary_fn(
                 owner=util_ver_name_tuple.utility.sources.github.owner,
                 repo=util_ver_name_tuple.utility.sources.github.repo,
                 version=util_ver_name_tuple.version,
@@ -315,18 +322,18 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
             )
         ).flat_map(
             lambda download_filepath: PyFn.of(
-                ReleaseName_ReleaseFilePath_Utility_Tuple(
+                ReleaseFilename_ReleaseDownloadFilePath_Utility_Tuple(
                     util_ver_name_tuple.release_filename, download_filepath, util_ver_name_tuple.utility
                 )
             )
         )
 
     def _maybe_extract_downloaded_binary(
-        self, env: InstallerEnv, releasename_filepath_util_tuple: ReleaseName_ReleaseFilePath_Utility_Tuple
+        self, env: InstallerEnv, releasename_filepath_util_tuple: ReleaseFilename_ReleaseDownloadFilePath_Utility_Tuple
     ) -> PyFn["UtilityInstallerCmdRunner", Exception, ReleaseName_ReleaseFolderPath_Utility_Tuple]:
         # Download path is: ~/.config/provisioner/binaries/<binary-cli-name>/<version>/<archive-file>
         return (
-            PyFn.of(releasename_filepath_util_tuple.release_filepath)
+            PyFn.of(releasename_filepath_util_tuple.release_download_filepath)
             .if_then_else(
                 predicate=lambda release_filepath: env.collaborators.io_utils().is_archive_fn(release_filepath),
                 if_true=lambda release_filepath: PyFn.effect(
@@ -371,7 +378,7 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
             return (
                 PyFn.of(utility)
                 .flat_map(lambda utility: self._try_resolve_utility_version(env, utility))
-                .flat_map(lambda util_ver_tuple: self._try_get_release_name_by_os_arch(env, util_ver_tuple))
+                .flat_map(lambda util_ver_tuple: self._try_get_github_release_name_by_os_arch(env, util_ver_tuple))
                 .flat_map(lambda util_ver_name_tuple: self._print_before_downloading(env, util_ver_name_tuple))
                 .flat_map(lambda util_ver_name_tuple: self._download_binary_by_version(env, util_ver_name_tuple))
                 .flat_map(

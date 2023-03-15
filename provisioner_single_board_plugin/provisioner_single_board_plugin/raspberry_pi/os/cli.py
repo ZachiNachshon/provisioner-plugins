@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 
 from typing import Optional
-from python_core_lib.infra.evaluator import Evaluator
 
 import typer
 from loguru import logger
 from provisioner_features_lib.config.config_resolver import ConfigResolver
 from python_core_lib.infra.context import CliContextManager
+from python_core_lib.infra.evaluator import Evaluator
 
 from provisioner_single_board_plugin.raspberry_pi.os.burn_image_cmd import (
     RPiOsBurnImageCmd,
@@ -37,5 +37,5 @@ def burn_image(
                 image_download_path=ConfigResolver.get_config().single_board.os.download_path,
             ),
         ),
-        error_message="Failed to burn Raspbian OS"
+        error_message="Failed to burn Raspbian OS",
     )

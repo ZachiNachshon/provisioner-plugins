@@ -34,5 +34,12 @@ class Installable:
             self.sources = sources
             self.active_source = active_source
 
-        def has_install_script(self) -> bool:
-            return self.script and len(self.script.install_cmd) > 0
+        def has_script_active_source(self) -> bool:
+            if self.active_source != ActiveInstallSource.Script:
+                return False
+            return self.sources and self.sources.script and len(self.sources.script.install_cmd) > 0
+
+        def has_github_active_source(self) -> bool:
+            if self.active_source != ActiveInstallSource.GitHub:
+                return False
+            return self.sources and self.sources.github
