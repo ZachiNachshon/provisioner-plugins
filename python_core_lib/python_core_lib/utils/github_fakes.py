@@ -26,7 +26,11 @@ class FakeGitHub(Checks):
     def _create_fake(dry_run: bool, verbose: bool) -> "FakeGitHub":
         github = FakeGitHub(dry_run=dry_run, verbose=verbose)
         github.get_latest_version_fn = lambda owner, repo: github._register_get_latest_version(owner, repo)
-        github.download_release_binary_fn = lambda owner, repo, version, binary_name, binary_folder_path: github._register_download_binary(owner, repo, version, binary_name, binary_folder_path)
+        github.download_release_binary_fn = (
+            lambda owner, repo, version, binary_name, binary_folder_path: github._register_download_binary(
+                owner, repo, version, binary_name, binary_folder_path
+            )
+        )
         return github
 
     @staticmethod
@@ -62,12 +66,16 @@ class FakeGitHub(Checks):
                     + f"Expected version:\n{version}"
                 )
 
-    def _register_download_binary(self, owner: str, repo: str, version: str, binary_name: str, binary_folder_path: str) -> str:
+    def _register_download_binary(
+        self, owner: str, repo: str, version: str, binary_name: str, binary_folder_path: str
+    ) -> str:
         key = self._create_download_release_binary_key(owner, repo, version, binary_name, binary_folder_path)
         self.__registered_download_release_binary[key] = f"{binary_folder_path}/{binary_name}"
         return self.__registered_download_release_binary[key]
 
-    def assert_download_binary(self, owner: str, repo: str, version: str, binary_name: str, binary_folder_path: str) -> None:
+    def assert_download_binary(
+        self, owner: str, repo: str, version: str, binary_name: str, binary_folder_path: str
+    ) -> None:
         key = self._create_download_release_binary_key(owner, repo, version, binary_name, binary_folder_path)
         if key not in self.__registered_download_release_binary:
             raise FakeEnvironmentAssertionError(
@@ -83,5 +91,7 @@ class FakeGitHub(Checks):
     def _create_get_latest_version_key(self, owner: str, repo: str) -> str:
         return f"{owner}_{repo}"
 
-    def _create_download_release_binary_key(self, owner: str, repo: str, version: str, binary_name: str, binary_folder_path: str) -> str:
+    def _create_download_release_binary_key(
+        self, owner: str, repo: str, version: str, binary_name: str, binary_folder_path: str
+    ) -> str:
         return f"{owner}_{repo}_{version}_{binary_name}_{binary_folder_path}"

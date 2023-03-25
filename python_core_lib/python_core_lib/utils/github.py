@@ -49,7 +49,9 @@ class GitHub:
             return version
         return version
 
-    def _download_release_binary(self, owner: str, repo: str, version: str, binary_name: str, binary_folder_path: str) -> str:
+    def _download_release_binary(
+        self, owner: str, repo: str, version: str, binary_name: str, binary_folder_path: str
+    ) -> str:
         named_params = {
             "git_hub_url": GitHubUrl,
             "owner": owner,
