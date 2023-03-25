@@ -25,7 +25,6 @@ from python_core_lib.shared.collaborators import CoreCollaborators
 from provisioner_installers_plugin.installer.domain.installable import Installable
 from provisioner_installers_plugin.installer.domain.source import ActiveInstallSource
 
-ProvisionerRunAnsiblePlaybookRelativePath = "provisioner_installers_plugin/installer/playbooks/provisioner_run.yaml"
 ProvisionerInstallableBinariesPath = os.path.expanduser("~/.config/provisioner/binaries")
 ProvisionerInstallableSymlinksPath = os.path.expanduser("~/.local/bin")
 
@@ -57,9 +56,13 @@ class ReleaseFilename_ReleaseDownloadFilePath_Utility_Tuple(NamedTuple):
     utility: Installable.Utility
 
 
-class ReleaseName_ReleaseFolderPath_Utility_Tuple(NamedTuple):
-    release_filename: str
-    release_folderpath: str
+class UnpackedReleaseFolderPath_Utility_Tuple(NamedTuple):
+    unpacked_release_folderpath: str
+    utility: Installable.Utility
+
+
+class RemoteConnector_Utility_Tuple(NamedTuple):
+    connector: RemoteMachineConnector
     utility: Installable.Utility
 
 
@@ -72,11 +75,19 @@ class UtilityInstallerRunnerCmdArgs:
     utilities: List[str]
     remote_opts: CliRemoteOpts
     github_access_token: str
+    ansible_playbook_relative_path_from_module: str
 
-    def __init__(self, utilities: List[str], remote_opts: CliRemoteOpts, github_access_token: str = None) -> None:
+    def __init__(
+        self,
+        utilities: List[str],
+        remote_opts: CliRemoteOpts,
+        ansible_playbook_relative_path_from_module: str,
+        github_access_token: str = None,
+    ) -> None:
         self.utilities = utilities
         self.remote_opts = remote_opts
         self.github_access_token = github_access_token
+        self.ansible_playbook_relative_path_from_module = ansible_playbook_relative_path_from_module
 
 
 class InstallerEnv:
@@ -288,9 +299,7 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
                 )
             )
         return PyFn.success(
-            Utility_Version_ReleaseFileName_Tuple(
-                util_ver_tuple.utility, util_ver_tuple.version, release_filename
-            )
+            Utility_Version_ReleaseFileName_Tuple(util_ver_tuple.utility, util_ver_tuple.version, release_filename)
         )
 
     def _print_before_downloading(
@@ -330,7 +339,7 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
 
     def _maybe_extract_downloaded_binary(
         self, env: InstallerEnv, releasename_filepath_util_tuple: ReleaseFilename_ReleaseDownloadFilePath_Utility_Tuple
-    ) -> PyFn["UtilityInstallerCmdRunner", Exception, ReleaseName_ReleaseFolderPath_Utility_Tuple]:
+    ) -> PyFn["UtilityInstallerCmdRunner", Exception, UnpackedReleaseFolderPath_Utility_Tuple]:
         # Download path is: ~/.config/provisioner/binaries/<binary-cli-name>/<version>/<archive-file>
         return (
             PyFn.of(releasename_filepath_util_tuple.release_download_filepath)
@@ -339,40 +348,39 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
                 if_true=lambda release_filepath: PyFn.effect(
                     lambda: env.collaborators.io_utils().unpack_archive_fn(release_filepath)
                 ),
-                if_false=lambda release_filepath: PyFn.of(pathlib.Path(release_filepath).parent),
+                if_false=lambda release_filepath: PyFn.of(str(pathlib.Path(release_filepath).parent)),
             )
             .map(
-                lambda release_folderpath: ReleaseName_ReleaseFolderPath_Utility_Tuple(
-                    releasename_filepath_util_tuple.release_filename,
-                    release_folderpath,
+                lambda unpacked_release_folderpath: UnpackedReleaseFolderPath_Utility_Tuple(
+                    unpacked_release_folderpath,
                     releasename_filepath_util_tuple.utility,
                 )
             )
         )
 
     def _elevate_permission_and_symlink(
-        self, env: InstallerEnv, releasename_folderpath_util_tuple: ReleaseName_ReleaseFolderPath_Utility_Tuple
+        self, env: InstallerEnv, unpackedreleasefolderpath_utility_tuple: UnpackedReleaseFolderPath_Utility_Tuple
     ) -> PyFn["UtilityInstallerCmdRunner", Exception, str]:
         return (
-            PyFn.of(releasename_folderpath_util_tuple)
+            PyFn.of(unpackedreleasefolderpath_utility_tuple)
             .map(
                 lambda releasename_folderpath_tuple: env.collaborators.io_utils().set_file_permissions_fn(
-                    file_path=f"{releasename_folderpath_tuple.release_folderpath}/{releasename_folderpath_tuple.release_filename}"
+                    file_path=f"{releasename_folderpath_tuple.unpacked_release_folderpath}/{releasename_folderpath_tuple.utility.binary_name}"
                 )
             )
             .map(
                 lambda _: env.collaborators.io_utils().write_symlink_fn(
-                    f"{releasename_folderpath_util_tuple.release_folderpath}/{releasename_folderpath_util_tuple.utility.binary_name}",
-                    self._genreate_binary_symlink_path(releasename_folderpath_util_tuple.utility.binary_name),
+                    f"{unpackedreleasefolderpath_utility_tuple.unpacked_release_folderpath}/{unpackedreleasefolderpath_utility_tuple.utility.binary_name}",
+                    self._genreate_binary_symlink_path(unpackedreleasefolderpath_utility_tuple.utility.binary_name),
                 )
             )
         )
 
     def _install_from_github(
         self, env: InstallerEnv, utility: Installable.Utility
-    ) -> PyFn["UtilityInstallerCmdRunner", Exception, Installable.Utility]:
+    ) -> PyFn["UtilityInstallerCmdRunner", InstallerSourceError, Installable.Utility]:
         if not utility.sources.github:
-            return PyFn.fail(error=Exception(f"Missing installation source. name: GitHub"))
+            return PyFn.fail(error=InstallerSourceError(f"Missing installation source. name: GitHub"))
         else:
             # TODO: for command lines we need to support additional install args
             return (
@@ -435,7 +443,7 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
                     with_paths=AnsibleRunner.WithPaths.create(
                         paths=env.collaborators.paths(),
                         script_import_name_var=__name__,
-                        playbook_path=ProvisionerRunAnsiblePlaybookRelativePath,
+                        playbook_path=env.args.ansible_playbook_relative_path_from_module,
                     ),
                     ansible_vars=[
                         f"\"provisioner_command='provisioner -y install cli --environment=Local {sshconninfo_utility_info.utility.binary_name}'\""
@@ -450,19 +458,16 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
     def _run_remote_installation(
         self, env: InstallerEnv, utilities: List[Installable.Utility]
     ) -> PyFn["UtilityInstallerCmdRunner", Exception, List[Installable.Utility]]:
-        chain = PyFn.of(RemoteMachineConnector(collaborators=env.collaborators)).flat_map(
+        ssh_conn_info_chain = PyFn.of(RemoteMachineConnector(collaborators=env.collaborators)).flat_map(
             lambda connector: self._collect_ssh_connection_info(env, connector)
         )
-
-        for utility in utilities:
-            chain = (
-                chain.map(lambda ssh_conn_info: SSHConnInfo_Utility_Tuple(ssh_conn_info, utility))
-                .flat_map(
-                    lambda sshconninfo_utility_info: self._install_on_remote_machine(env, sshconninfo_utility_info)
-                )
-                .map(lambda output: env.collaborators.printer().new_line_fn().print_fn(output))
+        return PyFn.of(utilities).for_each(
+            lambda utility: ssh_conn_info_chain.flat_map(
+                lambda ssh_conn_info: PyFn.of(SSHConnInfo_Utility_Tuple(ssh_conn_info, utility))
             )
-        return chain.map(lambda _: utilities)
+            .flat_map(lambda sshconninfo_utility_tuple: self._install_on_remote_machine(env, sshconninfo_utility_tuple))
+            .map(lambda output: env.collaborators.printer().new_line_fn().print_fn(output))
+        )
 
 
 @staticmethod

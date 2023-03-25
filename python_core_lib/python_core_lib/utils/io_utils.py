@@ -89,11 +89,12 @@ class IOUtils:
 
         return content
 
-    def _write_symlink(self, file_path, symlink_path) -> None:
+    def _write_symlink(self, file_path: str, symlink_path: str) -> str:
         if self._dry_run:
-            return
+            return symlink_path
         os.symlink(src=file_path, dst=symlink_path)
         logger.debug("Created symlink. path: {}".format(symlink_path))
+        return symlink_path
 
     def _read_symlink(self, symlink_path: str) -> str:
         if self._dry_run:

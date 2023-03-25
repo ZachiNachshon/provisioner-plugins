@@ -45,10 +45,14 @@ class InstallSourcesTestShould(unittest.TestCase):
 
     def test_github_source_generate_binary_url_success(self) -> None:
         fake_github_src = self.create_fake_github_source()
-        release_filename = fake_github_src.resolve_binary_release_name(TEST_RELEASE_BINARY_OS_ARCH, version=TEST_GITHUB_RELEASE_VERSION)
+        release_filename = fake_github_src.resolve_binary_release_name(
+            TEST_RELEASE_BINARY_OS_ARCH, version=TEST_GITHUB_RELEASE_VERSION
+        )
         self.assertEqual(TEST_GITHUB_RELEASE_FILENAME, release_filename)
 
     def test_github_source_os_arch_not_supported(self) -> None:
         fake_github_src = self.create_fake_github_source()
-        url = fake_github_src.resolve_binary_release_name(OsArch(os=MAC_OS, arch="amd32"), version=TEST_GITHUB_RELEASE_VERSION)
+        url = fake_github_src.resolve_binary_release_name(
+            OsArch(os=MAC_OS, arch="amd32"), version=TEST_GITHUB_RELEASE_VERSION
+        )
         self.assertIsNone(url)

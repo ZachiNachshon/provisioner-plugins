@@ -3,6 +3,7 @@
 from typing import Any, List
 
 from python_core_lib.infra.context import Context
+from python_core_lib.test_lib.assertions import to_json
 from python_core_lib.test_lib.test_errors import FakeEnvironmentAssertionError
 from python_core_lib.utils.json_util import JsonUtil
 from python_core_lib.utils.summary import Summary
@@ -51,8 +52,8 @@ class FakeSummary(Summary):
         if assert_hash != value_hash:
             raise FakeEnvironmentAssertionError(
                 f"Summary attribute value was not the same as expected.\n"
-                + f"Actual:\nname: {attribute_name}, value: {registered_value}\n"
-                + f"Expected:\nname: {attribute_name}, value: {value}"
+                + f"Actual:\nname: {attribute_name}\nhash: {assert_hash}\nvalue: {to_json(registered_value)}\n"
+                + f"Expected:\nname: {attribute_name}\nhash: {value_hash}\nvalue: {to_json(value)}"
             )
 
     def _register_show_summary_title(self, title: str) -> None:

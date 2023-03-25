@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-
 from typing import Optional
 
 from python_core_lib.infra.context import Context
@@ -8,7 +7,6 @@ from python_core_lib.test_lib.test_errors import FakeEnvironmentAssertionError
 from python_core_lib.utils.checks import Checks
 
 DUMMY_VERSION = "v1.0.0"
-# DUMMY_DOWNLOAD_FOLDER_PATH = "/dummy/download/path"
 
 
 class FakeGitHub(Checks):
@@ -17,14 +15,12 @@ class FakeGitHub(Checks):
     __registered_download_release_binary: dict[str, str] = None
 
     __mocked_get_latest_version: dict[str, str] = None
-    # __mocked_download_release_binary: dict[str, bool] = None
 
     def __init__(self, dry_run: bool, verbose: bool):
         super().__init__(dry_run=dry_run, verbose=verbose)
         self.__registered_get_latest_version = {}
         self.__registered_download_release_binary = {}
         self.__mocked_get_latest_version = {}
-        # self.__mocked_download_release_binary = {}
 
     @staticmethod
     def _create_fake(dry_run: bool, verbose: bool) -> "FakeGitHub":
@@ -40,6 +36,12 @@ class FakeGitHub(Checks):
     def _register_get_latest_version(self, owner: str, repo: str) -> str:
         key = self._create_get_latest_version_key(owner, repo)
         if key in self.__mocked_get_latest_version:
+            print("===============")
+            print("===============")
+            print("===============")
+            print(self.__mocked_get_latest_version[key])
+            print(self.__mocked_get_latest_version[key])
+            print(self.__mocked_get_latest_version[key])
             self.__registered_get_latest_version[key] = self.__mocked_get_latest_version[key]
         else:
             self.__registered_get_latest_version[key] = DUMMY_VERSION
@@ -78,11 +80,6 @@ class FakeGitHub(Checks):
         self.__mocked_get_latest_version[self._create_get_latest_version_key(owner, repo)] = version
         return self
 
-    # def mock_download_binary_filepath(self, owner: str, repo: str, version: str, binary_name: str, binary_folder_path: str) -> "FakeGitHub":
-    #     key = self._create_download_binary_key(owner, repo, version, binary_name, binary_folder_path)
-    #     self.__mocked_get_latest_version[key] = binary_folder_path + binary_name
-    #     return self
-    
     def _create_get_latest_version_key(self, owner: str, repo: str) -> str:
         return f"{owner}_{repo}"
 

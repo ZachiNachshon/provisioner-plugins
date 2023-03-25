@@ -104,15 +104,15 @@ class Assertion:
     def expect_equal_objects(testObj, obj1, obj2):
         try:
             testObj.maxDiff = None
-            obj1_json = _to_json(obj1)
-            obj2_json = _to_json(obj2)
+            obj1_json = to_json(obj1)
+            obj2_json = to_json(obj2)
             testObj.assertEqual(obj1_json, obj2_json)
         except Exception as ex:
             testObj.fail(f"Objects are not equal or encountered a JSON serialization failure. message: {str(ex)}")
         return
 
 
-def _to_json(obj: Any) -> str:
+def to_json(obj: Any) -> str:
     if hasattr(obj, "__dict__"):
         return json.dumps(obj.__dict__, default=vars, indent=2)
     else:

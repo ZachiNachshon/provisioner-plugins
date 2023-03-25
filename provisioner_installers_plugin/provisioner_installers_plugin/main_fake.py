@@ -5,7 +5,7 @@ import traceback
 from provisioner_features_lib.config.config_resolver import ConfigResolver
 from provisioner_features_lib.remote.domain.config import RemoteConfig
 from provisioner_features_lib.remote.typer_remote_opts import TyperRemoteOpts
-from provisioner_features_lib.remote.typer_remote_opts_fakes import TestDataRemoteOpts
+from provisioner_features_lib.remote.typer_remote_opts_fakes import *
 from python_core_lib.cli.entrypoint import EntryPoint
 from python_core_lib.domain.serialize import SerializationBase
 
@@ -54,11 +54,11 @@ def register_remote_cli_args():
     )
 
     remote_args_callback(
-        environment=TestDataRemoteOpts.TEST_DATA_ENVIRONMENT,
-        node_username=TestDataRemoteOpts.TEST_DATA_REMOTE_NODE_USERNAME_1,
-        node_password=TestDataRemoteOpts.TEST_DATA_REMOTE_NODE_PASSWORD_1,
-        ssh_private_key_file_path=TestDataRemoteOpts.TEST_DATA_REMOTE_SSH_PRIVATE_KEY_FILE_PATH_1,
-        ip_discovery_range=TestDataRemoteOpts.TEST_DATA_REMOTE_IP_DISCOVERY_RANGE,
+        environment=TEST_DATA_ENVIRONMENT,
+        node_username=TEST_DATA_REMOTE_NODE_USERNAME_1,
+        node_password=TEST_DATA_REMOTE_NODE_PASSWORD_1,
+        ssh_private_key_file_path=TEST_DATA_REMOTE_SSH_PRIVATE_KEY_FILE_PATH_1,
+        ip_discovery_range=TEST_DATA_REMOTE_IP_DISCOVERY_RANGE,
     )
 
 

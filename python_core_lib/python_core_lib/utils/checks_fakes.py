@@ -41,8 +41,12 @@ class FakeChecks(Checks):
             raise FakeEnvironmentAssertionError(
                 f"Checks expected a check if tool exists but it never triggered. name: {name}"
             )
-        else:
-            return exist == self.__registered_is_tool_exists[name]
+        elif exist != self.__registered_is_tool_exists[name]:
+            raise FakeEnvironmentAssertionError(
+                f"Checks expected a check if tool exists but the result differ.\n"
+                + f"Actual:\n{self.__registered_is_tool_exists[name]}\n"
+                + f"Expected:\n{exist}"
+            )
 
     def _register_check_tool(self, name: str) -> bool:
         exists = name in self.__mocked_utilities_install_status
@@ -52,10 +56,14 @@ class FakeChecks(Checks):
     def assert_check_tool(self, name: str, status: bool) -> None:
         if name not in self.__registered_check_tool:
             raise FakeEnvironmentAssertionError(
-                f"Checks expected a check for tools status but it never triggered. name: {name}"
+                f"Checks expected a check for a tool status but it never triggered. name: {name}"
             )
-        else:
-            return status == self.__registered_check_tool[name]
+        elif status != self.__registered_check_tool[name]:
+            raise FakeEnvironmentAssertionError(
+                f"Checks expected a check for a tool status but the result differ.\n"
+                + f"Actual:\n{self.__registered_check_tool[name]}\n"
+                + f"Expected:\n{status}"
+            )
 
     def mock_utility(self, name: str, exist: Optional[bool] = True) -> "FakeChecks":
         self.__mocked_utilities_install_status[name] = exist

@@ -4,6 +4,7 @@ from typing import List, Optional
 
 from python_core_lib.infra.context import Context
 from python_core_lib.runner.ansible.ansible import AnsibleHost, AnsibleRunner
+from python_core_lib.test_lib.assertions import to_json
 from python_core_lib.test_lib.test_errors import FakeEnvironmentAssertionError
 from python_core_lib.utils.io_utils import IOUtils
 from python_core_lib.utils.json_util import JsonUtil
@@ -126,7 +127,7 @@ class FakeAnsibleRunner(AnsibleRunner):
         with_paths: AnsibleRunner.WithPaths,
         ansible_vars: List[str],
         ansible_tags: List[str],
-        force_dockerized: bool,
+        force_dockerized: Optional[bool] = False,
     ) -> FakeAnsibleCommandArgs:
 
         cmd_args = FakeAnsibleRunner.FakeAnsibleCommandArgs(
@@ -139,6 +140,8 @@ class FakeAnsibleRunner(AnsibleRunner):
         if cmd_args not in self.registered_commands:
             cmd_args_json = self.json_util.to_json_fn(cmd_args)
             raise FakeEnvironmentAssertionError(
-                f"Ansible command was not triggered with expected arguments. args:\n{str(cmd_args_json)}"
+                f"Ansible command was not triggered with expected arguments. args:\n"
+                + f"All registered commands:\n{to_json(self.registered_commands)}\n"
+                + f"Expected command:\n{str(cmd_args_json)}"
             )
         return cmd_args
