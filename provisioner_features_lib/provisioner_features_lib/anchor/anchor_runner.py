@@ -6,7 +6,7 @@ from loguru import logger
 from python_core_lib.errors.cli_errors import MissingCliArgument
 from python_core_lib.infra.context import Context
 from python_core_lib.infra.evaluator import Evaluator
-from python_core_lib.runner.ansible.ansible import AnsibleHost
+from python_core_lib.runner.ansible.ansible import AnsibleHost, AnsibleRunner
 from python_core_lib.shared.collaborators import CoreCollaborators
 from python_core_lib.utils.checks import Checks
 
@@ -66,25 +66,24 @@ class AnchorCmdRunner:
 
     def _start_remote_run_command_flow(self, ctx: Context, args: AnchorRunnerCmdArgs, collaborators: CoreCollaborators):
         remote_connector = RemoteMachineConnector(collaborators)
-        ssh_conn_info = Evaluator.eval_step_return_value_throw_on_failure(
-            call=lambda: remote_connector.collect_ssh_connection_info(ctx, args.remote_opts),
-            ctx=ctx,
-            err_msg="Could not resolve SSH connection info",
+        ssh_conn_info = collaborators.summary().append_result(
+            attribute_name="ssh_conn_info",
+            call=lambda: Evaluator.eval_step_return_value_throw_on_failure(
+                call=lambda: remote_connector.collect_ssh_connection_info(ctx, args.remote_opts),
+                ctx=ctx,
+                err_msg="Could not resolve SSH connection info",
+            ),
         )
-        collaborators.summary().append("ssh_conn_info", ssh_conn_info)
 
         collaborators.printer().new_line_fn()
-
         output = collaborators.printer().progress_indicator.status.long_running_process_fn(
             call=lambda: collaborators.ansible_runner().run_fn(
-                working_dir=collaborators.paths().get_path_from_exec_module_root_fn(),
-                username=ssh_conn_info.username,
-                password=ssh_conn_info.password,
-                ssh_private_key_file_path=ssh_conn_info.ssh_private_key_file_path,
-                playbook_path=collaborators.paths().get_path_relative_from_module_root_fn(
-                    __name__, AnchorRunAnsiblePlaybookRelativePathFromRoot
+                selected_hosts=ssh_conn_info.ansible_hosts,
+                with_paths=AnsibleRunner.WithPaths.create(
+                    paths=collaborators.paths(),
+                    script_import_name_var=__name__,
+                    playbook_path=AnchorRunAnsiblePlaybookRelativePathFromRoot,
                 ),
-                extra_modules_paths=[collaborators.paths().get_path_abs_to_module_root_fn(__name__)],
                 ansible_vars=[
                     "anchor_command=Run",
                     f"\"anchor_args='{args.anchor_run_command}'\"",
@@ -94,15 +93,12 @@ class AnchorCmdRunner:
                     f"github_access_token={args.github_access_token}",
                 ],
                 ansible_tags=["ansible_run"],
-                selected_hosts=ssh_conn_info.host_ip_pairs,
             ),
             desc_run="Running Ansible playbook (Anchor Run)",
             desc_end="Ansible playbook finished (Anchor Run).",
         )
 
-        collaborators.printer().new_line_fn()
-        collaborators.printer().print_fn(output)
-        collaborators.printer().print_with_rich_table_fn(
+        collaborators.printer().new_line_fn().print_fn(output).print_with_rich_table_fn(
             generate_summary(
                 ansible_hosts=ssh_conn_info.host_ip_pairs,
                 anchor_cmd=args.anchor_run_command,
