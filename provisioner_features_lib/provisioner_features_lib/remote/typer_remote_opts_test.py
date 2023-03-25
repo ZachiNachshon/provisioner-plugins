@@ -13,7 +13,7 @@ from provisioner_features_lib.remote.typer_remote_opts import (
     TyperRemoteOpts,
     TyperResolvedRemoteOpts,
 )
-from provisioner_features_lib.remote.typer_remote_opts_fakes import TestDataRemoteOpts
+from provisioner_features_lib.remote.typer_remote_opts_fakes import *
 
 ARG_CLI_OVERRIDE_ENVIRONMENT = "test-environment"
 ARG_CLI_OVERRIDE_NODE_USERNAME = "test-node-username"
@@ -54,8 +54,8 @@ class TyperRemoteOptsTestShould(unittest.TestCase):
         # This is a simulation of typer triggering the remote_args_callback
         # DO NOT SET AUTH VARIABLES SINCE THOSE WOULD BE TREATED AS CLI ARGUMENTS OVERRIDES
         TyperResolvedRemoteOpts.create(
-            environment=TestDataRemoteOpts.TEST_DATA_ENVIRONMENT,
-            remote_hosts=TestDataRemoteOpts.TEST_REMOTE_HOSTS_DICT,
+            environment=TEST_DATA_ENVIRONMENT,
+            remote_hosts=TEST_REMOTE_HOSTS_DICT,
         )
 
         # Assert TyperResolvedRemoteOpts
@@ -63,29 +63,29 @@ class TyperRemoteOptsTestShould(unittest.TestCase):
             GLOBAL_TYPER_RESOLVED_REMOTE_OPTS,
         )
 
-        self.assertEqual(GLOBAL_TYPER_RESOLVED_REMOTE_OPTS._environment, TestDataRemoteOpts.TEST_DATA_ENVIRONMENT)
-        self.assertEqual(GLOBAL_TYPER_RESOLVED_REMOTE_OPTS._remote_hosts, TestDataRemoteOpts.TEST_REMOTE_HOSTS_DICT)
+        self.assertEqual(GLOBAL_TYPER_RESOLVED_REMOTE_OPTS._environment, TEST_DATA_ENVIRONMENT)
+        self.assertEqual(GLOBAL_TYPER_RESOLVED_REMOTE_OPTS._remote_hosts, TEST_REMOTE_HOSTS_DICT)
 
         # Assert CliRemoteOpts
         cli_remote_opts = CliRemoteOpts.maybe_get()
         self.assertIsNotNone(cli_remote_opts)
-        self.assertEqual(cli_remote_opts.environment, TestDataRemoteOpts.TEST_DATA_ENVIRONMENT)
+        self.assertEqual(cli_remote_opts.environment, TEST_DATA_ENVIRONMENT)
 
         Assertion.expect_equal_objects(
             self,
             obj1=cli_remote_opts.ansible_hosts,
             obj2=[
                 AnsibleHost(
-                    host=TestDataRemoteOpts.TEST_DATA_SSH_HOSTNAME_1,
-                    ip_address=TestDataRemoteOpts.TEST_DATA_SSH_IP_ADDRESS_1,
-                    username=TestDataRemoteOpts.TEST_DATA_REMOTE_NODE_USERNAME_1,
-                    password=TestDataRemoteOpts.TEST_DATA_REMOTE_NODE_PASSWORD_1,
+                    host=TEST_DATA_SSH_HOSTNAME_1,
+                    ip_address=TEST_DATA_SSH_IP_ADDRESS_1,
+                    username=TEST_DATA_REMOTE_NODE_USERNAME_1,
+                    password=TEST_DATA_REMOTE_NODE_PASSWORD_1,
                 ),
                 AnsibleHost(
-                    host=TestDataRemoteOpts.TEST_DATA_SSH_HOSTNAME_2,
-                    ip_address=TestDataRemoteOpts.TEST_DATA_SSH_IP_ADDRESS_2,
-                    username=TestDataRemoteOpts.TEST_DATA_REMOTE_NODE_USERNAME_2,
-                    ssh_private_key_file_path=TestDataRemoteOpts.TEST_DATA_REMOTE_SSH_PRIVATE_KEY_FILE_PATH_2,
+                    host=TEST_DATA_SSH_HOSTNAME_2,
+                    ip_address=TEST_DATA_SSH_IP_ADDRESS_2,
+                    username=TEST_DATA_REMOTE_NODE_USERNAME_2,
+                    ssh_private_key_file_path=TEST_DATA_REMOTE_SSH_PRIVATE_KEY_FILE_PATH_2,
                 ),
             ],
         )
@@ -100,7 +100,7 @@ class TyperRemoteOptsTestShould(unittest.TestCase):
             ARG_CLI_OVERRIDE_NODE_PASSWORD,
             ARG_CLI_OVERRIDE_SSH_PRIVATE_KEY_FILE_PATH,
             ARG_CLI_OVERRIDE_IP_DISCOVERY_RANGE,
-            TestDataRemoteOpts.TEST_REMOTE_HOSTS_DICT,
+            TEST_REMOTE_HOSTS_DICT,
         )
 
         # Assert TyperResolvedRemoteOpts
@@ -115,7 +115,7 @@ class TyperRemoteOptsTestShould(unittest.TestCase):
             GLOBAL_TYPER_RESOLVED_REMOTE_OPTS._ssh_private_key_file_path, ARG_CLI_OVERRIDE_SSH_PRIVATE_KEY_FILE_PATH
         )
         self.assertEqual(GLOBAL_TYPER_RESOLVED_REMOTE_OPTS._ip_discovery_range, ARG_CLI_OVERRIDE_IP_DISCOVERY_RANGE)
-        self.assertEqual(GLOBAL_TYPER_RESOLVED_REMOTE_OPTS._remote_hosts, TestDataRemoteOpts.TEST_REMOTE_HOSTS_DICT)
+        self.assertEqual(GLOBAL_TYPER_RESOLVED_REMOTE_OPTS._remote_hosts, TEST_REMOTE_HOSTS_DICT)
 
         # Assert CliRemoteOpts
         cli_remote_opts = CliRemoteOpts.maybe_get()
@@ -131,15 +131,15 @@ class TyperRemoteOptsTestShould(unittest.TestCase):
             obj1=cli_remote_opts.ansible_hosts,
             obj2=[
                 AnsibleHost(
-                    host=TestDataRemoteOpts.TEST_DATA_SSH_HOSTNAME_1,
-                    ip_address=TestDataRemoteOpts.TEST_DATA_SSH_IP_ADDRESS_1,
+                    host=TEST_DATA_SSH_HOSTNAME_1,
+                    ip_address=TEST_DATA_SSH_IP_ADDRESS_1,
                     username=ARG_CLI_OVERRIDE_NODE_USERNAME,
                     password=ARG_CLI_OVERRIDE_NODE_PASSWORD,
                     ssh_private_key_file_path=ARG_CLI_OVERRIDE_SSH_PRIVATE_KEY_FILE_PATH,
                 ),
                 AnsibleHost(
-                    host=TestDataRemoteOpts.TEST_DATA_SSH_HOSTNAME_2,
-                    ip_address=TestDataRemoteOpts.TEST_DATA_SSH_IP_ADDRESS_2,
+                    host=TEST_DATA_SSH_HOSTNAME_2,
+                    ip_address=TEST_DATA_SSH_IP_ADDRESS_2,
                     username=ARG_CLI_OVERRIDE_NODE_USERNAME,
                     password=ARG_CLI_OVERRIDE_NODE_PASSWORD,
                     ssh_private_key_file_path=ARG_CLI_OVERRIDE_SSH_PRIVATE_KEY_FILE_PATH,
@@ -154,29 +154,25 @@ class TyperRemoteOptsTestShould(unittest.TestCase):
         )
 
         remote_args_callback(
-            environment=TestDataRemoteOpts.TEST_DATA_ENVIRONMENT,
-            node_username=TestDataRemoteOpts.TEST_DATA_REMOTE_NODE_USERNAME_1,
-            node_password=TestDataRemoteOpts.TEST_DATA_REMOTE_NODE_PASSWORD_1,
-            ssh_private_key_file_path=TestDataRemoteOpts.TEST_DATA_REMOTE_SSH_PRIVATE_KEY_FILE_PATH_1,
-            ip_discovery_range=TestDataRemoteOpts.TEST_DATA_REMOTE_IP_DISCOVERY_RANGE,
+            environment=TEST_DATA_ENVIRONMENT,
+            node_username=TEST_DATA_REMOTE_NODE_USERNAME_1,
+            node_password=TEST_DATA_REMOTE_NODE_PASSWORD_1,
+            ssh_private_key_file_path=TEST_DATA_REMOTE_SSH_PRIVATE_KEY_FILE_PATH_1,
+            ip_discovery_range=TEST_DATA_REMOTE_IP_DISCOVERY_RANGE,
         )
 
         from provisioner_features_lib.remote.typer_remote_opts import (
             GLOBAL_TYPER_RESOLVED_REMOTE_OPTS,
         )
 
-        self.assertEqual(GLOBAL_TYPER_RESOLVED_REMOTE_OPTS._environment, TestDataRemoteOpts.TEST_DATA_ENVIRONMENT)
-        self.assertEqual(
-            GLOBAL_TYPER_RESOLVED_REMOTE_OPTS._node_username, TestDataRemoteOpts.TEST_DATA_REMOTE_NODE_USERNAME_1
-        )
-        self.assertEqual(
-            GLOBAL_TYPER_RESOLVED_REMOTE_OPTS._node_password, TestDataRemoteOpts.TEST_DATA_REMOTE_NODE_PASSWORD_1
-        )
+        self.assertEqual(GLOBAL_TYPER_RESOLVED_REMOTE_OPTS._environment, TEST_DATA_ENVIRONMENT)
+        self.assertEqual(GLOBAL_TYPER_RESOLVED_REMOTE_OPTS._node_username, TEST_DATA_REMOTE_NODE_USERNAME_1)
+        self.assertEqual(GLOBAL_TYPER_RESOLVED_REMOTE_OPTS._node_password, TEST_DATA_REMOTE_NODE_PASSWORD_1)
         self.assertEqual(
             GLOBAL_TYPER_RESOLVED_REMOTE_OPTS._ssh_private_key_file_path,
-            TestDataRemoteOpts.TEST_DATA_REMOTE_SSH_PRIVATE_KEY_FILE_PATH_1,
+            TEST_DATA_REMOTE_SSH_PRIVATE_KEY_FILE_PATH_1,
         )
         self.assertEqual(
             GLOBAL_TYPER_RESOLVED_REMOTE_OPTS._ip_discovery_range,
-            TestDataRemoteOpts.TEST_DATA_REMOTE_IP_DISCOVERY_RANGE,
+            TEST_DATA_REMOTE_IP_DISCOVERY_RANGE,
         )

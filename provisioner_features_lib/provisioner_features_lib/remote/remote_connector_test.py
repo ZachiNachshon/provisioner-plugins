@@ -18,7 +18,11 @@ from provisioner_features_lib.remote.remote_connector_fakes import (
     TestDataRemoteConnector,
 )
 from provisioner_features_lib.remote.typer_remote_opts import CliRemoteOpts
-from provisioner_features_lib.remote.typer_remote_opts_fakes import TestDataRemoteOpts
+from provisioner_features_lib.remote.typer_remote_opts_fakes import (
+    TEST_DATA_REMOTE_NODE_PASSWORD_1,
+    TEST_DATA_REMOTE_SSH_PRIVATE_KEY_FILE_PATH_1,
+    TestDataRemoteOpts,
+)
 
 # To run as a single test target:
 #  poetry run coverage run -m pytest provisioner_features_lib/remote/remote_connector_test.py
@@ -291,7 +295,7 @@ class RemoteMachineConnectorTestShould(unittest.TestCase):
         response = RemoteMachineConnector(env.get_collaborators())._collect_auth_password(
             env.get_context(), TestDataRemoteOpts.create_fake_cli_remote_opts()
         )
-        self.assertEqual(response, TestDataRemoteOpts.TEST_DATA_REMOTE_NODE_PASSWORD_1)
+        self.assertEqual(response, TEST_DATA_REMOTE_NODE_PASSWORD_1)
         env.get_collaborators().printer().assert_output("Identified SSH password from CLI argument.")
 
     def test_collect_auth_password_from_user_prompt(self) -> None:
@@ -309,7 +313,7 @@ class RemoteMachineConnectorTestShould(unittest.TestCase):
         response = RemoteMachineConnector(env.get_collaborators())._collect_auth_ssh_private_key_path(
             env.get_context(), TestDataRemoteOpts.create_fake_cli_remote_opts()
         )
-        self.assertEqual(response, TestDataRemoteOpts.TEST_DATA_REMOTE_SSH_PRIVATE_KEY_FILE_PATH_1)
+        self.assertEqual(response, TEST_DATA_REMOTE_SSH_PRIVATE_KEY_FILE_PATH_1)
         env.get_collaborators().printer().assert_output("Identified SSH private key path from CLI argument.")
 
     def test_collect_auth_ssh_private_key_path_from_user_prompt(self) -> None:
@@ -361,8 +365,7 @@ class RemoteMachineConnectorTestShould(unittest.TestCase):
         Assertion.expect_call_argument(self, run_call, "options_list", HOST_SELECTION_OPTIONS_LIST)
         Assertion.expect_call_arguments(self, run_call, "option_to_value_dict", assertion_callback)
 
-    @mock.patch(f"{REMOTE_MACHINE_CONNECTOR_PATH}._convert_prompted_host_selection_to_ansible_hosts")
-    def test_run_lan_scan_host_selection_fail_missing_nmap(self, run_call: mock.MagicMock) -> None:
+    def test_run_lan_scan_host_selection_fail_missing_nmap(self) -> None:
         env = TestEnv.create()
         env.get_collaborators().checks().mock_utility("nmap", exist=False)
         response = RemoteMachineConnector(env.get_collaborators())._run_lan_scan_host_selection(

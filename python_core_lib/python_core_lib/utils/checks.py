@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 from shutil import which
-from typing import Optional
 
 from loguru import logger
 

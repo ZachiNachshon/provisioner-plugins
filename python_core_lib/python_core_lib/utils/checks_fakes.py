@@ -2,6 +2,7 @@
 
 from typing import Optional
 
+from python_core_lib.errors.cli_errors import MissingUtilityException
 from python_core_lib.infra.context import Context
 from python_core_lib.test_lib.test_errors import FakeEnvironmentAssertionError
 from python_core_lib.utils.checks import Checks
@@ -32,9 +33,9 @@ class FakeChecks(Checks):
         return FakeChecks._create_fake(dry_run=ctx.is_dry_run(), verbose=ctx.is_verbose())
 
     def _register_is_tool_exist(self, name: str) -> bool:
-        exists = name in self.__mocked_utilities_install_status
-        self.__registered_is_tool_exists[name] = exists
-        return exists
+        status = self.__mocked_utilities_install_status.get(name, False)
+        self.__registered_is_tool_exists[name] = status
+        return status
 
     def assert_is_tool_exist(self, name: str, exist: bool) -> None:
         if name not in self.__registered_is_tool_exists:
@@ -49,9 +50,13 @@ class FakeChecks(Checks):
             )
 
     def _register_check_tool(self, name: str) -> bool:
-        exists = name in self.__mocked_utilities_install_status
-        self.__registered_check_tool[name] = exists
-        return exists
+        status = self.__mocked_utilities_install_status.get(name, False)
+        if not status:
+            # To allow the same flow as with the real Checks utilitie, we must raise an error
+            # in case the check_tool function fails
+            raise MissingUtilityException(f"missing CLI tool. name: {name}")
+        self.__registered_check_tool[name] = status
+        return status
 
     def assert_check_tool(self, name: str, status: bool) -> None:
         if name not in self.__registered_check_tool:

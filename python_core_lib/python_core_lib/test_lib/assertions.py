@@ -47,7 +47,7 @@ class Assertion:
         failed = False
         try:
             output = method_to_run()
-            if output.exit_code != 0:
+            if output and output.exit_code != 0:
                 failed = True
                 exception_class = output.exc_info[0]
                 testObj.assertEqual(exception_class, ex_type)
