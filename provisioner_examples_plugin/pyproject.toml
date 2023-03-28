@@ -18,11 +18,17 @@ exclude = [
     ".git-deps",
     ".pytest_cache"]
 
-# packages = [
-#     { include = "provisioner_features_lib" },
-# ]
+# A list of patterns that will be included in the final package.
+# If no format is specified, it will default to include both sdist and wheel
+# i.e. { path = "tests", format = ["sdist", "wheel"] }
+include = [
+    # This file must be packaged since it allow the Paths utility to find the 
+    # module root folder used for reading bundled files
+    { path = "pyproject.toml" },
+]
 
 [tool.poetry.scripts]
+# This module is not meant to be used as a standalone CLI, rather used as a plugin/library for a module with a main entry point i.e. provisioner
 test_runner = "provisioner_examples_plugin.main_fake:fake_app"
 
 [tool.isort]
@@ -49,14 +55,15 @@ python = "^3.10"
 typer = "^0.6.1"
 loguru = "^0.6.0"
 requests = "^2.28.1"
-rich = "^12.5.1"           # - Progress Bar for Python and CLI (https://github.com/Textualize/rich)
+# Progress Bar for Python and CLI (https://github.com/Textualize/rich)
+rich = "^12.5.1"
 python3-nmap = "^1.5.4"
 python-libnmap = "^0.7.3"
 PyYAML = "^6.0"
 inquirer = "^2.10.0"
 python-hosts = "^1.0.3"
-python_core_lib = { path = "../python_core_lib", develop = true }
-provisioner_features_lib = { path = "../provisioner_features_lib", develop = true }
+# python_core_lib = { path = "../python_core_lib", develop = true }
+# provisioner_features_lib = { path = "../provisioner_features_lib", develop = true }
 
 [tool.poetry.dev-dependencies]
 black = "^22.8.0"

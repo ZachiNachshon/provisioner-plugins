@@ -17,6 +17,10 @@ create-update-venv: ## Create/Update a Python virtual env
 	@${POETRY_WRAPPER_DEV} install  # Download and install dependencies
 	@${POETRY_WRAPPER_DEV} build    # Build a tarball package with local Python wheel
 
+.PHONY: install-sdist
+install-sdist: ## Install a source distribution locally
+	@./runners/install_sdist_pip.sh
+
 .PHONY: fmt
 fmt: ## Format Python code using Black style and sort imports
 	@echo "Formatting Python code using Black style..."

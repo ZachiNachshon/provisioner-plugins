@@ -21,7 +21,7 @@ create-update-venv: ## Create/Update a Python virtual env
 
 .PHONY: install-sdist
 install-sdist: ## Install a source distribution locally
-	@./runners/install_sdist.sh
+	@./runners/install_sdist_pip.sh
 
 .PHONY: fmt
 fmt: ## Format Python code using Black style and sort imports

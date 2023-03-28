@@ -13,6 +13,16 @@ from python_core_lib.utils.io_utils import IOUtils
 from python_core_lib.utils.paths import Paths
 from python_core_lib.utils.process import Process
 
+# import importlib.resources
+
+# print("Modules name: " + __name__)
+# print("Modules name: " + __name__)
+# print("Modules name: " + __name__)
+
+# ANSIBLE_SHELL_RUNNER_PATH = importlib.resources.path(
+#     package="provisioner/external/shell_scripts_lib/runner/ansible", 
+#     resource="ansible.sh")
+
 ANSIBLE_SHELL_RUNNER_PATH = "external/shell_scripts_lib/runner/ansible/ansible.sh"
 
 

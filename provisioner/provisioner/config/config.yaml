@@ -1,20 +1,25 @@
 provisioner:
   remote:
-    # TODO: auth section to each host
     hosts:
       - name: localhost
         address: ansible_connection=local
+        auth:
+          username: pi
+          password: raspberry
       - name: kmaster
         address: 192.168.1.200
+        auth:
+          username: pi
+          password: raspberry
       - name: knode1
         address: 192.168.1.201
+        auth:
+          username: pi
+          password: raspberry
+          ssh_private_key_file_path: /path/to/unknown
+
     lan_scan:
       ip_discovery_range: 192.168.1.1/24
-    auth:
-      # TODO: add auth attribute to every host item
-      username: pi
-      password: raspberry
-      # ssh_private_key_file_path: /path/to/unknown
 
   single_board:
     os:

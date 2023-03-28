@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "provisioner"
 version = "0.1.0"
-description = "Provision anything on any remote machine"
+description = "Provision Everything Anywhere"
 authors = ["Zachi Nachshon <zachi.nachshon@gmail.com>"]
 
 # Until multi-project is supported natively with Poetry, use a plugins that bundles
@@ -26,24 +26,27 @@ exclude = [
 
 packages = [
     { include = "provisioner" },
-    # { include = "external", from="../python_core_lib" },
+    # Must be boundled since those packages aren't pip installed, rather bundled with the source code
     { include = "python_core_lib", from="../python_core_lib" },
     { include = "provisioner_features_lib", from="../provisioner_features_lib" },
 ]
 
-# # A list of patterns that will be included in the final package.
-# # If no format is specified, it will default to include both sdist and wheel
-# # i.e. { path = "tests", format = ["sdist", "wheel"] }
+# A list of patterns that will be included in the final package.
+# If no format is specified, it will default to include both sdist and wheel
+# i.e. { path = "tests", format = ["sdist", "wheel"] }
 include = [
+    # This file must be packaged since it allow the Paths utility to find the 
+    # module root folder used for reading bundled files
+    { path = "pyproject.toml" },
     { path = "provisioner/__init__.py" },
     { path = "provisioner/main.py" },
     { path = "resources/version.txt" },
-    { path = "provisioner/config.yaml" },
-    { path = "external" },
+    { path = "provisioner/config/config.yaml" },
+    # Must be boundled since those packages aren't pip installed, rather bundled with the source code
+    { path = "python_core_lib" },
     { path = "provisioner_features_lib" },
-    { path = "provisioner_installers_plugin" },
-    { path = "provisioner_examples_plugin" },
-    { path = "provisioner_single_board_plugin" },
+    # Must be boundled for referensing shell script files i.e. Ansible runner and playbooks
+    { path = "external" },
 ]
 
 [tool.poetry.scripts]
@@ -74,34 +77,26 @@ python = "^3.10"
 typer = "^0.6.1"
 loguru = "^0.6.0"
 requests = "^2.28.1"
-rich = "^12.5.1"      # - Progress Bar for Python and CLI (https://github.com/Textualize/rich)
+# Progress Bar for Python and CLI (https://github.com/Textualize/rich)
+rich = "^12.5.1"
 python3-nmap = "^1.5.4"
 python-libnmap = "^0.7.3"
 PyYAML = "^6.0"
 inquirer = "^2.10.0"
 python-hosts = "^1.0.3"
+# poetry-multiproject-plugin = "^1.1.4"
 # GitPython = "^3.1.18" # - GitPython provides object model access to your git repository (https://github.com/gitpython-developers/GitPython)
 # #Jinja2 = "^3.0.3"      - Templating engine (https://github.com/pallets/jinja)
 # #sh = "^1.14.2"         - Subprocess replacement for Python (https://github.com/amoffat/sh)
 # #backoff = "^1.10.0"    - Function decoration for backoff and retry (https://github.com/litl/backoff)
 # #tenacity = "^8.0.1"    - General-purpose retrying library (https://github.com/jd/tenacity)
-python_core_lib = { path = "../python_core_lib", develop = true }
-provisioner_features_lib = { path = "../provisioner_features_lib", develop = true }
 
 
 # A list of all of the optional dependencies, some of which are included in the
 # below `extras`. They can be opted into by apps.
-python_test_lib = { path = "../python_test_lib", develop = true, optional = true }
 provisioner_installers_plugin = { path = "../provisioner_installers_plugin", develop = true, optional = true }
 provisioner_examples_plugin = { path = "../provisioner_examples_plugin", develop = true, optional = true }
 provisioner_single_board_plugin = { path = "../provisioner_single_board_plugin", develop = true, optional = true }
-poetry-multiproject-plugin = "^1.1.4"
-
-[tool.poetry.extras]
-python_test_lib = ["python_test_lib"] # poetry install --extras "python_test_lib" / poetry install -E python_test_lib
-provisioner_installers_plugin = ["provisioner_installers_plugin"] # poetry install --extras "provisioner_installers_plugin" / poetry install -E provisioner_installers_plugin
-provisioner_examples_plugin = ["provisioner_examples_plugin"] # poetry install --extras "provisioner_examples_plugin" / poetry install -E provisioner_examples_plugin
-provisioner_single_board_plugin = ["provisioner_single_board_plugin"] # poetry install --extras "provisioner_single_board_plugin" / poetry install -E provisioner_single_board_plugin
 
 [tool.poetry.dev-dependencies]
 black = "^22.8.0"
@@ -111,12 +106,14 @@ coverage = "^6.4.4"
 diagrams = "^0.22.0"
 isort = "^5.10.1"
 poetry-multiproject-plugin = "^1.1.4"
-python_core_lib = { path = "../python_core_lib", develop = true }
-provisioner_features_lib = { path = "../provisioner_features_lib", develop = true }
-python_test_lib = { path = "../python_test_lib", develop = true, optional = true }
 provisioner_installers_plugin = { path = "../provisioner_installers_plugin", develop = true, optional = true }
 provisioner_examples_plugin = { path = "../provisioner_examples_plugin", develop = true, optional = true }
 provisioner_single_board_plugin = { path = "../provisioner_single_board_plugin", develop = true, optional = true }
+
+[tool.poetry.extras]
+provisioner_installers_plugin = ["provisioner_installers_plugin"] # poetry install --extras "provisioner_installers_plugin" / poetry install -E provisioner_installers_plugin
+provisioner_examples_plugin = ["provisioner_examples_plugin"] # poetry install --extras "provisioner_examples_plugin" / poetry install -E provisioner_examples_plugin
+provisioner_single_board_plugin = ["provisioner_single_board_plugin"] # poetry install --extras "provisioner_single_board_plugin" / poetry install -E provisioner_single_board_plugin
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

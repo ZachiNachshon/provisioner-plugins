@@ -43,3 +43,4 @@ htmlcov/
 hosts
 utils/ansible/hosts
 ansible_hosts
+requirements.txt

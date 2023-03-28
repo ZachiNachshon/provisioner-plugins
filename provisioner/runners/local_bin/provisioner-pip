@@ -4,7 +4,7 @@ def launch():
     # this is where we add the custom installation directory to PYTHONPATH so our modules are found.
     try:
         import provisioner
-        from provisioner.rpi.main import main
+        from provisioner.main import main
         main()
     except ModuleNotFoundError:
         print("The 'provisioner' package could not be found. "

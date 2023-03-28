@@ -35,6 +35,9 @@ class Paths:
         and not from this IO utility file
         """
         exec_path = self._get_exec_main_path()
+        print(f"exec_path: {exec_path}")
+        print(f"exec_path: {exec_path}")
+        print(f"exec_path: {exec_path}")
         return self._calculate_static_file_path_from_project(exec_path, relative_path)
 
     def _get_path_abs_to_module_root(self, package_name, relative_path: Optional[str] = None) -> str:
@@ -64,8 +67,14 @@ class Paths:
     def _calculate_static_file_path_from_project(self, file_path, relative_path: Optional[str] = None) -> str:
         result_path = None
         parent_path = pathlib.Path(file_path).parent
+        print(f"file_path: {file_path}")
+        print(f"relative_path: {relative_path}")
         while True:
             basename = os.path.basename(parent_path)
+            print(f"basename: {basename}")
+            print(f"basename: {basename}")
+            print(f"basename: {basename}")
+            print(f"basename: {basename}")
             if os.path.exists(f"{parent_path}/pyproject.toml") or os.path.exists(f"{parent_path}/setup.py"):
                 result_path = parent_path
                 break
@@ -77,6 +86,7 @@ class Paths:
             return (
                 f"{result_path}{relative_path}" if relative_path.startswith("/") else f"{result_path}/{relative_path}"
             )
+        print(f"result_path: {result_path}")
         return result_path
 
     # def _relative_path_to_abs_path(self, relative_path: str) -> str:

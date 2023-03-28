@@ -4,9 +4,9 @@ from typing import Optional
 
 from loguru import logger
 
-from ..domain.serialize import SerializationBase
-from ..errors.cli_errors import FailedToReadConfigurationFile
-from ..utils.yaml_util import YamlUtil
+from python_core_lib.domain.serialize import SerializationBase
+from python_core_lib.errors.cli_errors import FailedToReadConfigurationFile
+from python_core_lib.utils.yaml_util import YamlUtil
 
 
 class ConfigReader:
