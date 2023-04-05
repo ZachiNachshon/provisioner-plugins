@@ -47,7 +47,7 @@ install_provisioner_launcher_binary() {
 pip_install_provisioner() {
   cd "${PIP_PKG_FOLDER_PATH}" || exit
   log_info "Installing provisioners pip package from tarball..."
-  pip3 install "${PROVISIONER_TARBALL_NAME}"
+  python3 -m pip install "${PROVISIONER_TARBALL_NAME}"
 }
 
 pip_install_all_dependencies() {

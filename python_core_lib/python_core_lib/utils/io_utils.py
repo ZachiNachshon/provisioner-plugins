@@ -6,7 +6,7 @@ import stat
 import tarfile
 import tempfile
 import zipfile
-from shutil import copy2
+from shutil import copy2, copytree
 from typing import Optional
 
 from loguru import logger
@@ -25,18 +25,24 @@ class IOUtils:
         logger.debug(f"Creating IO utils...")
         return IOUtils(ctx)
 
-    def _create_directory(self, folder_path) -> None:
+    def _create_directory(self, folder_path) -> str:
         if self._dry_run:
             return None
 
         if not os.path.exists(folder_path) or not os.path.isdir(folder_path):
             os.makedirs(folder_path, exist_ok=True)
+            
+        return folder_path
 
-    def _copy_file_or_dir(self, from_path: str, to_path: str):
+    def _copy_file(self, from_path: str, to_path: str):
         if self._dry_run:
             return None
-
         copy2(from_path, to_path)
+
+    def _copy_directory(self, from_path: str, to_path: str):
+        if self._dry_run:
+            return None
+        copytree(from_path, to_path, dirs_exist_ok=True)
 
     def _write_file(
         self, content: str, file_name: str, dir_path: Optional[str] = None, executable: Optional[bool] = False
@@ -183,7 +189,8 @@ class IOUtils:
         return file_path
 
     create_directory_fn = _create_directory
-    copy_file_or_dir_fn = _copy_file_or_dir
+    copy_file_fn = _copy_file
+    copy_directory_fn = _copy_directory
     write_file_fn = _write_file
     delete_file_fn = _delete_file
     read_file_safe_fn = _read_file_safe

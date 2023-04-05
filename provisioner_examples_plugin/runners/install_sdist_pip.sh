@@ -15,13 +15,6 @@ build_sdist_tarball()  {
   poetry build -f sdist || exit
 }
 
-pip_install_package() {
-  local pip_tarball_folder_path=$1
-  cd "${pip_tarball_folder_path}" || exit
-  log_info "Installing provisioners plugin/library as pip package from tarball..."
-  pip3 install "${pip_tarball_folder_path}/${PROVISIONER_TARBALL_NAME}"
-}
-
 prerequisites() {
   # Update lock file changes
   log_info "Updating changes to the Poetry lock file"
@@ -42,7 +35,7 @@ main() {
   cd "${pip_tarball_folder_path}" || exit
   
   log_info "Installing provisioners plugin/library as pip package from tarball..."
-  pip3 install "${pip_tarball_folder_path}/${PROVISIONER_TARBALL_NAME}"
+  python3 -m pip install "${pip_tarball_folder_path}/${PROVISIONER_TARBALL_NAME}"
   
   cd "${cwd}" || exit
 }

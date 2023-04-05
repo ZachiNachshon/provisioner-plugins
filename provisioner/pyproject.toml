@@ -26,6 +26,8 @@ exclude = [
 
 packages = [
     { include = "provisioner" },
+    { include = "resources" },
+    { include = "external/ansible_playbooks" },
     # Must be boundled since those packages aren't pip installed, rather bundled with the source code
     { include = "python_core_lib", from="../python_core_lib" },
     { include = "provisioner_features_lib", from="../provisioner_features_lib" },
@@ -37,16 +39,17 @@ packages = [
 include = [
     # This file must be packaged since it allow the Paths utility to find the 
     # module root folder used for reading bundled files
-    { path = "pyproject.toml" },
+    # { path = "pyproject.toml" },
     { path = "provisioner/__init__.py" },
     { path = "provisioner/main.py" },
-    { path = "resources/version.txt" },
+    # { path = "resources/version.txt" },
+    { path = "resources" },
     { path = "provisioner/config/config.yaml" },
     # Must be boundled since those packages aren't pip installed, rather bundled with the source code
     { path = "python_core_lib" },
     { path = "provisioner_features_lib" },
-    # Must be boundled for referensing shell script files i.e. Ansible runner and playbooks
-    { path = "external" },
+    # Must be boundled for referensing Ansible playbooks
+    { path = "external/ansible_playbooks" },
 ]
 
 [tool.poetry.scripts]
@@ -84,6 +87,8 @@ python-libnmap = "^0.7.3"
 PyYAML = "^6.0"
 inquirer = "^2.10.0"
 python-hosts = "^1.0.3"
+ansible = "^7.3.0"
+ansible-runner = "^2.3.2"
 # poetry-multiproject-plugin = "^1.1.4"
 # GitPython = "^3.1.18" # - GitPython provides object model access to your git repository (https://github.com/gitpython-developers/GitPython)
 # #Jinja2 = "^3.0.3"      - Templating engine (https://github.com/pallets/jinja)

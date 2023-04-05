@@ -7,6 +7,7 @@ from python_core_lib.errors.cli_errors import MissingCliArgument
 from python_core_lib.infra.context import Context
 from python_core_lib.infra.evaluator import Evaluator
 from python_core_lib.runner.ansible.ansible import AnsibleHost, AnsibleRunner
+from python_core_lib.runner.ansible.ansible_runner import AnsiblePlaybook
 from python_core_lib.shared.collaborators import CoreCollaborators
 from python_core_lib.utils.checks import Checks
 
@@ -14,10 +15,20 @@ from provisioner_features_lib.remote.domain.config import RunEnvironment
 from provisioner_features_lib.remote.remote_connector import RemoteMachineConnector
 from provisioner_features_lib.remote.typer_remote_opts import CliRemoteOpts
 
-# When reading Ansible static files from within `provisioner_features_lib` module,
-# it should be read as relative from the module root folder
-AnchorRunAnsiblePlaybookRelativePathFromRoot = "provisioner_features_lib/anchor/playbooks/anchor_run.yaml"
+ANSIBLE_PLAYBOOK_ANCHOR_RUN = """
+---
+- name: Anchor run command
+  hosts: selected_hosts
+  gather_facts: no
+  environment:
+    DRY_RUN: True
+    VERBOSE: True
+    # SILENT: True
 
+  roles:
+    - role: {ansible_playbooks_path}/roles/anchor
+      tags: ['anchor_run']
+"""
 
 class AnchorRunnerCmdArgs:
 
@@ -79,11 +90,7 @@ class AnchorCmdRunner:
         output = collaborators.printer().progress_indicator.status.long_running_process_fn(
             call=lambda: collaborators.ansible_runner().run_fn(
                 selected_hosts=ssh_conn_info.ansible_hosts,
-                with_paths=AnsibleRunner.WithPaths.create(
-                    paths=collaborators.paths(),
-                    script_import_name_var=__name__,
-                    playbook_path=AnchorRunAnsiblePlaybookRelativePathFromRoot,
-                ),
+                playbook=AnsiblePlaybook("anchor_run", ANSIBLE_PLAYBOOK_ANCHOR_RUN),
                 ansible_vars=[
                     "anchor_command=Run",
                     f"\"anchor_args='{args.anchor_run_command}'\"",
@@ -92,7 +99,7 @@ class AnchorCmdRunner:
                     f"anchor_github_repo_branch={args.branch_name}",
                     f"github_access_token={args.github_access_token}",
                 ],
-                ansible_tags=["ansible_run"],
+                ansible_tags=["anchor_run"],
             ),
             desc_run="Running Ansible playbook (Anchor Run)",
             desc_end="Ansible playbook finished (Anchor Run).",

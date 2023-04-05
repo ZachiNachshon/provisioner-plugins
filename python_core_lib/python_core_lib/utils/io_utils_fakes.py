@@ -45,6 +45,8 @@ class FakeIOUtils(IOUtils):
             file_path, permissions_octal
         )
         io.write_symlink_fn = lambda file_path, symlink_path: io._register_write_symlink(file_path, symlink_path)
+        io.copy_file_fn = lambda from_path, to_path: None
+        io.copy_directory_fn = lambda from_path, to_path: None
         return io
 
     @staticmethod

@@ -46,11 +46,11 @@ class YamlUtil:
 
     def _read_string(self, yaml_str: str, class_name: SerializationBase) -> SerializationBase:
         yaml_str_expanded = expandvars(yaml_str)
-        json_data_dict = yaml.safe_load(yaml_str_expanded)
+        json_data_list_of_dicts = yaml.safe_load(yaml_str_expanded)
         if self._verbose:
-            json_data_str = json.dumps(json_data_dict, indent=2)
+            json_data_str = json.dumps(json_data_list_of_dicts, indent=2)
             logger.debug(json_data_str)
-        return class_name(json_data_dict)
+        return class_name(json_data_list_of_dicts)
 
     def _read_file(self, file_path: str, class_name: SerializationBase) -> SerializationBase:
         self._validate_yaml_file_path(file_path)

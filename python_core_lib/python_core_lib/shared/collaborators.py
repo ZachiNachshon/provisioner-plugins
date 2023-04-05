@@ -4,7 +4,7 @@ import threading
 from typing import Any, Callable
 
 from python_core_lib.infra.context import Context
-from python_core_lib.runner.ansible.ansible import AnsibleRunner
+from python_core_lib.runner.ansible.ansible_runner import AnsibleRunnerLocal
 from python_core_lib.utils.checks import Checks
 from python_core_lib.utils.github import GitHub
 from python_core_lib.utils.hosts_file import HostsFile
@@ -32,7 +32,7 @@ class CoreCollaborators:
         self.__prompter: Prompter = None
         self.__printer: Printer = None
         self.__process: Process = None
-        self.__ansible_runner: AnsibleRunner = None
+        self.__ansible_runner: AnsibleRunnerLocal = None
         self.__network_util: NetworkUtil = None
         self.__github: GitHub = None
         self.__hosts_file: HostsFile = None
@@ -105,10 +105,10 @@ class CoreCollaborators:
 
         return self._lock_and_get(callback=create_prompter)
 
-    def ansible_runner(self) -> AnsibleRunner:
+    def ansible_runner(self) -> AnsibleRunnerLocal:
         def create_ansible_runner():
             if not self.__ansible_runner:
-                self.__ansible_runner = AnsibleRunner.create(self.__ctx, self.io_utils(), self.process(), self.paths())
+                self.__ansible_runner = AnsibleRunnerLocal.create(self.__ctx, self.io_utils(), self.process(), self.paths())
             return self.__ansible_runner
 
         return self._lock_and_get(callback=create_ansible_runner)

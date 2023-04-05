@@ -45,6 +45,7 @@ class FakePaths(Paths):
             if relative_path
             else paths.path_relative_module_root
         )
+        paths.get_file_path_from_python_package = lambda package_name: paths.append_relative_path(package_name.replace(".", "/"), "")
         paths.relative_path_to_abs_path_fn = lambda relative_path: ""
         return paths
 

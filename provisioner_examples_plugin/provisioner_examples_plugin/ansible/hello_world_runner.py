@@ -6,12 +6,27 @@ from loguru import logger
 from provisioner_features_lib.remote.remote_connector import SSHConnectionInfo
 from provisioner_features_lib.remote.typer_remote_opts import CliRemoteOpts
 from python_core_lib.infra.context import Context
-from python_core_lib.runner.ansible.ansible import AnsibleHost, AnsibleRunner
+from python_core_lib.runner.ansible.ansible import AnsibleHost
+from python_core_lib.runner.ansible.ansible_runner import AnsiblePlaybook
 from python_core_lib.shared.collaborators import CoreCollaborators
 from python_core_lib.utils.checks import Checks
 from python_core_lib.utils.printer import Printer
 from python_core_lib.utils.prompter import Prompter
 
+ANSIBLE_PLAYBOOK_HELLO_WORLD = """
+---
+- name: Hello World Run
+  hosts: selected_hosts
+  gather_facts: no
+  environment:
+    DRY_RUN: True
+    VERBOSE: True
+    # SILENT: True
+
+  roles:
+    - role: {ansible_playbooks_path}/roles/hello_world
+      tags: ['hello']
+"""
 
 class HelloWorldRunnerArgs:
 
@@ -38,13 +53,23 @@ class HelloWorldRunner:
         )
 
     def _get_ssh_conn_info(self) -> SSHConnectionInfo:
+        # return SSHConnectionInfo(
+        #     ansible_hosts=[
+        #         AnsibleHost(
+        #             host="test",
+        #             ip_address="1.1.1.1",
+        #             username="pi",
+        #             password="raspbian",
+        #         )
+        #     ]
+        # )
         return SSHConnectionInfo(
             ansible_hosts=[
                 AnsibleHost(
                     host="localhost",
                     ip_address="ansible_connection=local",
                     username="pi",
-                    password="raspbian",
+                    # password="raspbian",
                 )
             ]
         )
@@ -60,12 +85,8 @@ class HelloWorldRunner:
         output = collaborators.printer().progress_indicator.status.long_running_process_fn(
             call=lambda: collaborators.ansible_runner().run_fn(
                 selected_hosts=ssh_conn_info.ansible_hosts,
-                with_paths=AnsibleRunner.WithPaths.create(
-                    paths=collaborators.paths(),
-                    script_import_name_var=__name__,
-                    playbook_path=args.ansible_playbook_relative_path_from_module,
-                ),
-                ansible_vars=[f"\"username='{args.username}'\""],
+                playbook=AnsiblePlaybook("hello_world", ANSIBLE_PLAYBOOK_HELLO_WORLD),
+                ansible_vars=[f"username='{args.username}'"],
                 ansible_tags=["hello"],
             ),
             desc_run="Running Ansible playbook (Hello World)",
