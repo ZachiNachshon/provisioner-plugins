@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
+from python_core_lib.config.config_reader import ConfigReader
 from python_core_lib.domain.serialize import SerializationBase
 from python_core_lib.utils.yaml_util import YamlUtil
-from python_core_lib.config.config_reader import ConfigReader
 
 
 class FakeConfigReader(ConfigReader):

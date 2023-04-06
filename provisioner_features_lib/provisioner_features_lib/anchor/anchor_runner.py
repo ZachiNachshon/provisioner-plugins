@@ -30,6 +30,7 @@ ANSIBLE_PLAYBOOK_ANCHOR_RUN = """
       tags: ['anchor_run']
 """
 
+
 class AnchorRunnerCmdArgs:
 
     anchor_run_command: str

@@ -9,17 +9,44 @@ from python_core_lib.infra.log import LoggerManager
 
 STATIC_VERSION_FILE_PATH = None
 
+MODIFIERS_FLAGS_HELP_TITLE = "Modifiers"
+
 
 def main_runner(
-    verbose: Optional[bool] = typer.Option(False, "--verbose", "-v", help="Run command with DEBUG verbosity"),
+    verbose: Optional[bool] = typer.Option(
+        False,
+        "--verbose",
+        "-v",
+        help="Run command with DEBUG verbosity",
+        is_flag=True,
+        rich_help_panel=MODIFIERS_FLAGS_HELP_TITLE,
+    ),
     auto_prompt: Optional[bool] = typer.Option(
-        False, "--auto-prompt", "-y", help="Do not prompt for approval and accept everything"
+        False,
+        "--auto-prompt",
+        "-y",
+        help="Do not prompt for approval and accept everything",
+        is_flag=True,
+        rich_help_panel=MODIFIERS_FLAGS_HELP_TITLE,
     ),
     dry_run: Optional[bool] = typer.Option(
-        False, "--dry-run", "-d", help="Run command as NO-OP, print commands to output, do not execute"
+        False,
+        "--dry-run",
+        "-d",
+        help="Run command as NO-OP, print commands to output, do not execute",
+        is_flag=True,
+        rich_help_panel=MODIFIERS_FLAGS_HELP_TITLE,
     ),
-    os_arch: Optional[str] = typer.Option(None, "--os-arch", help="Specify a OS_ARCH tuple manually"),
-    version: Optional[bool] = typer.Option(False, "--version", help="Print client version"),
+    os_arch: Optional[str] = typer.Option(
+        None,
+        "--os-arch",
+        help="Specify a OS_ARCH tuple manually",
+        is_flag=True,
+        rich_help_panel=MODIFIERS_FLAGS_HELP_TITLE,
+    ),
+    version: Optional[bool] = typer.Option(
+        False, "--version", help="Print client version", is_flag=True, rich_help_panel=MODIFIERS_FLAGS_HELP_TITLE
+    ),
 ) -> None:
 
     if version:
@@ -38,6 +65,7 @@ def main_runner(
     if os_arch:
         typer.echo(f"OS_Arch supplied manually: {os_arch}")
 
+    # if not state_was_initialized():
     CliGlobalArgs.create(verbose, dry_run, auto_prompt, os_arch)
     logger_mgr = LoggerManager()
     logger_mgr.initialize(verbose, dry_run)

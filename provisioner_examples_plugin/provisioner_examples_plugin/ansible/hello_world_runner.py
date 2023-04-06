@@ -28,6 +28,7 @@ ANSIBLE_PLAYBOOK_HELLO_WORLD = """
       tags: ['hello']
 """
 
+
 class HelloWorldRunnerArgs:
 
     username: str

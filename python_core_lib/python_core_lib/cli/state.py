@@ -4,7 +4,7 @@ from typing import Optional
 
 from loguru import logger
 
-from ..errors.cli_errors import CliGlobalArgsNotInitialized
+from python_core_lib.errors.cli_errors import CliGlobalArgsNotInitialized
 
 
 class CliGlobalArgs:

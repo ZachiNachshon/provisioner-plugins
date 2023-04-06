@@ -1,14 +1,12 @@
 # !/usr/bin/env python3
 
 import os
-import ansible_runner 
-
 from typing import List, Optional
+
+import ansible_runner
 from loguru import logger
 
-from python_core_lib.errors.cli_errors import (
-    InvalidAnsibleHostPair,
-)
+from python_core_lib.errors.cli_errors import InvalidAnsibleHostPair
 from python_core_lib.infra.context import Context
 from python_core_lib.utils.io_utils import IOUtils
 from python_core_lib.utils.paths import Paths
@@ -36,12 +34,13 @@ ansible_connection=ssh
 {}
 """
 
-ENV_VARS = { 
-    'ANSIBLE_CONFIG': f"{ProvisionerAnsibleProjectPath}/{ANSIBLE_CFG_FILE_NAME}",
-    'ANSIBLE_CALLBACK_PLUGINS': f"{ProvisionerAnsibleProjectPath}/{ANSIBLE_CALLBACK_PLUGINS_DIR_NAME}",
+ENV_VARS = {
+    "ANSIBLE_CONFIG": f"{ProvisionerAnsibleProjectPath}/{ANSIBLE_CFG_FILE_NAME}",
+    "ANSIBLE_CALLBACK_PLUGINS": f"{ProvisionerAnsibleProjectPath}/{ANSIBLE_CALLBACK_PLUGINS_DIR_NAME}",
 }
 
 REMOTE_MACHINE_LOCAL_BIN_FOLDER = "~/.local/bin"
+
 
 class AnsiblePlaybook:
     __name: str
@@ -53,9 +52,10 @@ class AnsiblePlaybook:
 
     def get_name(self) -> str:
         return self.__name.replace(" ", "_").lower()
-    
+
     def get_content(self) -> str:
         return self.__content
+
 
 class AnsibleHost:
     host: str
@@ -90,6 +90,7 @@ class AnsibleHost:
             if "ssh_private_key_file_path" in ansible_host_dict
             else None,
         )
+
 
 class AnsibleRunnerLocal:
 
@@ -158,23 +159,23 @@ class AnsibleRunnerLocal:
 
     def _create_ansible_config_file(self):
         # Copy config file to ~/.config/provisioner/ansible/ansible.cfg
-        ansible_cfg_src_filepath = self.paths.get_file_path_from_python_package(ANSIBLE_CFG_PYTHON_PACKAGE, ANSIBLE_CFG_FILE_NAME)
+        ansible_cfg_src_filepath = self.paths.get_file_path_from_python_package(
+            ANSIBLE_CFG_PYTHON_PACKAGE, ANSIBLE_CFG_FILE_NAME
+        )
         ansible_cfg_dest_filepath = f"{ProvisionerAnsibleProjectPath}/{ANSIBLE_CFG_FILE_NAME}"
         self._io_utils.create_directory_fn(ProvisionerAnsibleProjectPath)
-        self._io_utils.copy_file_fn(
-            from_path=ansible_cfg_src_filepath,
-            to_path=ansible_cfg_dest_filepath
-        )
+        self._io_utils.copy_file_fn(from_path=ansible_cfg_src_filepath, to_path=ansible_cfg_dest_filepath)
         logger.debug(f"Copied ansible.cfg file. source: {ansible_cfg_src_filepath}, dest: {ansible_cfg_dest_filepath}")
-        
+
     def _create_ansible_callback_plugins_folder(self) -> str:
         # Copy callback plugins file to ~/.config/provisioner/ansible/callback_plugins
-        callbacks_src_dir = self.paths.get_dir_path_from_python_package(ANSIBLE_CFG_PYTHON_PACKAGE, ANSIBLE_CALLBACK_PLUGINS_DIR_NAME)
-        callbacks_dest_dir = self._io_utils.create_directory_fn(f"{ProvisionerAnsibleProjectPath}/{ANSIBLE_CALLBACK_PLUGINS_DIR_NAME}")
-        self._io_utils.copy_directory_fn(
-            from_path=callbacks_src_dir,
-            to_path=callbacks_dest_dir
+        callbacks_src_dir = self.paths.get_dir_path_from_python_package(
+            ANSIBLE_CFG_PYTHON_PACKAGE, ANSIBLE_CALLBACK_PLUGINS_DIR_NAME
         )
+        callbacks_dest_dir = self._io_utils.create_directory_fn(
+            f"{ProvisionerAnsibleProjectPath}/{ANSIBLE_CALLBACK_PLUGINS_DIR_NAME}"
+        )
+        self._io_utils.copy_directory_fn(from_path=callbacks_src_dir, to_path=callbacks_dest_dir)
         logger.debug(f"Copied ansible callback plugins. source: {callbacks_src_dir}, dest: {callbacks_dest_dir}")
 
     def _create_inventory_hosts_file(self, selected_hosts: List[AnsibleHost]) -> str:
@@ -182,33 +183,37 @@ class AnsibleRunnerLocal:
         hosts_list = "\n".join(ansible_hosts_list)
         inventory = INVENTORY_FORMAT.format(hosts_list)
         self._io_utils.write_file_fn(
-            content=inventory, 
-            file_name=ANSIBLE_HOSTS_FILE_NAME, 
-            dir_path=ProvisionerAnsibleProjectPath)
-        logger.debug(f"Created ansible hosts file. path: {ProvisionerAnsibleProjectPath}/{ANSIBLE_HOSTS_FILE_NAME}\n{inventory}")
+            content=inventory, file_name=ANSIBLE_HOSTS_FILE_NAME, dir_path=ProvisionerAnsibleProjectPath
+        )
+        logger.debug(
+            f"Created ansible hosts file. path: {ProvisionerAnsibleProjectPath}/{ANSIBLE_HOSTS_FILE_NAME}\n{inventory}"
+        )
 
     def _generate_ansible_playbook_args(
-            self, 
-            playbook_file_path: str,
-            ansible_vars: Optional[List[str]] = None,
-            ansible_tags: Optional[List[str]] = None) -> List[str]:
-        
+        self,
+        playbook_file_path: str,
+        ansible_vars: Optional[List[str]] = None,
+        ansible_tags: Optional[List[str]] = None,
+    ) -> List[str]:
+
         cmdline_args = [
-            '-i', f"{ProvisionerAnsibleProjectPath}/{ANSIBLE_HOSTS_FILE_NAME}",
-            playbook_file_path,     
-            '-e', f"local_bin_folder='{REMOTE_MACHINE_LOCAL_BIN_FOLDER}'"
+            "-i",
+            f"{ProvisionerAnsibleProjectPath}/{ANSIBLE_HOSTS_FILE_NAME}",
+            playbook_file_path,
+            "-e",
+            f"local_bin_folder='{REMOTE_MACHINE_LOCAL_BIN_FOLDER}'",
         ]
         if ansible_vars:
-            cmdline_args += [ f"-e {ansible_var}" for ansible_var in ansible_vars]
+            cmdline_args += [f"-e {ansible_var}" for ansible_var in ansible_vars]
         if ansible_tags:
             tags_list = []
             tags_sep = ""
             for ansible_tag in ansible_tags:
                 tags_list.append(f"{tags_sep}{ansible_tag}")
                 tags_sep = ","
-            cmdline_args += ['--tags'] + tags_list
+            cmdline_args += ["--tags"] + tags_list
         if self._verbose:
-            cmdline_args += ['-vvvv']
+            cmdline_args += ["-vvvv"]
         # for host in selected_hosts:
         #     if host.password:
         #         cmdline_args += ['-b', '-c', 'paramiko', '--ask-pass']
@@ -216,15 +221,18 @@ class AnsibleRunnerLocal:
 
     def _create_playbook_file(self, playbook: AnsiblePlaybook) -> str:
         playbook_name_escaped = playbook.get_name()
-        playbooks_dest_dir = self._io_utils.create_directory_fn(f"{ProvisionerAnsibleProjectPath}/{ANSIBLE_PLAYBOOKS_DIR_NAME}")
+        playbooks_dest_dir = self._io_utils.create_directory_fn(
+            f"{ProvisionerAnsibleProjectPath}/{ANSIBLE_PLAYBOOKS_DIR_NAME}"
+        )
         playbook_content = playbook.get_content().format(
-            ansible_playbooks_path=self.paths.get_dir_path_from_python_package(ANSIBLE_PLAYBOOKS_PYTHON_PACKAGE, ANSIBLE_PLAYBOOKS_DIR_NAME)
+            ansible_playbooks_path=self.paths.get_dir_path_from_python_package(
+                ANSIBLE_PLAYBOOKS_PYTHON_PACKAGE, ANSIBLE_PLAYBOOKS_DIR_NAME
+            )
         )
         logger.debug(f"Created playbook file. path: {playbooks_dest_dir}\n{playbook_content}")
         return self._io_utils.write_file_fn(
-            content=playbook_content, 
-            file_name=playbook_name_escaped, 
-            dir_path=playbooks_dest_dir)
+            content=playbook_content, file_name=playbook_name_escaped, dir_path=playbooks_dest_dir
+        )
 
     def _run(
         self,
@@ -233,21 +241,21 @@ class AnsibleRunnerLocal:
         ansible_vars: Optional[List[str]] = None,
         ansible_tags: Optional[List[str]] = None,
     ) -> str:
-        
+
         # Problem:
-        # To use ansible-playground with host entry that uses ansible_password=secret 
+        # To use ansible-playground with host entry that uses ansible_password=secret
         # we must sshpass installed locally
         # ERROR:
-        # to use the 'ssh' connection type with passwords or pkcs11_provider, 
+        # to use the 'ssh' connection type with passwords or pkcs11_provider,
         # you must install the sshpass program
-        # 
+        #
 
         # Solution:
         # It is possible to pass the parameter using paramiko,
-        # which is another pure python implementation of SSH. 
-        # This is supported by ansible and would be the preferred option 
-        # as it relies on less cross language dependancies that has to be separately managed; 
-        # Thus this essentially by-passes the need for another library installed 
+        # which is another pure python implementation of SSH.
+        # This is supported by ansible and would be the preferred option
+        # as it relies on less cross language dependancies that has to be separately managed;
+        # Thus this essentially by-passes the need for another library installed
         # on your host machine : sshpass.
         self._create_ansible_config_file()
         self._create_ansible_callback_plugins_folder()
@@ -259,11 +267,11 @@ class AnsibleRunnerLocal:
 
         if self._dry_run:
             return "DRY_RUN_RESPONSE"
-        
+
         # Run ansible/generic commands in interactive mode locally
         out, err, rc = ansible_runner.run_command(
             private_data_dir=ProvisionerAnsibleProjectPath,
-            executable_cmd='ansible-playbook',
+            executable_cmd="ansible-playbook",
             cmdline_args=ansible_playbook_args,
             runner_mode="subprocess",
             # json_mode=True,
@@ -278,5 +286,5 @@ class AnsibleRunnerLocal:
         if rc != 0:
             raise Exception(err if err else out)
         return str(out)
-    
+
     run_fn = _run

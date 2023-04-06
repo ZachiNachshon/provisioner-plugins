@@ -31,7 +31,7 @@ class IOUtils:
 
         if not os.path.exists(folder_path) or not os.path.isdir(folder_path):
             os.makedirs(folder_path, exist_ok=True)
-            
+
         return folder_path
 
     def _copy_file(self, from_path: str, to_path: str):

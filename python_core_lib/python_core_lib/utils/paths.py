@@ -3,9 +3,9 @@
 import os
 import pathlib
 import sys
+from importlib import resources
 from pathlib import Path
 from typing import Optional
-from importlib import resources
 
 from loguru import logger
 
@@ -97,7 +97,7 @@ class Paths:
 
     def _get_file_path_from_python_package(self, package: str, filename: str) -> str:
         return resources.path(package=package, resource=filename)
-    
+
     def _get_dir_path_from_python_package(self, package: str, dirname: str) -> str:
         return resources.files(package).joinpath(dirname)
 

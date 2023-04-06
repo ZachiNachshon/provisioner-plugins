@@ -53,7 +53,7 @@ include = [
 ]
 
 [tool.poetry.scripts]
-provisioner = "provisioner.main:app"
+provisioner = "provisioner.main:main"
 # rpi_diagrams = "rpi.os.diagrams.install_diag:main"
 
 [tool.isort]
