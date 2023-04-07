@@ -8,13 +8,14 @@ from provisioner_features_lib.remote.remote_connector_fakes import (
 )
 from python_core_lib.errors.cli_errors import MissingUtilityException
 from python_core_lib.infra.context import Context
-from python_core_lib.runner.ansible.ansible import AnsibleRunner
+from python_core_lib.runner.ansible.ansible_runner import AnsiblePlaybook, AnsibleRunnerLocal
 from python_core_lib.test_lib.assertions import Assertion
 from python_core_lib.test_lib.test_env import TestEnv
 from python_core_lib.utils.checks_fakes import FakeChecks
 from python_core_lib.utils.os import LINUX, MAC_OS, WINDOWS, OsArch
 
 from provisioner_single_board_plugin.common.remote.remote_os_configure import (
+    ANSIBLE_PLAYBOOK_RPI_CONFIGURE_NODE,
     RemoteMachineOsConfigureArgs,
     RemoteMachineOsConfigureRunner,
 )
@@ -25,7 +26,6 @@ from provisioner_single_board_plugin.common.remote.remote_os_configure import (
 ARG_NODE_USERNAME = "test-username"
 ARG_NODE_PASSWORD = "test-password"
 ARG_IP_DISCOVERY_RANGE = "1.1.1.1/24"
-ARG_ANSIBLE_PLAYBOOK_RELATIVE_PATH_FROM_ROOT = "/test/path/ansible/os_configure.yaml"
 
 REMOTE_NETWORK_CONFIGURE_RUNNER_PATH = (
     "provisioner_single_board_plugin.common.remote.remote_os_configure.RemoteMachineOsConfigureRunner"
@@ -38,7 +38,6 @@ class RemoteMachineConfigureTestShould(unittest.TestCase):
 
     def create_fake_configure_args(self) -> RemoteMachineOsConfigureArgs:
         return RemoteMachineOsConfigureArgs(
-            ansible_playbook_relative_path_from_module=ARG_ANSIBLE_PLAYBOOK_RELATIVE_PATH_FROM_ROOT,
             remote_opts=None,
         )
 
@@ -142,16 +141,11 @@ class RemoteMachineConfigureTestShould(unittest.TestCase):
             .ansible_runner()
             .assert_command(
                 selected_hosts=TestDataRemoteConnector.TEST_DATA_SSH_ANSIBLE_HOSTS,
-                with_paths=AnsibleRunner.WithPaths.create_custom(
-                    working_dir=env.get_test_env_root_path(),
-                    playbook_path=f"{env.get_test_env_root_path()}{ARG_ANSIBLE_PLAYBOOK_RELATIVE_PATH_FROM_ROOT}",
-                    extra_modules_paths=[env.get_test_env_root_path()],
-                ),
+                playbook=AnsiblePlaybook(name="rpi_configure_node", content=ANSIBLE_PLAYBOOK_RPI_CONFIGURE_NODE),
                 ansible_vars=[
                     f"host_name={TestDataRemoteConnector.TEST_DATA_SSH_HOSTNAME_1}",
                 ],
                 ansible_tags=["configure_remote_node", "reboot"],
-                force_dockerized=False,
             ),
         )
 

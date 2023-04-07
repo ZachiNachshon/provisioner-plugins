@@ -13,8 +13,13 @@ from python_core_lib.infra.context import Context
 
 
 class Paths:
+
+    _verbose: bool
+    _dry_run: bool
+
     def __init__(self, ctx: Context) -> None:
-        pass
+        self._verbose = ctx.is_verbose()
+        self._dry_run = ctx.is_dry_run()
 
     @staticmethod
     def create(ctx: Context) -> "Paths":
@@ -96,9 +101,13 @@ class Paths:
         return os.path.dirname(sFile)
 
     def _get_file_path_from_python_package(self, package: str, filename: str) -> str:
+        if self._dry_run:
+            return "DRY_RUN_RESPONSE"
         return resources.path(package=package, resource=filename)
 
     def _get_dir_path_from_python_package(self, package: str, dirname: str) -> str:
+        if self._dry_run:
+            return "DRY_RUN_RESPONSE"
         return resources.files(package).joinpath(dirname)
 
     get_home_directory_fn = _get_home_directory

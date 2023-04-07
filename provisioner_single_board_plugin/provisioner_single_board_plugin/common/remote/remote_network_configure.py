@@ -12,10 +12,27 @@ from provisioner_features_lib.remote.typer_remote_opts import CliRemoteOpts
 from python_core_lib.colors import color
 from python_core_lib.infra.context import Context
 from python_core_lib.infra.evaluator import Evaluator
-from python_core_lib.runner.ansible.ansible import AnsibleRunner
+from python_core_lib.runner.ansible.ansible_runner import AnsiblePlaybook
 from python_core_lib.shared.collaborators import CoreCollaborators
 from python_core_lib.utils.checks import Checks
 
+ANSIBLE_PLAYBOOK_RPI_CONFIGURE_NETWORK = """
+---
+- name: Configure static IP address and hostname on remote RPi host
+  hosts: selected_hosts
+  gather_facts: no
+  roles:
+    - role: {ansible_playbooks_path}/roles/rpi_config_network
+      tags: ['configure_rpi_network']
+      
+    - role: {ansible_playbooks_path}/roles/dhcp_static_ip
+      tags: ['define_static_ip']
+
+  tasks:
+    - name: Reboot and wait
+      include_tasks: {ansible_playbooks_path}/reboot.yaml
+      tags: ['reboot']
+"""
 
 class RemoteMachineNetworkConfigureArgs:
     gw_ip_address: str
@@ -123,11 +140,7 @@ class RemoteMachineNetworkConfigureRunner:
         output = collaborators.printer().progress_indicator.status.long_running_process_fn(
             call=lambda: collaborators.ansible_runner().run_fn(
                 selected_hosts=ssh_conn_info.ansible_hosts,
-                with_paths=AnsibleRunner.WithPaths.create(
-                    paths=collaborators.paths(),
-                    script_import_name_var=__name__,
-                    playbook_path=args.ansible_playbook_relative_path_from_module,
-                ),
+                playbook=AnsiblePlaybook(name="rpi_configure_network", content=ANSIBLE_PLAYBOOK_RPI_CONFIGURE_NETWORK),
                 ansible_vars=[
                     f"host_name={network_info.ssh_hostname}",
                     f"static_ip={dhcpcd_configure_info.static_ip_address}",
@@ -139,8 +152,7 @@ class RemoteMachineNetworkConfigureRunner:
             desc_run="Running Ansible playbook (Configure Network)",
             desc_end="Ansible playbook finished (Configure Network).",
         )
-        collaborators.printer().new_line_fn()
-        collaborators.printer().print_fn(output)
+        collaborators.printer().new_line_fn().print_fn(output)
 
         return tuple_info
 

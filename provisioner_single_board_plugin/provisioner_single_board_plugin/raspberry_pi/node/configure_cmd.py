@@ -11,10 +11,6 @@ from provisioner_single_board_plugin.common.remote.remote_os_configure import (
     RemoteMachineOsConfigureRunner,
 )
 
-RpiConfigureOsAnsiblePlaybookRelativePathFromRoot = (
-    "provisioner_single_board_plugin/raspberry_pi/node/playbooks/configure_os.yaml"
-)
-
 
 class RPiOsConfigureCmdArgs:
 
@@ -38,7 +34,6 @@ class RPiOsConfigureCmd:
             ctx=ctx,
             args=RemoteMachineOsConfigureArgs(
                 remote_opts=args.remote_opts,
-                ansible_playbook_relative_path_from_module=RpiConfigureOsAnsiblePlaybookRelativePathFromRoot,
             ),
             collaborators=CoreCollaborators(ctx),
         )

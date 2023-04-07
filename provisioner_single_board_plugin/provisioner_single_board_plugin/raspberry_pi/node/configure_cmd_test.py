@@ -36,10 +36,6 @@ class RPiOsConfigureCmdTestShould(unittest.TestCase):
 
         def assertion_callback(args):
             self.assertEqual(args.remote_opts, fake_cmd_args.remote_opts)
-            self.assertEqual(
-                args.ansible_playbook_relative_path_from_module,
-                "provisioner_single_board_plugin/raspberry_pi/node/playbooks/configure_os.yaml",
-            )
-
+            
         Assertion.expect_call_arguments(self, run_call, arg_name="args", assertion_callable=assertion_callback)
         Assertion.expect_call_argument(self, run_call, arg_name="ctx", expected_value=self.env.get_context())

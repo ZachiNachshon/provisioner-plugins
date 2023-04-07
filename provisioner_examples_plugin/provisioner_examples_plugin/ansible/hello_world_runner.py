@@ -6,8 +6,7 @@ from loguru import logger
 from provisioner_features_lib.remote.remote_connector import SSHConnectionInfo
 from provisioner_features_lib.remote.typer_remote_opts import CliRemoteOpts
 from python_core_lib.infra.context import Context
-from python_core_lib.runner.ansible.ansible import AnsibleHost
-from python_core_lib.runner.ansible.ansible_runner import AnsiblePlaybook
+from python_core_lib.runner.ansible.ansible_runner import AnsiblePlaybook, AnsibleHost, AnsibleHost
 from python_core_lib.shared.collaborators import CoreCollaborators
 from python_core_lib.utils.checks import Checks
 from python_core_lib.utils.printer import Printer

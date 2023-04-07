@@ -3,7 +3,8 @@
 import unittest
 
 from python_core_lib.domain.serialize import SerializationBase
-from python_core_lib.runner.ansible.ansible import AnsibleHost
+from python_core_lib.runner.ansible.ansible_runner import AnsibleHost
+
 from python_core_lib.test_lib.assertions import Assertion
 
 from provisioner_features_lib.config.config_resolver import ConfigResolver

@@ -18,7 +18,7 @@ from python_core_lib.errors.cli_errors import (
 )
 from python_core_lib.func.pyfn import Environment, PyFn, PyFnEvaluator
 from python_core_lib.infra.context import Context
-from python_core_lib.runner.ansible.ansible import AnsibleRunner
+from python_core_lib.runner.ansible.ansible_runner import AnsiblePlaybook, AnsibleRunnerLocal
 from python_core_lib.test_lib.assertions import Assertion
 from python_core_lib.test_lib.test_env import TestEnv
 from python_core_lib.utils.os import OsArch
@@ -29,6 +29,7 @@ from provisioner_installers_plugin.installer.domain.source import (
     InstallSources,
 )
 from provisioner_installers_plugin.installer.runner.installer_runner import (
+    ANSIBLE_PLAYBOOK_REMOTE_PROVISIONER_RUN,
     InstallerEnv,
     ProvisionerInstallableBinariesPath,
     ProvisionerInstallableSymlinksPath,
@@ -52,8 +53,6 @@ TEST_GITHUB_ACCESS_TOKEN = "top-secret"
 UTILITY_INSTALLER_CMD_RUNNER_PATH = (
     "provisioner_installers_plugin.installer.runner.installer_runner.UtilityInstallerCmdRunner"
 )
-ARG_ANSIBLE_PLAYBOOK_RELATIVE_PATH_FROM_ROOT = "/installer/playbooks/provisioner_run.yaml"
-
 REMOTE_MACHINE_CONNECTOR_PATH = "provisioner_features_lib.remote.remote_connector.RemoteMachineConnector"
 
 TestSupportedToolings = {
@@ -141,8 +140,7 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
             args=UtilityInstallerRunnerCmdArgs(
                 utilities=utilities,
                 remote_opts=TestDataRemoteOpts.create_fake_cli_remote_opts(environment),
-                github_access_token=TEST_GITHUB_ACCESS_TOKEN,
-                ansible_playbook_relative_path_from_module=ARG_ANSIBLE_PLAYBOOK_RELATIVE_PATH_FROM_ROOT,
+                github_access_token=TEST_GITHUB_ACCESS_TOKEN
             ),
             supported_utilities=TestSupportedToolings,
         )
@@ -695,13 +693,9 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
         )
         test_env.get_collaborators().ansible_runner().assert_command(
             selected_hosts=TestDataRemoteConnector.TEST_DATA_SSH_ANSIBLE_HOSTS,
-            with_paths=AnsibleRunner.WithPaths.create_custom(
-                working_dir=test_env.get_test_env_root_path(),
-                playbook_path=f"{test_env.get_test_env_root_path()}{ARG_ANSIBLE_PLAYBOOK_RELATIVE_PATH_FROM_ROOT}",
-                extra_modules_paths=[test_env.get_test_env_root_path()],
-            ),
+            playbook=AnsiblePlaybook(name="provisioner_run", content=ANSIBLE_PLAYBOOK_REMOTE_PROVISIONER_RUN),
             ansible_vars=[
-                f"\"provisioner_command='provisioner -y install cli --environment=Local {utility.binary_name}'\""
+                f"provisioner_command='provisioner -y install cli --environment=Local {utility.binary_name}'"
             ],
             ansible_tags=["provisioner_run"],
         )

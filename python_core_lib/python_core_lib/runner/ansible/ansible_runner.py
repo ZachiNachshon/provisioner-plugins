@@ -1,16 +1,15 @@
 # !/usr/bin/env python3
 
 import os
+import ansible_runner
 from typing import List, Optional
 
-import ansible_runner
 from loguru import logger
 
 from python_core_lib.errors.cli_errors import InvalidAnsibleHostPair
 from python_core_lib.infra.context import Context
 from python_core_lib.utils.io_utils import IOUtils
 from python_core_lib.utils.paths import Paths
-from python_core_lib.utils.process import Process
 
 ProvisionerAnsibleProjectPath = os.path.expanduser("~/.config/provisioner/ansible")
 
@@ -44,6 +43,11 @@ REMOTE_MACHINE_LOCAL_BIN_FOLDER = "~/.local/bin"
 
 class AnsiblePlaybook:
     __name: str
+
+    """
+    Playbook content support the following string format values:
+      - ansible_playbooks_path: replace with the ansible-playbook resource root folder path 
+    """
     __content: str
 
     def __init__(self, name: str, content: str) -> None:
@@ -53,9 +57,20 @@ class AnsiblePlaybook:
     def get_name(self) -> str:
         return self.__name.replace(" ", "_").lower()
 
-    def get_content(self) -> str:
-        return self.__content
+    def get_content(self, paths: Paths) -> str:
+        return self.__content.format(
+            ansible_playbooks_path=paths.get_dir_path_from_python_package(
+                ANSIBLE_PLAYBOOKS_PYTHON_PACKAGE, ANSIBLE_PLAYBOOKS_DIR_NAME
+            )
+        )
+    
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return hash(self) == hash(other)
+        return False
 
+    def __hash__(self):
+        return hash((self.__name, self.__content))
 
 class AnsibleHost:
     host: str
@@ -97,20 +112,17 @@ class AnsibleRunnerLocal:
     _dry_run: bool = None
     _verbose: bool = None
     _paths: Paths = None
-    _process: Process = None
     _io_utils: IOUtils = None
 
     def __init__(
         self,
         io_utils: IOUtils,
-        process: Process,
         paths: Paths,
         dry_run: bool,
         verbose: bool,
     ) -> None:
 
         self._io_utils = io_utils
-        self._process = process
         self.paths = paths
         self._dry_run = dry_run
         self._verbose = verbose
@@ -119,14 +131,13 @@ class AnsibleRunnerLocal:
     def create(
         ctx: Context,
         io_utils: IOUtils,
-        process: Process,
         paths: Paths,
     ) -> "AnsibleRunnerLocal":
 
         dry_run = ctx.is_dry_run()
         verbose = ctx.is_verbose()
         logger.debug(f"Creating Ansible runner (dry_run: {dry_run}, verbose: {verbose})...")
-        return AnsibleRunnerLocal(io_utils, process, paths, dry_run, verbose)
+        return AnsibleRunnerLocal(io_utils, paths, dry_run, verbose)
 
     def _prepare_ansible_host_items(self, ansible_hosts: List[AnsibleHost]) -> List[str]:
         result = []
@@ -182,11 +193,11 @@ class AnsibleRunnerLocal:
         ansible_hosts_list = self._prepare_ansible_host_items(selected_hosts)
         hosts_list = "\n".join(ansible_hosts_list)
         inventory = INVENTORY_FORMAT.format(hosts_list)
-        self._io_utils.write_file_fn(
+        hosts_file_path = self._io_utils.write_file_fn(
             content=inventory, file_name=ANSIBLE_HOSTS_FILE_NAME, dir_path=ProvisionerAnsibleProjectPath
         )
         logger.debug(
-            f"Created ansible hosts file. path: {ProvisionerAnsibleProjectPath}/{ANSIBLE_HOSTS_FILE_NAME}\n{inventory}"
+            f"Created ansible hosts file. path: {hosts_file_path}"
         )
 
     def _generate_ansible_playbook_args(
@@ -206,12 +217,12 @@ class AnsibleRunnerLocal:
         if ansible_vars:
             cmdline_args += [f"-e {ansible_var}" for ansible_var in ansible_vars]
         if ansible_tags:
-            tags_list = []
+            tags_str = ""
             tags_sep = ""
             for ansible_tag in ansible_tags:
-                tags_list.append(f"{tags_sep}{ansible_tag}")
+                tags_str += f"{tags_sep}{ansible_tag}"
                 tags_sep = ","
-            cmdline_args += ["--tags"] + tags_list
+            cmdline_args += ["--tags"] + [tags_str]
         if self._verbose:
             cmdline_args += ["-vvvv"]
         # for host in selected_hosts:
@@ -224,11 +235,7 @@ class AnsibleRunnerLocal:
         playbooks_dest_dir = self._io_utils.create_directory_fn(
             f"{ProvisionerAnsibleProjectPath}/{ANSIBLE_PLAYBOOKS_DIR_NAME}"
         )
-        playbook_content = playbook.get_content().format(
-            ansible_playbooks_path=self.paths.get_dir_path_from_python_package(
-                ANSIBLE_PLAYBOOKS_PYTHON_PACKAGE, ANSIBLE_PLAYBOOKS_DIR_NAME
-            )
-        )
+        playbook_content = playbook.get_content(paths=self.paths)
         logger.debug(f"Created playbook file. path: {playbooks_dest_dir}\n{playbook_content}")
         return self._io_utils.write_file_fn(
             content=playbook_content, file_name=playbook_name_escaped, dir_path=playbooks_dest_dir

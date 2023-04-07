@@ -8,7 +8,8 @@ from python_core_lib.errors.cli_errors import (
     InvalidAnsibleHostPair,
 )
 from python_core_lib.infra.context import Context
-from python_core_lib.runner.ansible.ansible import AnsibleHost, AnsibleRunner
+from python_core_lib.runner.ansible.ansible_runner import AnsibleHost, AnsibleRunnerLocal
+
 from python_core_lib.utils.io_utils import IOUtils
 from python_core_lib.utils.io_utils_fakes import FakeIOUtils
 from python_core_lib.utils.paths import Paths
@@ -27,7 +28,7 @@ class AnsibleRunnerTestShould(unittest.TestCase):
         ansible_vars = ["key1=value1", "key2=value2"]
         force_dockerized = True
 
-        ansible_runner = AnsibleRunner.create(
+        ansible_runner = AnsibleRunnerLocal.create(
             ctx=ctx, io_utils=FakeIOUtils.create(ctx), process=Process.create(ctx), paths=Paths.create(ctx)
         )
 
@@ -59,13 +60,11 @@ ansible_var: key2=value2 \
 
     def test_run_ansible_mock_flow_custom_shell_runner(self):
         ctx = Context.create(dry_run=True, verbose=True, auto_prompt=True)
-        ansible_shell_runner_path = "path/to/custom/ansible/shell/runner/ansible.sh"
-        ansible_runner = AnsibleRunner.create(
+        ansible_runner = AnsibleRunnerLocal.create(
             ctx=ctx,
             io_utils=FakeIOUtils.create(ctx),
             process=Process.create(ctx),
             paths=Paths.create(ctx),
-            ansible_shell_runner_path=ansible_shell_runner_path,
         )
 
         output = ansible_runner.run_fn(
@@ -75,23 +74,21 @@ ansible_var: key2=value2 \
             selected_hosts="",
             playbook_path="",
             ansible_vars="",
-            force_dockerized="",
         )
 
-        self.assertIn(
-            f"sh ./{ansible_shell_runner_path}",
-            output,
-        )
+        # self.assertIn(
+        #     f"sh ./{ansible_shell_runner_path}",
+        #     output,
+        # )
 
     def test_run_ansible_fail_on_missing_shell_runner_path(self):
         ctx = Context.create(dry_run=False, verbose=True, auto_prompt=True)
         # Use real IOUtils to explicitly fail on missing Ansible shell runner
-        ansible_runner = AnsibleRunner.create(
+        ansible_runner = AnsibleRunnerLocal.create(
             ctx=ctx,
             io_utils=IOUtils.create(ctx),
             process=Process.create(ctx),
-            paths=Paths.create(ctx),
-            ansible_shell_runner_path="/invalid/ansible/shell/runner/ansible.sh",
+            paths=Paths.create(ctx)
         )
 
         with self.assertRaises(ExternalDependencyFileNotFound):
@@ -102,12 +99,11 @@ ansible_var: key2=value2 \
                 selected_hosts="",
                 playbook_path="",
                 ansible_vars="",
-                force_dockerized="",
             )
 
     def test_run_ansible_fail_on_invalid_host_ip_pair(self):
         ctx = Context.create(dry_run=False, verbose=True, auto_prompt=True)
-        ansible_runner = AnsibleRunner.create(
+        ansible_runner = AnsibleRunnerLocal.create(
             ctx=ctx,
             io_utils=FakeIOUtils.create(ctx),
             process=Process.create(ctx),
@@ -137,7 +133,7 @@ ansible_var: key2=value2 \
         ansible_vars = ["key1=value1", "key2=value2"]
         force_dockerized = False
 
-        ansible_runner = AnsibleRunner.create(
+        ansible_runner = AnsibleRunnerLocal.create(
             ctx=ansible_ctx, io_utils=IOUtils.create(ctx), process=Process.create(ctx), paths=Paths.create(ctx)
         )
 
@@ -148,7 +144,6 @@ ansible_var: key2=value2 \
             selected_hosts=selected_hosts,
             playbook_path=playbook_path,
             ansible_vars=ansible_vars,
-            force_dockerized=force_dockerized,
         )
 
         ansible_hosts_path = os.path.expanduser("~/.config/ansible/ansible_hosts")

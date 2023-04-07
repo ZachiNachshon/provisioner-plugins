@@ -10,19 +10,32 @@ from provisioner_features_lib.remote.remote_connector import (
 from provisioner_features_lib.remote.typer_remote_opts import CliRemoteOpts
 from python_core_lib.infra.context import Context
 from python_core_lib.infra.evaluator import Evaluator
-from python_core_lib.runner.ansible.ansible import AnsibleHost, AnsibleRunner
+from python_core_lib.runner.ansible.ansible_runner import AnsibleHost, AnsiblePlaybook, AnsibleRunnerLocal
+
 from python_core_lib.shared.collaborators import CoreCollaborators
 from python_core_lib.utils.checks import Checks
 
+ANSIBLE_PLAYBOOK_RPI_CONFIGURE_NODE = """
+---
+- name: Configure Raspbian OS on remote RPi host
+  hosts: selected_hosts
+  gather_facts: no
+  roles:
+    - role: {ansible_playbooks_path}/roles/rpi_config_node
+      tags: ['configure_remote_node']
+
+  tasks:
+    - name: Reboot and wait
+      include_tasks: {ansible_playbooks_path}/reboot.yaml
+      tags: ['reboot'] 
+"""
 
 class RemoteMachineOsConfigureArgs:
 
-    ansible_playbook_relative_path_from_module: str
     remote_opts: CliRemoteOpts
 
-    def __init__(self, ansible_playbook_relative_path_from_module: str, remote_opts: CliRemoteOpts) -> None:
+    def __init__(self, remote_opts: CliRemoteOpts) -> None:
         self.remote_opts = remote_opts
-        self.ansible_playbook_relative_path_from_module = ansible_playbook_relative_path_from_module
 
 
 class RemoteMachineOsConfigureRunner:
@@ -55,20 +68,14 @@ class RemoteMachineOsConfigureRunner:
         output = collaborators.printer().progress_indicator.status.long_running_process_fn(
             call=lambda: collaborators.ansible_runner().run_fn(
                 selected_hosts=ssh_conn_info.ansible_hosts,
-                with_paths=AnsibleRunner.WithPaths.create(
-                    paths=collaborators.paths(),
-                    script_import_name_var=__name__,
-                    playbook_path=args.ansible_playbook_relative_path_from_module,
-                ),
+                playbook=AnsiblePlaybook(name="rpi_configure_node", content=ANSIBLE_PLAYBOOK_RPI_CONFIGURE_NODE),
                 ansible_vars=[f"host_name={ansible_host.host}"],
                 ansible_tags=["configure_remote_node", "reboot"],
             ),
             desc_run="Running Ansible playbook (Configure OS)",
             desc_end="Ansible playbook finished (Configure OS).",
         )
-        collaborators.printer().new_line_fn()
-        collaborators.printer().print_fn(output)
-
+        collaborators.printer().new_line_fn().print_fn(output)
         return ansible_host
 
     def _get_ssh_conn_info(

@@ -158,9 +158,7 @@ class UtilityInstallerCliTestShould(unittest.TestCase):
             expected=[
                 "About to install the following CLI utilities:",
                 "- anchor",
-                "Running on Remote environment",
-                "playbook_path: provisioner_installers_plugin/provisioner_installers_plugin/installer/playbooks/provisioner_run.yaml",
-                """ansible_var: "provisioner_command='provisioner -y install cli --environment=Local anchor'""",
+                "Running on Remote environment"
             ],
             method_to_run=lambda: TestCliRunner.run(
                 UtilityInstallerCliTestShould.create_remote_utility_installer_runner

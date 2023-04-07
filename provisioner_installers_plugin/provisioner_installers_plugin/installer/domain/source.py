@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from enum import Enum
-from typing import Callable, List, Optional
+from typing import Callable, List
 
 from python_core_lib.utils.os import OsArch
 

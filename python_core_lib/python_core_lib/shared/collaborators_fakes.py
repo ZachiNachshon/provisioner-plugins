@@ -4,8 +4,8 @@ import threading
 from typing import Any, Callable
 
 from python_core_lib.infra.context import Context
-from python_core_lib.runner.ansible.ansible import AnsibleRunner
-from python_core_lib.runner.ansible.ansible_fakes import FakeAnsibleRunner
+from python_core_lib.runner.ansible.ansible_fakes import FakeAnsibleRunnerLocal
+from python_core_lib.runner.ansible.ansible_runner import AnsibleRunnerLocal
 from python_core_lib.shared.collaborators import CoreCollaborators
 from python_core_lib.utils.checks import Checks
 from python_core_lib.utils.checks_fakes import FakeChecks
@@ -44,7 +44,7 @@ class FakeCoreCollaborators(CoreCollaborators):
         self.__prompter: Prompter = None
         self.__printer: Printer = None
         self.__process: Process = None
-        self.__ansible_runner: AnsibleRunner = None
+        self.__ansible_runner: AnsibleRunnerLocal = None
         self.__network_util: NetworkUtil = None
         self.__github: FakeGitHub = None
         self.__hosts_file: HostsFile = None
@@ -133,15 +133,15 @@ class FakeCoreCollaborators(CoreCollaborators):
     def override_prompter(self, prompter: FakePrompter) -> None:
         self.prompter = prompter
 
-    def ansible_runner(self) -> FakeAnsibleRunner:
+    def ansible_runner(self) -> FakeAnsibleRunnerLocal:
         def create_ansible_runner():
             if not self.__ansible_runner:
-                self.__ansible_runner = FakeAnsibleRunner.create(self.__ctx)
+                self.__ansible_runner = FakeAnsibleRunnerLocal.create(self.__ctx)
             return self.__ansible_runner
 
         return self._lock_and_get(callback=create_ansible_runner)
 
-    def override_ansible_runner(self, ansible_runner: FakeAnsibleRunner) -> None:
+    def override_ansible_runner(self, ansible_runner: FakeAnsibleRunnerLocal) -> None:
         self.__ansible_runner = ansible_runner
 
     def network_util(self) -> FakeNetworkUtil:

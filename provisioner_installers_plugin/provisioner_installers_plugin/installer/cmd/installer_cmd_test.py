@@ -8,7 +8,6 @@ from python_core_lib.test_lib.assertions import Assertion
 from python_core_lib.test_lib.test_env import TestEnv
 
 from provisioner_installers_plugin.installer.cmd.installer_cmd import (
-    ProvisionerRunAnsiblePlaybookRelativePathFromRoot,
     UtilityInstallerCmd,
     UtilityInstallerCmdArgs,
 )
@@ -50,8 +49,7 @@ class UtilityInstallerCmdTestShould(unittest.TestCase):
                 UtilityInstallerRunnerCmdArgs(
                     utilities=fake_cmd_args.utilities,
                     remote_opts=fake_cmd_args.remote_opts,
-                    github_access_token=fake_cmd_args.github_access_token,
-                    ansible_playbook_relative_path_from_module=ProvisionerRunAnsiblePlaybookRelativePathFromRoot,
+                    github_access_token=fake_cmd_args.github_access_token
                 ),
             )
 

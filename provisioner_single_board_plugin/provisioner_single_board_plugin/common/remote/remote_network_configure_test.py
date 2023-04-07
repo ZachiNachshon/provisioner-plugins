@@ -12,13 +12,14 @@ from provisioner_features_lib.remote.remote_connector_fakes import (
 )
 from python_core_lib.errors.cli_errors import MissingUtilityException
 from python_core_lib.infra.context import Context
-from python_core_lib.runner.ansible.ansible import AnsibleRunner
+from python_core_lib.runner.ansible.ansible_runner import AnsiblePlaybook, AnsibleRunnerLocal
 from python_core_lib.test_lib.assertions import Assertion
 from python_core_lib.test_lib.test_env import TestEnv
 from python_core_lib.utils.checks_fakes import FakeChecks
 from python_core_lib.utils.os import LINUX, MAC_OS, WINDOWS, OsArch
 
 from provisioner_single_board_plugin.common.remote.remote_network_configure import (
+    ANSIBLE_PLAYBOOK_RPI_CONFIGURE_NETWORK,
     RemoteMachineNetworkConfigureArgs,
     RemoteMachineNetworkConfigureRunner,
 )
@@ -194,11 +195,7 @@ class RemoteMachineNetworkConfigureTestShould(unittest.TestCase):
             .ansible_runner()
             .assert_command(
                 selected_hosts=TestDataRemoteConnector.TEST_DATA_SSH_ANSIBLE_HOSTS,
-                with_paths=AnsibleRunner.WithPaths.create_custom(
-                    working_dir=env.get_test_env_root_path(),
-                    playbook_path=f"{env.get_test_env_root_path()}{ARG_ANSIBLE_PLAYBOOK_RELATIVE_PATH_FROM_ROOT}",
-                    extra_modules_paths=[env.get_test_env_root_path()],
-                ),
+                playbook=AnsiblePlaybook(name="rpi_configure_network", content=ANSIBLE_PLAYBOOK_RPI_CONFIGURE_NETWORK),                
                 ansible_vars=[
                     f"host_name={TestDataRemoteConnector.TEST_DATA_SSH_HOSTNAME_1}",
                     f"static_ip={TestDataRemoteConnector.TEST_DATA_DHCP_STATIC_IP_ADDRESS}",
@@ -206,7 +203,6 @@ class RemoteMachineNetworkConfigureTestShould(unittest.TestCase):
                     f"dns_address={TestDataRemoteConnector.TEST_DATA_DHCP_DNS_IP_ADDRESS}",
                 ],
                 ansible_tags=["configure_rpi_network", "define_static_ip", "reboot"],
-                force_dockerized=False,
             ),
         )
 

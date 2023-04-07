@@ -27,7 +27,7 @@ class IOUtils:
 
     def _create_directory(self, folder_path) -> str:
         if self._dry_run:
-            return None
+            return "DRY_RUN_RESPONSE"
 
         if not os.path.exists(folder_path) or not os.path.isdir(folder_path):
             os.makedirs(folder_path, exist_ok=True)

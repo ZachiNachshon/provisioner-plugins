@@ -19,7 +19,7 @@ from python_core_lib.errors.cli_errors import (
 )
 from python_core_lib.func.pyfn import Environment, PyFn, PyFnEnvBase, PyFnEvaluator
 from python_core_lib.infra.context import Context
-from python_core_lib.runner.ansible.ansible import AnsibleRunner
+from python_core_lib.runner.ansible.ansible_runner import AnsiblePlaybook
 from python_core_lib.shared.collaborators import CoreCollaborators
 
 from provisioner_installers_plugin.installer.domain.installable import Installable
@@ -27,6 +27,21 @@ from provisioner_installers_plugin.installer.domain.source import ActiveInstallS
 
 ProvisionerInstallableBinariesPath = os.path.expanduser("~/.config/provisioner/binaries")
 ProvisionerInstallableSymlinksPath = os.path.expanduser("~/.local/bin")
+
+ANSIBLE_PLAYBOOK_REMOTE_PROVISIONER_RUN = """
+---
+- name: Provisioner run command
+  hosts: selected_hosts
+  gather_facts: no
+  environment:
+    DRY_RUN: True
+    VERBOSE: True
+    # SILENT: True
+
+  roles:
+    - role: {ansible_playbooks_path}/roles/provisioner
+      tags: ['provisioner_run']
+"""
 
 # Named Tuples
 class Utility_InstallStatus_Tuple(NamedTuple):
@@ -75,19 +90,16 @@ class UtilityInstallerRunnerCmdArgs:
     utilities: List[str]
     remote_opts: CliRemoteOpts
     github_access_token: str
-    ansible_playbook_relative_path_from_module: str
 
     def __init__(
         self,
         utilities: List[str],
         remote_opts: CliRemoteOpts,
-        ansible_playbook_relative_path_from_module: str,
         github_access_token: str = None,
     ) -> None:
         self.utilities = utilities
         self.remote_opts = remote_opts
         self.github_access_token = github_access_token
-        self.ansible_playbook_relative_path_from_module = ansible_playbook_relative_path_from_module
 
 
 class InstallerEnv:
@@ -440,13 +452,9 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
             lambda: env.collaborators.printer().progress_indicator.status.long_running_process_fn(
                 call=lambda: env.collaborators.ansible_runner().run_fn(
                     selected_hosts=sshconninfo_utility_info.ssh_conn_info.ansible_hosts,
-                    with_paths=AnsibleRunner.WithPaths.create(
-                        paths=env.collaborators.paths(),
-                        script_import_name_var=__name__,
-                        playbook_path=env.args.ansible_playbook_relative_path_from_module,
-                    ),
+                    playbook=AnsiblePlaybook(name="provisioner_run", content=ANSIBLE_PLAYBOOK_REMOTE_PROVISIONER_RUN),
                     ansible_vars=[
-                        f"\"provisioner_command='provisioner -y install cli --environment=Local {sshconninfo_utility_info.utility.binary_name}'\""
+                        f"provisioner_command='provisioner -y install cli --environment=Local {sshconninfo_utility_info.utility.binary_name}'"
                     ],
                     ansible_tags=["provisioner_run"],
                 ),

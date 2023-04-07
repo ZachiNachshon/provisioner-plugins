@@ -14,11 +14,6 @@ from provisioner_installers_plugin.installer.runner.installer_runner import (
 )
 from provisioner_installers_plugin.installer.utilities import SupportedToolings
 
-ProvisionerRunAnsiblePlaybookRelativePathFromRoot = (
-    "provisioner_installers_plugin/installer/playbooks/provisioner_run.yaml"
-)
-
-
 class UtilityInstallerCmdArgs:
 
     utilities: List[str]
@@ -57,7 +52,6 @@ class UtilityInstallerCmd:
                     utilities=args.utilities,
                     remote_opts=args.remote_opts,
                     github_access_token=args.github_access_token,
-                    ansible_playbook_relative_path_from_module=ProvisionerRunAnsiblePlaybookRelativePathFromRoot,
                 ),
             )
         )

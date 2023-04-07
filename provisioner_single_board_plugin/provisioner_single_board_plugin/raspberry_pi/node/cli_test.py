@@ -86,14 +86,15 @@ class RaspberryPiNodeCliTestShould(unittest.TestCase):
     def test_e2e_run_rpi_node_configure_success(self) -> None:
         Assertion.expect_outputs(
             self,
-            expected=[
-                f"bash external/shell_scripts_lib/runner/ansible/ansible.sh",
-                f"working_dir: {os.getcwd()}",
-                "provisioner_single_board_plugin/raspberry_pi/node/playbooks/configure_os.yaml",
-                "selected_host: DRY_RUN_RESPONSE ansible_host=DRY_RUN_RESPONSE ansible_user=DRY_RUN_RESPONSE ansible_password=DRY_RUN_RESPONSE",
-                "ansible_var: host_name=DRY_RUN_RESPONSE",
-                "ansible_tag: configure_remote_node",
-                "ansible_tag: reboot",
+            expected=[         
+                "- name: Configure Raspbian OS on remote RPi host",
+                "hosts: selected_hosts",
+                "- role: DRY_RUN_RESPONSE/roles/rpi_config_node",
+                "tags: ['configure_remote_node']",
+                "- name: Reboot and wait",
+                "include_tasks: DRY_RUN_RESPONSE/reboot.yaml",
+                "tags: ['reboot']",
+                "ansible-playbook -i /Users/zachin/.config/provisioner/ansible/hosts DRY_RUN_RESPONSE -e local_bin_folder='~/.local/bin' -e host_name=DRY_RUN_RESPONSE --tags configure_remote_node,reboot -vvvv",
             ],
             method_to_run=lambda: TestCliRunner.run(RaspberryPiNodeCliTestShould.create_os_configure_runner),
         )
@@ -130,17 +131,16 @@ class RaspberryPiNodeCliTestShould(unittest.TestCase):
         Assertion.expect_outputs(
             self,
             expected=[
-                f"bash external/shell_scripts_lib/runner/ansible/ansible.sh",
-                f"working_dir: {os.getcwd()}",
-                "provisioner_single_board_plugin/raspberry_pi/node/playbooks/configure_network.yaml",
-                "selected_host: DRY_RUN_RESPONSE ansible_host=DRY_RUN_RESPONSE",
-                "ansible_var: host_name=DRY_RUN_RESPONSE",
-                "ansible_var: static_ip=DRY_RUN_RESPONSE",
-                "ansible_var: gateway_address=DRY_RUN_RESPONSE",
-                "ansible_var: dns_address=DRY_RUN_RESPONSE",
-                "ansible_tag: configure_rpi_network",
-                "ansible_tag: define_static_ip",
-                "ansible_tag: reboot",
+                "- name: Configure static IP address and hostname on remote RPi host",
+                "hosts: selected_hosts",
+                "- role: DRY_RUN_RESPONSE/roles/rpi_config_network",
+                "tags: ['configure_rpi_network']",
+                "- role: DRY_RUN_RESPONSE/roles/dhcp_static_ip",
+                "tags: ['define_static_ip']",
+                "- name: Reboot and wait",
+                "include_tasks: DRY_RUN_RESPONSE/reboot.yaml",
+                "tags: ['reboot']",
+                "ansible-playbook -i /Users/zachin/.config/provisioner/ansible/hosts DRY_RUN_RESPONSE -e local_bin_folder='~/.local/bin' -e host_name=DRY_RUN_RESPONSE -e static_ip=DRY_RUN_RESPONSE -e gateway_address=DRY_RUN_RESPONSE -e dns_address=DRY_RUN_RESPONSE --tags configure_rpi_network,define_static_ip,reboot -vvvv"
             ],
             method_to_run=lambda: TestCliRunner.run(RaspberryPiNodeCliTestShould.create_network_configure_runner),
         )
