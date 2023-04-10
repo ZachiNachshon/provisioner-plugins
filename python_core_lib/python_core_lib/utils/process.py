@@ -2,12 +2,11 @@
 
 import os
 import subprocess
-import sys
 from typing import List, Optional
 
 from loguru import logger
 
-from ..infra.context import Context
+from python_core_lib.infra.context import Context
 
 
 class Process:

@@ -6,7 +6,7 @@ from provisioner_features_lib.remote.typer_remote_opts_callback import (
 )
 
 
-def append_examples(app: typer.Typer):
+def append_to_cli(app: typer.Typer):
     examples_cli = typer.Typer()
     app.add_typer(examples_cli, name="examples", invoke_without_command=True, no_args_is_help=True)
 

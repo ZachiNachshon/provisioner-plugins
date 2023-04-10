@@ -6,7 +6,7 @@ from provisioner_features_lib.remote.typer_remote_opts_callback import (
 )
 
 
-def append_installers(app: typer.Typer):
+def append_to_cli(app: typer.Typer):
     installers_cli = typer.Typer()
     app.add_typer(installers_cli, name="install", invoke_without_command=True, no_args_is_help=True)
 

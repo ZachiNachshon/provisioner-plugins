@@ -17,9 +17,13 @@ create-update-venv: ## Create/Update a Python virtual env
 	@${POETRY_WRAPPER_DEV} install  # Download and install dependencies
 	@${POETRY_WRAPPER_DEV} build    # Build a tarball package with local Python wheel
 
-.PHONY: install-sdist
-install-sdist: ## Install a source distribution locally
-	@./runners/install_sdist_pip.sh
+.PHONY: pip-install
+pip-install: ## Install a source distribution to local pip
+	@./external/shell_scripts_lib/python/poetry_pip_install.sh package-type=sdist --plugin -y
+
+.PHONY: pip-uninstall
+pip-uninstall: ## Uninstall a source distribution from local pip
+	@./external/shell_scripts_lib/python/poetry_pip_install.sh package-type=sdist --delete --plugin -y
 
 .PHONY: fmt
 fmt: ## Format Python code using Black style and sort imports

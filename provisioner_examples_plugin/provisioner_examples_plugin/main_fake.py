@@ -68,9 +68,9 @@ def register_remote_cli_args():
 
 
 def register_module_cli_args():
-    from provisioner_examples_plugin.main import append_examples
+    from provisioner_examples_plugin.main import append_to_cli
 
-    append_examples(fake_app)
+    append_to_cli(fake_app)
 
 
 def get_fake_app():

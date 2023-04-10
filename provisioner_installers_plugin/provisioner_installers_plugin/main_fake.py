@@ -63,9 +63,9 @@ def register_remote_cli_args():
 
 
 def register_module_cli_args():
-    from provisioner_installers_plugin.main import append_installers
+    from provisioner_installers_plugin.main import append_to_cli
 
-    append_installers(fake_app)
+    append_to_cli(fake_app)
 
 
 def get_fake_app():

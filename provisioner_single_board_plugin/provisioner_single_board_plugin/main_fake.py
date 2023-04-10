@@ -72,9 +72,9 @@ def register_remote_cli_args():
 
 
 def register_module_cli_args():
-    from provisioner_single_board_plugin.main import append_single_boards
+    from provisioner_single_board_plugin.main import append_to_cli
 
-    append_single_boards(fake_app)
+    append_to_cli(fake_app)
 
 
 def get_fake_app():

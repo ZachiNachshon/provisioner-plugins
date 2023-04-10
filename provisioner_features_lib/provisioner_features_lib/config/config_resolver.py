@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
-import os
-from typing import Any
+from typing import Any, Optional
 
 from loguru import logger
 from python_core_lib.config.config_reader import ConfigReader
@@ -12,8 +11,6 @@ from python_core_lib.utils.yaml_util import YamlUtil
 
 from provisioner_features_lib.anchor.typer_anchor_opts import TyperAnchorOpts
 from provisioner_features_lib.remote.typer_remote_opts import TyperRemoteOpts
-
-ENV_VAR_ENABLE_CONFIG_DEBUG = "PROVISIONER_PRE_RUN_DEBUG"
 
 
 class ConfigResolver:
@@ -39,16 +36,15 @@ class ConfigResolver:
         return resolver
 
     @staticmethod
-    def load(internal_path: str, user_path: str, class_name: SerializationBase) -> None:
-        """
-        The --dry-run and --verbose flags aren't avaialble at this stage since logger
-        is being set-up after Typer is initialized.
-        I've added pre Typer run env var to contorl if configuraiton load debug logs
-        should be visible.
-        """
-        debug_config = os.getenv(key=ENV_VAR_ENABLE_CONFIG_DEBUG, default=False)
-        if debug_config != "True":
+    def load(
+        internal_path: str, 
+        user_path: str, 
+        class_name: SerializationBase, 
+        debug: Optional[bool] = False) -> None:
+        
+        if not debug:
             logger.remove()
+
         logger.debug("Loading configuration...")
         empty_ctx = Context.create()
         resolver = ConfigResolver._create(empty_ctx, internal_path, user_path)
