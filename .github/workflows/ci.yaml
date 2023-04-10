@@ -63,11 +63,11 @@ jobs:
       - name: Combine coverage XML results
         run: |
           coverage combine \
-            provisioner/coverage.xml \
-            provisioner_examples_plugin/coverage.xml \
-            provisioner_features_lib/coverage.xml \
-            provisioner_installers_plugin/coverage.xml \
-            provisioner_single_board_plugin/coverage.xml
+            provisioner/.coverage \
+            provisioner_examples_plugin/.coverage \
+            provisioner_features_lib/.coverage \
+            provisioner_installers_plugin/.coverage \
+            provisioner_single_board_plugin/.coverage
 
           coverage xml -o coverage-combined.xml
       

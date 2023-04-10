@@ -94,6 +94,7 @@ ci-test-all: ## Run Unit/E2E/IT tests
 
 .PHONY: ci-install-deps-all
 ci-install-deps-all: ## Install all modules dependencies
+	@pip install coverage
 	@echo "\n\n========= PROVISIONER ===============================\n\n"
 	@cd provisioner; poetry install --all-extras; cd ..
 	@echo "\n\n========= PROVISIONER LIBRARY: CORE ==================\n\n"
@@ -106,6 +107,14 @@ ci-install-deps-all: ## Install all modules dependencies
 	@cd provisioner_installers_plugin; poetry install; cd ..
 	@echo "\n\n========= PROVISIONER PLUGIN: SINGLE BOARD ==========\n\n"
 	@cd provisioner_single_board_plugin; poetry install; cd ..
+	@echo "\n\n========= COMBINING COVERAGE.XML FILES ==========\n\n"
+	@coverage combine \
+		provisioner/.coverage \
+		provisioner_examples_plugin/.coverage \
+		provisioner_features_lib/.coverage \
+		provisioner_installers_plugin/.coverage \
+		provisioner_single_board_plugin/.coverage
+	@coverage xml -o coverage-combined.xml
 
 .PHONY: help
 help:
