@@ -35,15 +35,28 @@ jobs:
         with:
           version: ${{ env.POETRY_VERSION }}
           
-      - name: Load cached venv
-        id: cached-poetry-dependencies
-        uses: actions/cache@v2
+      - name: Set Poetry Config
+        run: |
+          poetry config virtualenvs.create true
+          poetry config cache-dir
+
+      - name: Set Poetry Cache
+        uses: actions/cache@v3
         with:
           path: ~/.cache/pypoetry/virtualenvs
-          key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}
-          # key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/**/poetry.lock') }}
-          # path: .venv
-          # key: ${{ runner.os }}-poetry-${{ hashFiles('**/**/poetry.lock') }}
+          key: poetry-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('poetry.lock') }}
+          restore-keys: |
+            poetry-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-
+
+      # - name: Load cached venv
+      #   id: cached-poetry-dependencies
+      #   uses: actions/cache@v2
+      #   with:
+      #     path: ~/.cache/pypoetry/virtualenvs
+      #     key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}
+      #     # key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/**/poetry.lock') }}
+      #     # path: .venv
+      #     # key: ${{ runner.os }}-poetry-${{ hashFiles('**/**/poetry.lock') }}
 
       # - name: Load cached Poetry installation
       #   uses: actions/cache@v2
@@ -62,7 +75,7 @@ jobs:
       
       # Requires CODECOV_TOKEN in GitHub repository secrets
       - name: Upload coverage
-        uses: codecov/codecov-action@v1
+        uses: codecov/codecov-action@v3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}  # Only required for private repositories
           # file: ./coverage.xml
