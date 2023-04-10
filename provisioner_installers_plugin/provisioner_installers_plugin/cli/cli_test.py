@@ -8,6 +8,7 @@ from python_core_lib.errors.cli_errors import (
     CliApplicationException,
     StepEvaluationFailure,
 )
+from python_core_lib.infra.context import Context
 from python_core_lib.test_lib.assertions import Assertion
 from python_core_lib.test_lib.test_cli_runner import TestCliRunner
 from python_core_lib.test_lib.test_env import TestEnv
@@ -111,6 +112,7 @@ class UtilityInstallerCliTestShould(unittest.TestCase):
         )
 
     def test_e2e_run_local_utility_install_success(self) -> None:
+        os_arch_pair = Context.create().os_arch.as_pair()
         Assertion.expect_outputs(
             self,
             expected=[
@@ -145,7 +147,7 @@ class UtilityInstallerCliTestShould(unittest.TestCase):
     ]
   }
 }""",
-                "Downloading from GitHub. owner: ZachiNachshon, repo: anchor, name: anchor_0.10.0_darwin_arm64.tar.gz, version: v0.10.0",
+                f"Downloading from GitHub. owner: ZachiNachshon, repo: anchor, name: anchor_0.10.0_{os_arch_pair}.tar.gz, version: v0.10.0",
             ],
             method_to_run=lambda: TestCliRunner.run(
                 UtilityInstallerCliTestShould.create_local_utility_installer_runner
