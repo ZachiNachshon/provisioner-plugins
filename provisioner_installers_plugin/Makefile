@@ -6,6 +6,14 @@ PROJECT_LOCATION=.
 
 # @rm -rf ${HOME}/Library/Caches/pypoetry
 
+.PHONY: pip-install
+pip-install: ## Install a source distribution to local pip
+	@./external/shell_scripts_lib/python/poetry_pip_install.sh package-type=sdist --plugin -y
+
+.PHONY: pip-uninstall
+pip-uninstall: ## Uninstall a source distribution from local pip
+	@./external/shell_scripts_lib/python/poetry_pip_install.sh package-type=sdist --delete --plugin -y
+
 .PHONY: clear-virtual-env
 clear-virtual-env: ## Clear Poetry virtual environments
 	@rm -rf .venv
@@ -48,13 +56,17 @@ test: ## Run Unit/E2E/IT tests
 	-@${POETRY_WRAPPER} run coverage html
 	-@echo "\n====\n\nFull coverage report available on the following link:\n\n  • $(PWD)/htmlcov/index.html\n"
 
-.PHONY: pip-install
-pip-install: ## Install a source distribution to local pip
-	@./external/shell_scripts_lib/python/poetry_pip_install.sh package-type=sdist --plugin -y
-
-.PHONY: pip-uninstall
-pip-uninstall: ## Uninstall a source distribution from local pip
-	@./external/shell_scripts_lib/python/poetry_pip_install.sh package-type=sdist --delete --plugin -y
+.PHONY: test-ci
+# test-ci: fmtcheck ## Run Unit/E2E/IT tests with XML report for app.codecov.io
+test-ci: ## Run Unit/E2E/IT tests with XML report for app.codecov.io
+	@echo "Cleaning up previous runs..."
+	-@rm -rf "$(PWD)/coverage.xml"
+	@echo "Done."
+	@echo "\nRunning tests/coverage..."
+	@${POETRY_WRAPPER_DEV} run coverage run -m pytest
+	@${POETRY_WRAPPER} run coverage report
+	@${POETRY_WRAPPER} run coverage xml
+	-@echo "\n====\n\nFull coverage report available on the following link:\n\n  • $(PWD)/coverage.xml\n"
 
 .PHONY: help
 help:

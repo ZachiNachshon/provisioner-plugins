@@ -12,7 +12,7 @@ on:
 env:
   # Semantic version range syntax (3.x) or exact version of a Python version
   PYTHON_VERSION: "3.10"
-  POETRY_VERSION: "1.2.1"
+  POETRY_VERSION: "1.4.1"
 
 jobs:
   build:
@@ -59,14 +59,14 @@ jobs:
 
       - name: Combine coverage XML results
         run: |
-          coverage combine \
+          python3 -m coverage coverage combine \
             provisioner/coverage.xml \
             provisioner_examples_plugin/coverage.xml \
             provisioner_features_lib/coverage.xml \
             provisioner_installers_plugin/coverage.xml \
             provisioner_single_board_plugin/coverage.xml
 
-          coverage xml -o coverage-combined.xml
+          python3 -m coverage xml -o coverage-combined.xml
       
       # Requires CODECOV_TOKEN in GitHub repository secrets
       - name: Upload coverage
