@@ -67,24 +67,26 @@ pip-install-all: ## pip install all packages locally
 update-externals-all: ## Update external source dependents
 	@echo "\n\n========= PROVISIONER ===============================\n\n"
 	@cd provisioner; make update-externals; cd ..
+	@echo "\n\n========= PROVISIONER LIBRARY: CORE ==================\n\n"
+	@cd python_core_lib; make update-externals; cd ..
+	@echo "\n\n========= PROVISIONER LIBRARY: FEATURES =============\n\n"
+	@cd provisioner_features_lib; make update-externals; cd ..
 	@echo "\n\n========= PROVISIONER PLUGIN: EXAMPLES ==============\n\n"
 	@cd provisioner_examples_plugin; make update-externals; cd ..
 	@echo "\n\n========= PROVISIONER PLUGIN: INSTALLERS ============\n\n"
 	@cd provisioner_installers_plugin; make update-externals; cd ..
 	@echo "\n\n========= PROVISIONER PLUGIN: SINGLE BOARD ==========\n\n"
 	@cd provisioner_single_board_plugin; make update-externals; cd ..
-	@echo "\n\n========= PROVISIONER LIBRARY: CORE ==================\n\n"
-	@cd python_core_lib; make update-externals; cd ..
 
 .PHONY: ci-test-all
 # ci-test-all: fmtcheck-all ## Run Unit/E2E/IT tests
 ci-test-all: ## Run Unit/E2E/IT tests
 	@echo "\n\n========= PROVISIONER ===============================\n\n"
 	@cd provisioner; make test-ci; cd ..
-	@echo "\n\n========= PROVISIONER PLUGIN: EXAMPLES ==============\n\n"
-	@cd provisioner_examples_plugin; make test-ci; cd ..
 	@echo "\n\n========= PROVISIONER LIBRARY: FEATURES =============\n\n"
 	@cd provisioner_features_lib; make test-ci; cd ..
+	@echo "\n\n========= PROVISIONER PLUGIN: EXAMPLES ==============\n\n"
+	@cd provisioner_examples_plugin; make test-ci; cd ..
 	@echo "\n\n========= PROVISIONER PLUGIN: INSTALLERS ============\n\n"
 	@cd provisioner_installers_plugin; make test-ci; cd ..
 	@echo "\n\n========= PROVISIONER PLUGIN: SINGLE BOARD ==========\n\n"
