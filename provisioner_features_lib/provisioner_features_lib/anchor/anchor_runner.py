@@ -6,8 +6,7 @@ from loguru import logger
 from python_core_lib.errors.cli_errors import MissingCliArgument
 from python_core_lib.infra.context import Context
 from python_core_lib.infra.evaluator import Evaluator
-
-from python_core_lib.runner.ansible.ansible_runner import AnsiblePlaybook, AnsibleHost
+from python_core_lib.runner.ansible.ansible_runner import AnsibleHost, AnsiblePlaybook
 from python_core_lib.shared.collaborators import CoreCollaborators
 from python_core_lib.utils.checks import Checks
 

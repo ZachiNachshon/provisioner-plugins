@@ -36,6 +36,6 @@ class RPiOsConfigureCmdTestShould(unittest.TestCase):
 
         def assertion_callback(args):
             self.assertEqual(args.remote_opts, fake_cmd_args.remote_opts)
-            
+
         Assertion.expect_call_arguments(self, run_call, arg_name="args", assertion_callable=assertion_callback)
         Assertion.expect_call_argument(self, run_call, arg_name="ctx", expected_value=self.env.get_context())

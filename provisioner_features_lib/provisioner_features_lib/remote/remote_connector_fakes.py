@@ -2,13 +2,12 @@
 
 from typing import Callable
 
-
+from python_core_lib.runner.ansible.ansible_runner import AnsibleHost
 
 from provisioner_features_lib.remote.remote_connector import (
     DHCPCDConfigurationInfo,
     SSHConnectionInfo,
 )
-from python_core_lib.runner.ansible.ansible_runner import AnsibleHost
 
 
 class TestDataRemoteConnector:

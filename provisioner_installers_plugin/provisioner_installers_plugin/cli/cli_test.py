@@ -155,11 +155,7 @@ class UtilityInstallerCliTestShould(unittest.TestCase):
     def test_e2e_run_remote_utility_install_success(self) -> None:
         Assertion.expect_outputs(
             self,
-            expected=[
-                "About to install the following CLI utilities:",
-                "- anchor",
-                "Running on Remote environment"
-            ],
+            expected=["About to install the following CLI utilities:", "- anchor", "Running on Remote environment"],
             method_to_run=lambda: TestCliRunner.run(
                 UtilityInstallerCliTestShould.create_remote_utility_installer_runner
             ),

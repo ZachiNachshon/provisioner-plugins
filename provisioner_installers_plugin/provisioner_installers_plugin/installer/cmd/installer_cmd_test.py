@@ -49,7 +49,7 @@ class UtilityInstallerCmdTestShould(unittest.TestCase):
                 UtilityInstallerRunnerCmdArgs(
                     utilities=fake_cmd_args.utilities,
                     remote_opts=fake_cmd_args.remote_opts,
-                    github_access_token=fake_cmd_args.github_access_token
+                    github_access_token=fake_cmd_args.github_access_token,
                 ),
             )
 

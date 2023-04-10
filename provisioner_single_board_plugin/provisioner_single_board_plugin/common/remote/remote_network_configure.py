@@ -34,6 +34,7 @@ ANSIBLE_PLAYBOOK_RPI_CONFIGURE_NETWORK = """
       tags: ['reboot']
 """
 
+
 class RemoteMachineNetworkConfigureArgs:
     gw_ip_address: str
     dns_ip_address: str

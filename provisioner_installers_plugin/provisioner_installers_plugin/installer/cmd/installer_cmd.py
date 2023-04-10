@@ -14,6 +14,7 @@ from provisioner_installers_plugin.installer.runner.installer_runner import (
 )
 from provisioner_installers_plugin.installer.utilities import SupportedToolings
 
+
 class UtilityInstallerCmdArgs:
 
     utilities: List[str]

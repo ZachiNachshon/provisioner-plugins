@@ -8,7 +8,10 @@ from provisioner_features_lib.remote.remote_connector_fakes import (
 )
 from python_core_lib.errors.cli_errors import MissingUtilityException
 from python_core_lib.infra.context import Context
-from python_core_lib.runner.ansible.ansible_runner import AnsiblePlaybook, AnsibleRunnerLocal
+from python_core_lib.runner.ansible.ansible_runner import (
+    AnsiblePlaybook,
+    AnsibleRunnerLocal,
+)
 from python_core_lib.test_lib.assertions import Assertion
 from python_core_lib.test_lib.test_env import TestEnv
 from python_core_lib.utils.checks_fakes import FakeChecks

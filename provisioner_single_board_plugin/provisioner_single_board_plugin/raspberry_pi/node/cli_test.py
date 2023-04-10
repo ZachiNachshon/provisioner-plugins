@@ -86,7 +86,7 @@ class RaspberryPiNodeCliTestShould(unittest.TestCase):
     def test_e2e_run_rpi_node_configure_success(self) -> None:
         Assertion.expect_outputs(
             self,
-            expected=[         
+            expected=[
                 "- name: Configure Raspbian OS on remote RPi host",
                 "hosts: selected_hosts",
                 "- role: DRY_RUN_RESPONSE/roles/rpi_config_node",
@@ -140,7 +140,7 @@ class RaspberryPiNodeCliTestShould(unittest.TestCase):
                 "- name: Reboot and wait",
                 "include_tasks: DRY_RUN_RESPONSE/reboot.yaml",
                 "tags: ['reboot']",
-                "ansible-playbook -i /Users/zachin/.config/provisioner/ansible/hosts DRY_RUN_RESPONSE -e local_bin_folder='~/.local/bin' -e host_name=DRY_RUN_RESPONSE -e static_ip=DRY_RUN_RESPONSE -e gateway_address=DRY_RUN_RESPONSE -e dns_address=DRY_RUN_RESPONSE --tags configure_rpi_network,define_static_ip,reboot -vvvv"
+                "ansible-playbook -i /Users/zachin/.config/provisioner/ansible/hosts DRY_RUN_RESPONSE -e local_bin_folder='~/.local/bin' -e host_name=DRY_RUN_RESPONSE -e static_ip=DRY_RUN_RESPONSE -e gateway_address=DRY_RUN_RESPONSE -e dns_address=DRY_RUN_RESPONSE --tags configure_rpi_network,define_static_ip,reboot -vvvv",
             ],
             method_to_run=lambda: TestCliRunner.run(RaspberryPiNodeCliTestShould.create_network_configure_runner),
         )

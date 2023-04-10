@@ -10,8 +10,11 @@ from provisioner_features_lib.remote.remote_connector import (
 from provisioner_features_lib.remote.typer_remote_opts import CliRemoteOpts
 from python_core_lib.infra.context import Context
 from python_core_lib.infra.evaluator import Evaluator
-from python_core_lib.runner.ansible.ansible_runner import AnsibleHost, AnsiblePlaybook, AnsibleRunnerLocal
-
+from python_core_lib.runner.ansible.ansible_runner import (
+    AnsibleHost,
+    AnsiblePlaybook,
+    AnsibleRunnerLocal,
+)
 from python_core_lib.shared.collaborators import CoreCollaborators
 from python_core_lib.utils.checks import Checks
 
@@ -29,6 +32,7 @@ ANSIBLE_PLAYBOOK_RPI_CONFIGURE_NODE = """
       include_tasks: {ansible_playbooks_path}/reboot.yaml
       tags: ['reboot'] 
 """
+
 
 class RemoteMachineOsConfigureArgs:
 

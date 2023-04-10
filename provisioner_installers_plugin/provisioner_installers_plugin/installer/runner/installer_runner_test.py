@@ -18,7 +18,10 @@ from python_core_lib.errors.cli_errors import (
 )
 from python_core_lib.func.pyfn import Environment, PyFn, PyFnEvaluator
 from python_core_lib.infra.context import Context
-from python_core_lib.runner.ansible.ansible_runner import AnsiblePlaybook, AnsibleRunnerLocal
+from python_core_lib.runner.ansible.ansible_runner import (
+    AnsiblePlaybook,
+    AnsibleRunnerLocal,
+)
 from python_core_lib.test_lib.assertions import Assertion
 from python_core_lib.test_lib.test_env import TestEnv
 from python_core_lib.utils.os import OsArch
@@ -140,7 +143,7 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
             args=UtilityInstallerRunnerCmdArgs(
                 utilities=utilities,
                 remote_opts=TestDataRemoteOpts.create_fake_cli_remote_opts(environment),
-                github_access_token=TEST_GITHUB_ACCESS_TOKEN
+                github_access_token=TEST_GITHUB_ACCESS_TOKEN,
             ),
             supported_utilities=TestSupportedToolings,
         )

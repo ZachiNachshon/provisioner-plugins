@@ -12,7 +12,10 @@ from provisioner_features_lib.remote.remote_connector_fakes import (
 )
 from python_core_lib.errors.cli_errors import MissingUtilityException
 from python_core_lib.infra.context import Context
-from python_core_lib.runner.ansible.ansible_runner import AnsiblePlaybook, AnsibleRunnerLocal
+from python_core_lib.runner.ansible.ansible_runner import (
+    AnsiblePlaybook,
+    AnsibleRunnerLocal,
+)
 from python_core_lib.test_lib.assertions import Assertion
 from python_core_lib.test_lib.test_env import TestEnv
 from python_core_lib.utils.checks_fakes import FakeChecks
@@ -195,7 +198,7 @@ class RemoteMachineNetworkConfigureTestShould(unittest.TestCase):
             .ansible_runner()
             .assert_command(
                 selected_hosts=TestDataRemoteConnector.TEST_DATA_SSH_ANSIBLE_HOSTS,
-                playbook=AnsiblePlaybook(name="rpi_configure_network", content=ANSIBLE_PLAYBOOK_RPI_CONFIGURE_NETWORK),                
+                playbook=AnsiblePlaybook(name="rpi_configure_network", content=ANSIBLE_PLAYBOOK_RPI_CONFIGURE_NETWORK),
                 ansible_vars=[
                     f"host_name={TestDataRemoteConnector.TEST_DATA_SSH_HOSTNAME_1}",
                     f"static_ip={TestDataRemoteConnector.TEST_DATA_DHCP_STATIC_IP_ADDRESS}",

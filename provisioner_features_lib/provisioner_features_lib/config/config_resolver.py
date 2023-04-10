@@ -36,12 +36,8 @@ class ConfigResolver:
         return resolver
 
     @staticmethod
-    def load(
-        internal_path: str, 
-        user_path: str, 
-        class_name: SerializationBase, 
-        debug: Optional[bool] = False) -> None:
-        
+    def load(internal_path: str, user_path: str, class_name: SerializationBase, debug: Optional[bool] = False) -> None:
+
         if not debug:
             logger.remove()
 
