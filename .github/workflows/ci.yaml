@@ -59,17 +59,6 @@ jobs:
 
       - name: Run tests
         run: make ci-test-all
-
-      - name: Combine coverage XML results
-        run: |
-          coverage combine \
-            provisioner/.coverage \
-            provisioner_examples_plugin/.coverage \
-            provisioner_features_lib/.coverage \
-            provisioner_installers_plugin/.coverage \
-            provisioner_single_board_plugin/.coverage
-
-          coverage xml -o coverage-combined.xml
       
       # Requires CODECOV_TOKEN in GitHub repository secrets
       - name: Upload coverage

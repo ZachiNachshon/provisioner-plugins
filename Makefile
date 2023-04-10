@@ -93,8 +93,8 @@ ci-test-all: ## Run Unit/E2E/IT tests
 	@cd provisioner_single_board_plugin; make test-ci; cd ..
 	@coverage combine \
 		provisioner/.coverage \
-		provisioner_examples_plugin/.coverage \
 		provisioner_features_lib/.coverage \
+		provisioner_examples_plugin/.coverage \
 		provisioner_installers_plugin/.coverage \
 		provisioner_single_board_plugin/.coverage
 	@coverage xml -o coverage-combined.xml
