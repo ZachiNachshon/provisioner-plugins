@@ -53,7 +53,7 @@ jobs:
       - name: Install all dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
         run: |
-          make install-deps-all
+          make ci-install-deps-all
           pip install coverage
 
       - name: Run tests
