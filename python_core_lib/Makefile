@@ -4,7 +4,9 @@ POETRY_WRAPPER=./runners/poetry_runner.sh
 POETRY_WRAPPER_DEV=./runners/poetry_runner_dev.sh
 PROJECT_LOCATION=.
 
-# @rm -rf ${HOME}/Library/Caches/pypoetry
+.PHONY: update-externals
+update-externals: ## Update external source dependents
+	@git-deps-syncer sync-all -y
 
 .PHONY: clear-virtual-env
 clear-virtual-env: ## Clear Poetry virtual environments

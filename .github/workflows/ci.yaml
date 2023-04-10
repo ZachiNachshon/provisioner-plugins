@@ -52,21 +52,23 @@ jobs:
 
       - name: Install all dependencies
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
-        run: make install-deps-all
+        run: |
+          make install-deps-all
+          pip install coverage
 
       - name: Run tests
-        run: make test-ci-all
+        run: make ci-test-all
 
       - name: Combine coverage XML results
         run: |
-          python3 -m coverage coverage combine \
+          coverage combine \
             provisioner/coverage.xml \
             provisioner_examples_plugin/coverage.xml \
             provisioner_features_lib/coverage.xml \
             provisioner_installers_plugin/coverage.xml \
             provisioner_single_board_plugin/coverage.xml
 
-          python3 -m coverage xml -o coverage-combined.xml
+          coverage xml -o coverage-combined.xml
       
       # Requires CODECOV_TOKEN in GitHub repository secrets
       - name: Upload coverage

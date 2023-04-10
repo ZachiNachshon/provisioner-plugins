@@ -4,6 +4,10 @@ POETRY_WRAPPER=./runners/poetry_runner.sh
 POETRY_WRAPPER_DEV=./runners/poetry_runner_dev.sh
 PROJECT_LOCATION=.
 
+.PHONY: update-externals
+update-externals: ## Update external source dependents
+	@git-deps-syncer sync-all -y
+
 .PHONY: pip-install
 pip-install: ## Install a source distribution to local pip
 	@./external/shell_scripts_lib/python/poetry_pip_install.sh package-type=sdist --plugin -y
