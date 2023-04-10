@@ -94,7 +94,7 @@ class RaspberryPiNodeCliTestShould(unittest.TestCase):
                 "- name: Reboot and wait",
                 "include_tasks: DRY_RUN_RESPONSE/reboot.yaml",
                 "tags: ['reboot']",
-                "ansible-playbook -i /Users/zachin/.config/provisioner/ansible/hosts DRY_RUN_RESPONSE -e local_bin_folder='~/.local/bin' -e host_name=DRY_RUN_RESPONSE --tags configure_remote_node,reboot -vvvv",
+                f"ansible-playbook -i {os.path.expanduser('~/.config/provisioner/ansible/hosts')} DRY_RUN_RESPONSE -e local_bin_folder='~/.local/bin' -e host_name=DRY_RUN_RESPONSE --tags configure_remote_node,reboot -vvvv",
             ],
             method_to_run=lambda: TestCliRunner.run(RaspberryPiNodeCliTestShould.create_os_configure_runner),
         )
@@ -140,7 +140,7 @@ class RaspberryPiNodeCliTestShould(unittest.TestCase):
                 "- name: Reboot and wait",
                 "include_tasks: DRY_RUN_RESPONSE/reboot.yaml",
                 "tags: ['reboot']",
-                "ansible-playbook -i /Users/zachin/.config/provisioner/ansible/hosts DRY_RUN_RESPONSE -e local_bin_folder='~/.local/bin' -e host_name=DRY_RUN_RESPONSE -e static_ip=DRY_RUN_RESPONSE -e gateway_address=DRY_RUN_RESPONSE -e dns_address=DRY_RUN_RESPONSE --tags configure_rpi_network,define_static_ip,reboot -vvvv",
+                f"ansible-playbook -i {os.path.expanduser('~/.config/provisioner/ansible/hosts')} DRY_RUN_RESPONSE -e local_bin_folder='~/.local/bin' -e host_name=DRY_RUN_RESPONSE -e static_ip=DRY_RUN_RESPONSE -e gateway_address=DRY_RUN_RESPONSE -e dns_address=DRY_RUN_RESPONSE --tags configure_rpi_network,define_static_ip,reboot -vvvv",
             ],
             method_to_run=lambda: TestCliRunner.run(RaspberryPiNodeCliTestShould.create_network_configure_runner),
         )
