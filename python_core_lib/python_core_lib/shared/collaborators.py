@@ -108,9 +108,7 @@ class CoreCollaborators:
     def ansible_runner(self) -> AnsibleRunnerLocal:
         def create_ansible_runner():
             if not self.__ansible_runner:
-                self.__ansible_runner = AnsibleRunnerLocal.create(
-                    self.__ctx, self.io_utils(), self.paths()
-                )
+                self.__ansible_runner = AnsibleRunnerLocal.create(self.__ctx, self.io_utils(), self.paths())
             return self.__ansible_runner
 
         return self._lock_and_get(callback=create_ansible_runner)

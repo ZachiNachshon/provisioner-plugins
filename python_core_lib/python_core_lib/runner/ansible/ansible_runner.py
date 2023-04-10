@@ -1,9 +1,9 @@
 # !/usr/bin/env python3
 
 import os
-import ansible_runner
 from typing import List, Optional
 
+import ansible_runner
 from loguru import logger
 
 from python_core_lib.errors.cli_errors import InvalidAnsibleHostPair
@@ -63,7 +63,7 @@ class AnsiblePlaybook:
                 ANSIBLE_PLAYBOOKS_PYTHON_PACKAGE, ANSIBLE_PLAYBOOKS_DIR_NAME
             )
         )
-    
+
     def __eq__(self, other):
         if isinstance(other, self.__class__):
             return hash(self) == hash(other)
@@ -71,6 +71,7 @@ class AnsiblePlaybook:
 
     def __hash__(self):
         return hash((self.__name, self.__content))
+
 
 class AnsibleHost:
     host: str
@@ -196,9 +197,7 @@ class AnsibleRunnerLocal:
         hosts_file_path = self._io_utils.write_file_fn(
             content=inventory, file_name=ANSIBLE_HOSTS_FILE_NAME, dir_path=ProvisionerAnsibleProjectPath
         )
-        logger.debug(
-            f"Created ansible hosts file. path: {hosts_file_path}"
-        )
+        logger.debug(f"Created ansible hosts file. path: {hosts_file_path}")
 
     def _generate_ansible_playbook_args(
         self,

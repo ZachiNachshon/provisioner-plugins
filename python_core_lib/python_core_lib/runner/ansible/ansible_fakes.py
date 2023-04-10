@@ -3,8 +3,11 @@
 from typing import List, Optional
 
 from python_core_lib.infra.context import Context
-
-from python_core_lib.runner.ansible.ansible_runner import AnsiblePlaybook, AnsibleHost, AnsibleRunnerLocal
+from python_core_lib.runner.ansible.ansible_runner import (
+    AnsibleHost,
+    AnsiblePlaybook,
+    AnsibleRunnerLocal,
+)
 from python_core_lib.test_lib.assertions import to_json
 from python_core_lib.test_lib.test_errors import FakeEnvironmentAssertionError
 from python_core_lib.utils.io_utils import IOUtils
@@ -23,9 +26,7 @@ class FakeAnsibleRunnerLocal(AnsibleRunnerLocal):
         ansible_vars: List[str],
         ansible_tags: List[str],
     ) -> str:
-        return hash(
-            (tuple(selected_hosts), playbook, tuple(ansible_vars), tuple(ansible_tags))
-        )
+        return hash((tuple(selected_hosts), playbook, tuple(ansible_vars), tuple(ansible_tags)))
 
     class FakeAnsibleCommandArgs:
         selected_hosts: List[AnsibleHost]
@@ -77,14 +78,14 @@ class FakeAnsibleRunnerLocal(AnsibleRunnerLocal):
 
     @staticmethod
     def _create_fake(dry_run: bool, verbose: bool) -> "FakeAnsibleRunnerLocal":
-        ansible_runner = FakeAnsibleRunnerLocal(
-            dry_run=dry_run, verbose=verbose
-        )
-        ansible_runner.run_fn = lambda selected_hosts, playbook, ansible_vars=None, ansible_tags=None: ansible_runner._record_command(
-            selected_hosts=selected_hosts,
-            playbook=playbook,
-            ansible_vars=ansible_vars,
-            ansible_tags=ansible_tags,
+        ansible_runner = FakeAnsibleRunnerLocal(dry_run=dry_run, verbose=verbose)
+        ansible_runner.run_fn = (
+            lambda selected_hosts, playbook, ansible_vars=None, ansible_tags=None: ansible_runner._record_command(
+                selected_hosts=selected_hosts,
+                playbook=playbook,
+                ansible_vars=ansible_vars,
+                ansible_tags=ansible_tags,
+            )
         )
         return ansible_runner
 

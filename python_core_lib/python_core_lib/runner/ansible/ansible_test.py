@@ -8,8 +8,10 @@ from python_core_lib.errors.cli_errors import (
     InvalidAnsibleHostPair,
 )
 from python_core_lib.infra.context import Context
-from python_core_lib.runner.ansible.ansible_runner import AnsibleHost, AnsibleRunnerLocal
-
+from python_core_lib.runner.ansible.ansible_runner import (
+    AnsibleHost,
+    AnsibleRunnerLocal,
+)
 from python_core_lib.utils.io_utils import IOUtils
 from python_core_lib.utils.io_utils_fakes import FakeIOUtils
 from python_core_lib.utils.paths import Paths
@@ -85,10 +87,7 @@ ansible_var: key2=value2 \
         ctx = Context.create(dry_run=False, verbose=True, auto_prompt=True)
         # Use real IOUtils to explicitly fail on missing Ansible shell runner
         ansible_runner = AnsibleRunnerLocal.create(
-            ctx=ctx,
-            io_utils=IOUtils.create(ctx),
-            process=Process.create(ctx),
-            paths=Paths.create(ctx)
+            ctx=ctx, io_utils=IOUtils.create(ctx), process=Process.create(ctx), paths=Paths.create(ctx)
         )
 
         with self.assertRaises(ExternalDependencyFileNotFound):
