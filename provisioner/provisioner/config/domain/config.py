@@ -1,48 +1,22 @@
 #!/usr/bin/env python3
 
-import importlib
-
 from provisioner_features_lib.anchor.domain.config import AnchorConfig
 from provisioner_features_lib.remote.domain.config import RemoteConfig
 from python_core_lib.domain.serialize import SerializationBase
+from python_core_lib.utils.package_loader import PackageLoader
 
 PLUGIN_EXAMPLES_CONFIG_MODULE_NAME = "provisioner_examples_plugin.domain.config"
 PLUGIN_SINGLE_BOARD_CONFIG_MODULE_NAME = "provisioner_single_board_plugin.config.domain.config"
 
+pkg_loader = PackageLoader.create()
+
 
 def is_examples_plugin_loaded() -> bool:
-    return _is_module_loaded(PLUGIN_EXAMPLES_CONFIG_MODULE_NAME)
+    return pkg_loader.is_module_loaded_fn(PLUGIN_EXAMPLES_CONFIG_MODULE_NAME)
 
 
 def is_single_board_plugin_loaded() -> bool:
-    return _is_module_loaded(PLUGIN_SINGLE_BOARD_CONFIG_MODULE_NAME)
-
-
-def _is_module_loaded(module_name: str) -> bool:
-    result = False
-    try:
-        module = importlib.import_module(module_name)
-        result = True
-        # print(f"Module {module_name} imported successfully!")
-    except ModuleNotFoundError:
-        # print(f"Module {module_name} not found.")
-        pass
-    except ImportError as e:
-        # print(f"ImportError occurred: {e}")
-        pass
-
-    return result
-
-
-def create_instance(module_name: str, type_name: str) -> object:
-    if _is_module_loaded(module_name):
-        type_object = getattr(importlib.import_module(module_name), type_name, None)
-        if type_object is None:
-            raise ValueError(f"Type {type_name} is not defined")
-        # Create an instance of the type object
-        return type_object()
-
-    return None
+    return pkg_loader.is_module_loaded_fn(PLUGIN_SINGLE_BOARD_CONFIG_MODULE_NAME)
 
 
 class ProvisionerConfig(SerializationBase):
@@ -175,5 +149,7 @@ class ProvisionerConfig(SerializationBase):
     remote: RemoteConfig = RemoteConfig()
     anchor: AnchorConfig = AnchorConfig()
 
-    dummmy = create_instance(module_name=PLUGIN_EXAMPLES_CONFIG_MODULE_NAME, type_name="DummyConfig")
-    single_board = create_instance(module_name=PLUGIN_SINGLE_BOARD_CONFIG_MODULE_NAME, type_name="SingleBoardConfig")
+    dummmy = pkg_loader.create_instance_fn(module_name=PLUGIN_EXAMPLES_CONFIG_MODULE_NAME, type_name="DummyConfig")
+    single_board = pkg_loader.create_instance_fn(
+        module_name=PLUGIN_SINGLE_BOARD_CONFIG_MODULE_NAME, type_name="SingleBoardConfig"
+    )

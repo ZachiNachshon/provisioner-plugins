@@ -55,7 +55,16 @@ test-all: ## Run Unit/E2E/IT tests
 	@echo "\n\n========= PROVISIONER PLUGIN: SINGLE BOARD ==========\n\n"
 	@cd provisioner_single_board_plugin; make test; cd ..
 
-# @cd python_core_lib; make test; cd ..
+.PHONY: pip-install-all
+pip-install-all: ## pip install all packages locally
+	@echo "\n\n========= PROVISIONER ===============================\n\n"
+	@cd provisioner; make pip-install; cd ..
+	@echo "\n\n========= PROVISIONER PLUGIN: EXAMPLES ==============\n\n"
+	@cd provisioner_examples_plugin; make pip-install; cd ..
+	@echo "\n\n========= PROVISIONER PLUGIN: INSTALLERS ============\n\n"
+	@cd provisioner_installers_plugin; make pip-install; cd ..
+	@echo "\n\n========= PROVISIONER PLUGIN: SINGLE BOARD ==========\n\n"
+	@cd provisioner_single_board_plugin; make pip-install; cd ..
 
 .PHONY: help
 help:

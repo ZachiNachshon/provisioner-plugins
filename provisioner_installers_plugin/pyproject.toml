@@ -59,8 +59,8 @@ python-libnmap = "^0.7.3"
 PyYAML = "^6.0"
 inquirer = "^2.10.0"
 python-hosts = "^1.0.3"
-python_core_lib = { path = "../python_core_lib", develop = true }
-provisioner_features_lib = { path = "../provisioner_features_lib", develop = true }
+# python_core_lib = { path = "../python_core_lib", develop = true }
+# provisioner_features_lib = { path = "../provisioner_features_lib", develop = true }
 
 [tool.poetry.dev-dependencies]
 black = "^22.8.0"

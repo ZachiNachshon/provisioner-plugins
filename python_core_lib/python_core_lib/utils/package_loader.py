@@ -9,20 +9,15 @@ from loguru import logger
 
 
 class PackageLoader:
-
-    _debug: bool = None
-
-    def __init__(self, debug: bool) -> None:
-        self._debug = debug
+    def __init__(self) -> None:
+        pass
 
     @staticmethod
-    def create(debug: Optional[bool] = False) -> "PackageLoader":
-        # debug value originate from env var, can be any string to indicate a True value
-        logger.debug(f"Creating package loader (debug: {debug is not False})")
-        return PackageLoader(debug)
+    def create() -> "PackageLoader":
+        # logger.debug(f"Creating package loader")
+        return PackageLoader()
 
     def _filter_by_keyword(self, pip_lines: List[str], filter_keyword: str, exclusions: List[str]) -> List[str]:
-
         filtered_packages = []
         for line in pip_lines:
             if line.startswith(filter_keyword):
@@ -34,7 +29,6 @@ class PackageLoader:
     def _import_modules(
         self, packages: List[str], import_path: str, callback: Optional[Callable[[ModuleType], None]] = None
     ) -> None:
-
         for package in packages:
             escaped_package_name = package.replace("-", "_")
             plugin_import_path = f"{escaped_package_name}.{import_path}"
@@ -59,9 +53,10 @@ class PackageLoader:
         import_path: str,
         exclusions: Optional[List[str]] = [],
         callback: Optional[Callable[[ModuleType], None]] = None,
+        debug: Optional[bool] = False,
     ) -> None:
 
-        if not self._debug:
+        if not debug:
             logger.remove()
 
         pip_lines: List[str] = None
@@ -92,4 +87,30 @@ class PackageLoader:
 
         self._import_modules(filtered_packages, import_path, callback)
 
-    load_modules = _load_modules
+    def _is_module_loaded(self, module_name: str) -> bool:
+        result = False
+        try:
+            module = importlib.import_module(module_name)
+            result = True
+            # print(f"Module {module_name} imported successfully!")
+        except ModuleNotFoundError:
+            # print(f"Module {module_name} not found.")
+            pass
+        except ImportError as e:
+            # print(f"ImportError occurred: {e}")
+            pass
+        return result
+
+    def _create_instance(self, module_name: str, type_name: str) -> object:
+        if self._is_module_loaded(module_name):
+            type_object = getattr(importlib.import_module(module_name), type_name, None)
+            if type_object is None:
+                raise ValueError(f"Type {type_name} is not defined")
+            # Create an instance of the type object
+            return type_object()
+
+        return None
+
+    load_modules_fn = _load_modules
+    is_module_loaded_fn = _is_module_loaded
+    create_instance_fn = _create_instance

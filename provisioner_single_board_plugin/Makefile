@@ -48,6 +48,14 @@ test: ## Run Unit/E2E/IT tests
 	-@${POETRY_WRAPPER} run coverage html
 	-@echo "\n====\n\nFull coverage report available on the following link:\n\n  • $(PWD)/htmlcov/index.html\n"
 
+.PHONY: pip-install
+pip-install: ## Install a source distribution to local pip
+	@./external/shell_scripts_lib/python/poetry_pip_install.sh package-type=sdist --plugin -y
+
+.PHONY: pip-uninstall
+pip-uninstall: ## Uninstall a source distribution from local pip
+	@./external/shell_scripts_lib/python/poetry_pip_install.sh package-type=sdist --delete --plugin -y
+
 .PHONY: help
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
