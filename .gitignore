@@ -23,6 +23,9 @@ logs/
 .*.sw[a-z]
 *.un~
 
+# Tests
+htmlcov/
+
 # Python
 *__pycache__*
 .coverage

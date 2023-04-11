@@ -51,6 +51,15 @@ test-all: ## Run Unit/E2E/IT tests
 	@cd provisioner_installers_plugin; make test; cd ..
 	@echo "\n\n========= PROVISIONER PLUGIN: SINGLE BOARD ==========\n\n"
 	@cd provisioner_single_board_plugin; make test; cd ..
+	@coverage combine \
+		provisioner/.coverage \
+		provisioner_features_lib/.coverage \
+		provisioner_examples_plugin/.coverage \
+		provisioner_installers_plugin/.coverage \
+		provisioner_single_board_plugin/.coverage
+	@coverage report
+	@coverage html
+	-@echo "\n====\n\nFull coverage report available on the following link:\n\n  • $(PWD)/htmlcov/index.html\n"
 
 .PHONY: pip-install-all
 pip-install-all: ## pip install all packages locally
@@ -91,13 +100,7 @@ ci-test-all: ## Run Unit/E2E/IT tests
 	@cd provisioner_installers_plugin; make test-ci; cd ..
 	@echo "\n\n========= PROVISIONER PLUGIN: SINGLE BOARD ==========\n\n"
 	@cd provisioner_single_board_plugin; make test-ci; cd ..
-	@coverage combine \
-		provisioner/.coverage \
-		provisioner_features_lib/.coverage \
-		provisioner_examples_plugin/.coverage \
-		provisioner_installers_plugin/.coverage \
-		provisioner_single_board_plugin/.coverage
-	@coverage xml -o coverage-combined.xml
+
 
 .PHONY: ci-install-deps-all
 ci-install-deps-all: ## Install all modules dependencies

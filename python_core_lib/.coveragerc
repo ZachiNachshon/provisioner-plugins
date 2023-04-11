@@ -12,6 +12,7 @@ omit =
     */external/*
     */loguru/*
     *_fakes.py
+    *_fake.py
     *__init__.py
     *__main__.py
     */templates/*
