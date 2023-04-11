@@ -5,8 +5,8 @@
         "name": "shell_scripts_lib",
         "url": "git@github.com:ZachiNachshon/shell-scripts-lib.git",
         "branch": "master",
-        "revision": "0f6a7e6ed7fd44906f1272ebda1a0a0fe8e1e728",
-        "includes": ["runner*/", "runner/base*", "runner/poetry*"],
+        "revision": "fa93ffeb8eda0f13a88368ad2157e068f97c20bf",
+        "includes": ["runner*/", "runner/base*", "runner/poetry*", "python*/"],
         "excludes": ["*_test*", "*/"]
       }
     ]

@@ -51,12 +51,14 @@ test-all: ## Run Unit/E2E/IT tests
 	@cd provisioner_installers_plugin; make test; cd ..
 	@echo "\n\n========= PROVISIONER PLUGIN: SINGLE BOARD ==========\n\n"
 	@cd provisioner_single_board_plugin; make test; cd ..
+	@echo "\n\n========= COMBINING COVERAGE DATABASES ==============\n\n"
 	@coverage combine \
 		provisioner/.coverage \
 		provisioner_features_lib/.coverage \
 		provisioner_examples_plugin/.coverage \
 		provisioner_installers_plugin/.coverage \
 		provisioner_single_board_plugin/.coverage
+	@echo "\n\n========= COVERAGE FULL REPORT ======================\n\n"		
 	@coverage report
 	@coverage html
 	-@echo "\n====\n\nFull coverage report available on the following link:\n\n  • $(PWD)/htmlcov/index.html\n"
