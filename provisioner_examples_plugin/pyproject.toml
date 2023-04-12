@@ -16,7 +16,7 @@ exclude = [
     ".coverage",
     ".coveragerc",
     ".git-deps",
-    ".pytest_cache"]
+    ".pycache"]
 
 # A list of patterns that will be included in the final package that
 # could be references using Paths utility class
