@@ -11,10 +11,6 @@ from provisioner_examples_plugin.ansible.hello_world_runner import (
     HelloWorldRunnerArgs,
 )
 
-# When reading Ansible static files from within `provisioner_examples_plugin` module,
-# it should be read as relative from the module root folder
-HelloWorldAnsiblePlaybookRelativePathFromModule = "provisioner_examples_plugin/ansible/playbooks/hello_world.yaml"
-
 
 class HelloWorldCmdArgs:
 
@@ -41,7 +37,6 @@ class HelloWorldCmd:
             args=HelloWorldRunnerArgs(
                 username=args.username,
                 remote_opts=args.remote_opts,
-                ansible_playbook_relative_path_from_module=HelloWorldAnsiblePlaybookRelativePathFromModule,
             ),
             collaborators=CoreCollaborators(ctx),
         )

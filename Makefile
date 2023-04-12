@@ -43,10 +43,12 @@ typecheck-all: ## Check for Python static types errors (https://mypy.readthedocs
 test-all: ## Run Unit/E2E/IT tests
 	@echo "\n\n========= PROVISIONER ===============================\n\n"
 	@cd provisioner; make test; cd ..
-	@echo "\n\n========= PROVISIONER PLUGIN: EXAMPLES ==============\n\n"
-	@cd provisioner_examples_plugin; make test; cd ..
+	@echo "\n\n========= PROVISIONER LIBRARY: CORE ==================\n\n"
+	@cd python_core_lib; make test; cd ..
 	@echo "\n\n========= PROVISIONER LIBRARY: FEATURES =============\n\n"
 	@cd provisioner_features_lib; make test; cd ..
+	@echo "\n\n========= PROVISIONER PLUGIN: EXAMPLES ==============\n\n"
+	@cd provisioner_examples_plugin; make test; cd ..
 	@echo "\n\n========= PROVISIONER PLUGIN: INSTALLERS ============\n\n"
 	@cd provisioner_installers_plugin; make test; cd ..
 	@echo "\n\n========= PROVISIONER PLUGIN: SINGLE BOARD ==========\n\n"
@@ -54,6 +56,7 @@ test-all: ## Run Unit/E2E/IT tests
 	@echo "\n\n========= COMBINING COVERAGE DATABASES ==============\n\n"
 	@coverage combine \
 		provisioner/.coverage \
+		python_core_lib/.coverage \
 		provisioner_features_lib/.coverage \
 		provisioner_examples_plugin/.coverage \
 		provisioner_installers_plugin/.coverage \
@@ -94,6 +97,8 @@ update-externals-all: ## Update external source dependents
 ci-test-all: ## Run Unit/E2E/IT tests
 	@echo "\n\n========= PROVISIONER ===============================\n\n"
 	@cd provisioner; make test-ci; cd ..
+	@echo "\n\n========= PROVISIONER LIBRARY: CORE ==================\n\n"
+	@cd python_core_lib; make test-ci; cd ..
 	@echo "\n\n========= PROVISIONER LIBRARY: FEATURES =============\n\n"
 	@cd provisioner_features_lib; make test-ci; cd ..
 	@echo "\n\n========= PROVISIONER PLUGIN: EXAMPLES ==============\n\n"

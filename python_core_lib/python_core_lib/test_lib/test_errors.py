@@ -5,5 +5,5 @@ class FakeEnvironmentAssertionError(Exception):
     pass
 
 
-class TestCliRunnerError(Exception):
+class CliRunnerTestError(Exception):
     pass

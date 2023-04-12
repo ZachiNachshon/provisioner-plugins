@@ -26,7 +26,6 @@ exclude = [
 
 packages = [
     { include = "provisioner" },
-    { include = "resources" },
     { include = "external/ansible_playbooks" },
     # Must be boundled since those packages aren't pip installed, rather bundled with the source code
     { include = "python_core_lib", from="../python_core_lib" },
@@ -43,7 +42,7 @@ include = [
     { path = "provisioner/__init__.py" },
     { path = "provisioner/main.py" },
     # { path = "resources/version.txt" },
-    { path = "resources" },
+    { path = "resources/version.txt" },
     { path = "provisioner/config/config.yaml" },
     # Must be boundled since those packages aren't pip installed, rather bundled with the source code
     { path = "python_core_lib" },

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from typing import Any, List
+from typing import List
 
 from python_core_lib.infra.context import Context
 from python_core_lib.test_lib.test_errors import FakeEnvironmentAssertionError

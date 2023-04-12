@@ -45,10 +45,6 @@ class RPiNetworkConfigureCmdTestShould(unittest.TestCase):
             self.assertEqual(args.gw_ip_address, fake_cmd_args.gw_ip_address)
             self.assertEqual(args.dns_ip_address, fake_cmd_args.dns_ip_address)
             self.assertEqual(args.static_ip_address, fake_cmd_args.static_ip_address)
-            self.assertEqual(
-                args.ansible_playbook_relative_path_from_module,
-                "provisioner_single_board_plugin/raspberry_pi/node/playbooks/configure_network.yaml",
-            )
 
         Assertion.expect_call_arguments(self, run_call, arg_name="args", assertion_callable=assertion_callback)
         Assertion.expect_call_argument(self, run_call, arg_name="ctx", expected_value=self.env.get_context())

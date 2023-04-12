@@ -18,9 +18,13 @@ exclude = [
     ".git-deps",
     ".pytest_cache"]
 
-# packages = [
-#     { include = "python_core_lib" },
-# ]
+packages = [
+    { include = "test_data" },
+]
+
+include = [
+    { path = "test_data" },
+]
 
 [tool.isort]
 profile = "black"

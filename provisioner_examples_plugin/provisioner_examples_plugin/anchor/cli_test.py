@@ -3,9 +3,18 @@
 import unittest
 from unittest import mock
 
+from python_core_lib.test_lib.assertions import Assertion
 from typer.testing import CliRunner
 
 from provisioner_examples_plugin.main_fake import get_fake_app
+
+EXPECTED_ANCHOR_RUN_COMMAND = "run --action=test-action"
+EXPECTED_GITHUB_ORGANIZATION = "test-org"
+EXPECTED_REPOSITORY_NAME = "test-repo"
+EXPECTED_BRANCH_NAME = "test-branch"
+EXPECTED_GITHUB_ACCESS_TOKEN = "test-github-access-token"
+
+ANCHOR_COMMAND_PATH = "provisioner_examples_plugin.anchor.anchor_cmd.AnchorCmd"
 
 runner = CliRunner()
 
@@ -13,14 +22,8 @@ runner = CliRunner()
 #  poetry run coverage run -m pytest provisioner_examples_plugin/anchor/cli_test.py
 #
 class AnchorCliTestShould(unittest.TestCase):
-    @mock.patch("provisioner_examples_plugin.anchor.anchor_cmd.AnchorCmd.run")
+    @mock.patch(f"{ANCHOR_COMMAND_PATH}.run")
     def test_cli_anchor_cmd_with_args_success(self, run_call: mock.MagicMock) -> None:
-        expected_anchor_run_command = "run --action=test-action"
-        expected_github_organization = "test-org"
-        expected_repository_name = "test-repo"
-        expected_branch_name = "test-branch"
-        expected_github_access_token = "test-github-access-token"
-
         result = runner.invoke(
             get_fake_app(),
             [
@@ -29,23 +32,19 @@ class AnchorCliTestShould(unittest.TestCase):
                 "examples",
                 "anchor",
                 "run-command",
-                f"--anchor-run-command={expected_anchor_run_command}",
-                f"--github-organization={expected_github_organization}",
-                f"--repository-name={expected_repository_name}",
-                f"--branch-name={expected_branch_name}",
-                f"--github-access-token={expected_github_access_token}",
+                f"--anchor-run-command={EXPECTED_ANCHOR_RUN_COMMAND}",
+                f"--github-organization={EXPECTED_GITHUB_ORGANIZATION}",
+                f"--repository-name={EXPECTED_REPOSITORY_NAME}",
+                f"--branch-name={EXPECTED_BRANCH_NAME}",
+                f"--github-access-token={EXPECTED_GITHUB_ACCESS_TOKEN}",
             ],
         )
-        self.assertEqual(1, run_call.call_count)
 
-        run_call_kwargs = run_call.call_args.kwargs
-        ctx = run_call_kwargs["ctx"]
-        call_args = run_call_kwargs["args"]
+        def assertion_callback(args):
+            self.assertEqual(EXPECTED_ANCHOR_RUN_COMMAND, args.anchor_run_command)
+            self.assertEqual(EXPECTED_GITHUB_ORGANIZATION, args.github_organization)
+            self.assertEqual(EXPECTED_REPOSITORY_NAME, args.repository_name)
+            self.assertEqual(EXPECTED_BRANCH_NAME, args.branch_name)
+            self.assertEqual(EXPECTED_GITHUB_ACCESS_TOKEN, args.github_access_token)
 
-        self.assertIsNotNone(ctx)
-        self.assertIsNotNone(call_args)
-        self.assertEqual(call_args.anchor_run_command, expected_anchor_run_command)
-        self.assertEqual(call_args.github_organization, expected_github_organization)
-        self.assertEqual(call_args.repository_name, expected_repository_name)
-        self.assertEqual(call_args.branch_name, expected_branch_name)
-        self.assertEqual(call_args.github_access_token, expected_github_access_token)
+        Assertion.expect_call_arguments(self, run_call, arg_name="args", assertion_callable=assertion_callback)

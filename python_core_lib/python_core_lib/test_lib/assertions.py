@@ -7,7 +7,7 @@ from unittest import mock
 
 from click.testing import Result
 
-from python_core_lib.test_lib.test_errors import TestCliRunnerError
+from python_core_lib.test_lib.test_errors import CliRunnerTestError
 
 REGEX_REMOTE_COLOR_CODES = re.compile(r"(?:\x1B[@-_]|[\x80-\x9F])[0-?]*[ -/]*[@-~]")
 
@@ -53,9 +53,6 @@ class Assertion:
                 testObj.assertEqual(exception_class, ex_type)
         except Exception as ex:
             failed = True
-            print(type(ex))
-            print(type(ex))
-            print(type(ex))
             testObj.assertIsInstance(ex, ex_type)
 
         testObj.assertTrue(failed)
@@ -77,7 +74,7 @@ class Assertion:
             print(run_output)
             print(run_output.stdout)
             # print(run_output.stderr)
-            raise TestCliRunnerError()
+            raise CliRunnerTestError(run_output.stderr)
         else:
             # Clear all ANSII color codes from output
             output_clear = REGEX_REMOTE_COLOR_CODES.sub("", run_output)

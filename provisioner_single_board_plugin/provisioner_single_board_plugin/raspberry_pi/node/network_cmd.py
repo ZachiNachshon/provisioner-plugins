@@ -12,10 +12,6 @@ from provisioner_single_board_plugin.common.remote.remote_network_configure impo
     RemoteMachineNetworkConfigureRunner,
 )
 
-RpiNetworkConfigureAnsiblePlaybookRelativePathFromRoot = (
-    "provisioner_single_board_plugin/raspberry_pi/node/playbooks/configure_network.yaml"
-)
-
 
 class RPiNetworkConfigureCmdArgs:
 
@@ -59,7 +55,6 @@ class RPiNetworkConfigureCmd:
                 gw_ip_address=args.gw_ip_address,
                 dns_ip_address=args.dns_ip_address,
                 static_ip_address=args.static_ip_address,
-                ansible_playbook_relative_path_from_module=RpiNetworkConfigureAnsiblePlaybookRelativePathFromRoot,
             ),
             collaborators=CoreCollaborators(ctx),
         )

@@ -3,182 +3,89 @@
 import os
 import unittest
 
-from python_core_lib.errors.cli_errors import (
-    ExternalDependencyFileNotFound,
-    InvalidAnsibleHostPair,
-)
+from python_core_lib.errors.cli_errors import InvalidAnsibleHostPair
 from python_core_lib.infra.context import Context
 from python_core_lib.runner.ansible.ansible_runner import (
     AnsibleHost,
+    AnsiblePlaybook,
     AnsibleRunnerLocal,
 )
+from python_core_lib.test_lib.assertions import Assertion
 from python_core_lib.utils.io_utils import IOUtils
 from python_core_lib.utils.io_utils_fakes import FakeIOUtils
 from python_core_lib.utils.paths import Paths
-from python_core_lib.utils.process import Process
+
+#
+# To run these directly from the terminal use:
+#  poetry run coverage run -m pytest python_core_lib/runner/ansible/ansible_test.py
+#
+ANSIBLE_PLAYBOOK_TEST_PATH = "/ansible/playbook/path"
+
+ANSIBLE_DUMMY_PLAYBOOK_CONTENT = """
+---
+- name: Test Dummy Playbook
+  hosts: selected_hosts
+  gather_facts: no
+  environment:
+    DRY_RUN: True
+    VERBOSE: True
+    # SILENT: True
+
+  roles:
+    - role: {ansible_playbooks_path}/roles/hello_world
+      tags: ['hello']
+"""
+
+ANSIBLE_DUMMY_PLAYBOOK_NAME = "dummy_playbook"
+ANSIBLE_DUMMY_PLAYBOOK = AnsiblePlaybook(name=ANSIBLE_DUMMY_PLAYBOOK_NAME, content=ANSIBLE_DUMMY_PLAYBOOK_CONTENT)
+
+ANSIBLE_HOSTS = [
+    AnsibleHost(
+        host="localhost",
+        ip_address="ansible_connection=local",
+        username="test-user",
+        password="test-pass",
+    )
+]
+
+ANSIBLE_VAR_1 = "key1=value1"
+ANSIBLE_VAR_2 = "key2=value2"
+ANSIBLE_VARIABLES = [ANSIBLE_VAR_1, ANSIBLE_VAR_2]
 
 
 class AnsibleRunnerTestShould(unittest.TestCase):
-    def test_run_ansible_mock_flow(self):
-        ctx = Context.create(dry_run=True, verbose=True, auto_prompt=True)
-
-        username = "test-user"
-        password = "test-pass"
-        working_dir = "/path/to/working/dir"
-        selected_hosts = [AnsibleHost("localhost", "ansible_connection=local")]
-        playbook_path = "/path/to/playbook/folder"
-        ansible_vars = ["key1=value1", "key2=value2"]
-        force_dockerized = True
-
-        ansible_runner = AnsibleRunnerLocal.create(
-            ctx=ctx, io_utils=FakeIOUtils.create(ctx), process=Process.create(ctx), paths=Paths.create(ctx)
-        )
-
-        output = ansible_runner.run_fn(
-            username=username,
-            password=password,
-            working_dir=working_dir,
-            selected_hosts=selected_hosts,
-            playbook_path=playbook_path,
-            ansible_vars=ansible_vars,
-            force_dockerized=force_dockerized,
-        )
-
-        self.assertIn(
-            """sh \
-./external/shell_scripts_lib/runner/ansible/ansible.sh \
-working_dir: /path/to/working/dir \
-username: test-user \
-password: test-pass \
-playbook_path: /path/to/playbook/folder \
-selected_host: localhost ansible_connection=local \
-ansible_var: key1=value1 \
-ansible_var: key2=value2 \
---force-dockerized \
---dry-run \
---verbose""",
-            output,
-        )
-
-    def test_run_ansible_mock_flow_custom_shell_runner(self):
-        ctx = Context.create(dry_run=True, verbose=True, auto_prompt=True)
-        ansible_runner = AnsibleRunnerLocal.create(
-            ctx=ctx,
-            io_utils=FakeIOUtils.create(ctx),
-            process=Process.create(ctx),
-            paths=Paths.create(ctx),
-        )
-
-        output = ansible_runner.run_fn(
-            username="",
-            password="",
-            working_dir="",
-            selected_hosts="",
-            playbook_path="",
-            ansible_vars="",
-        )
-
-        # self.assertIn(
-        #     f"sh ./{ansible_shell_runner_path}",
-        #     output,
-        # )
-
-    def test_run_ansible_fail_on_missing_shell_runner_path(self):
-        ctx = Context.create(dry_run=False, verbose=True, auto_prompt=True)
-        # Use real IOUtils to explicitly fail on missing Ansible shell runner
-        ansible_runner = AnsibleRunnerLocal.create(
-            ctx=ctx, io_utils=IOUtils.create(ctx), process=Process.create(ctx), paths=Paths.create(ctx)
-        )
-
-        with self.assertRaises(ExternalDependencyFileNotFound):
-            ansible_runner.run_fn(
-                username="",
-                password="",
-                working_dir="",
-                selected_hosts="",
-                playbook_path="",
-                ansible_vars="",
-            )
-
     def test_run_ansible_fail_on_invalid_host_ip_pair(self):
         ctx = Context.create(dry_run=False, verbose=True, auto_prompt=True)
-        ansible_runner = AnsibleRunnerLocal.create(
-            ctx=ctx,
-            io_utils=FakeIOUtils.create(ctx),
-            process=Process.create(ctx),
-            paths=Paths.create(ctx),
-        )
-
-        with self.assertRaises(InvalidAnsibleHostPair):
-            ansible_runner.run_fn(
-                username="",
-                password="",
-                working_dir="",
+        Assertion.expect_raised_failure(
+            self,
+            ex_type=InvalidAnsibleHostPair,
+            method_to_run=lambda: AnsibleRunnerLocal.create(
+                ctx=ctx,
+                io_utils=FakeIOUtils.create(ctx),
+                paths=Paths.create(ctx),
+            ).run_fn(
                 selected_hosts=[AnsibleHost("localhost", None)],
-                playbook_path="",
-                ansible_vars="",
-                force_dockerized="",
-            )
-
-    def test_integration_run_ansible_dry_run_flow(self):
-        ctx = Context.create(dry_run=False, verbose=True, auto_prompt=True)
-        ansible_ctx = Context.create(dry_run=True, verbose=True, auto_prompt=True)
-
-        username = "test-user"
-        password = "test-pass"
-        working_dir = os.getcwd()
-        selected_hosts = [AnsibleHost("localhost", "ansible_connection=local")]
-        playbook_path = "external/shell_scripts_lib/runner/ansible/test_data/test_playbook.yaml"
-        ansible_vars = ["key1=value1", "key2=value2"]
-        force_dockerized = False
-
-        ansible_runner = AnsibleRunnerLocal.create(
-            ctx=ansible_ctx, io_utils=IOUtils.create(ctx), process=Process.create(ctx), paths=Paths.create(ctx)
+                playbook=ANSIBLE_DUMMY_PLAYBOOK,
+            ),
         )
 
-        output = ansible_runner.run_fn(
-            username=username,
-            password=password,
-            working_dir=working_dir,
-            selected_hosts=selected_hosts,
-            playbook_path=playbook_path,
-            ansible_vars=ansible_vars,
-        )
-
-        ansible_hosts_path = os.path.expanduser("~/.config/ansible/ansible_hosts")
-        ansible_config_path = os.path.expanduser("~/.config/ansible/config")
-
-        self.assertIn(
-            """
-[all:vars]
-ansible_connection=ssh
-
-# The RPi remote user (default: pi)
-ansible_user=test-user
-
-# Redundant if supplying the local SSH key path using SECRET_ANSIBLE_SSH_KEY_PATH in .secrets file
-ansible_ssh_pass=test-pass
-
-# These are the user selected hosts from the prompted selection menu
-[selected_hosts]
-localhost ansible_connection=local""",
-            output,
-        )
-
-        # The first assertion checks that the shell_scripts_lib symlink was properly mounted as a docker volume.
-        # The host path might vary depends on the running machine, this is the reason a regex assertion was used.
-        # Symlinks used within a docker container MUST be mounted to the container as well, otherwise it won't be
-        # possible to get their reallink
-        self.assertRegex(output, f'docker run -v ".*":"/usr/runner/workspace/external/shell_scripts_lib"')
-
-        # Rest of the assertions
-        self.assertIn(f'-v "{ansible_hosts_path}":"/usr/runner/workspace/ansible_hosts"', output)
-        self.assertIn(f'-v "{ansible_config_path}":"/usr/runner/workspace/config"', output)
-        self.assertIn(f'-v "{working_dir}":"/usr/runner/workspace"', output)
-        self.assertIn('-v "/var/run/docker.sock":"/var/run/docker.sock"', output)
-        self.assertIn('-e VERBOSE="true"', output)
-        self.assertIn("shell_runner/ansible", output)
-        self.assertIn(
-            f"-i /usr/runner/workspace/ansible_hosts -vvv {playbook_path} -e ansible_user={username} -e ansible_ssh_pass={password} -e local_bin_folder=/home/test-user/.local/bin -e  {ansible_vars[0]} -e  {ansible_vars[1]} ",
-            output,
+    def test_run_ansible_dry_run_flow(self):
+        ctx = Context.create(dry_run=True, verbose=True, auto_prompt=True)
+        Assertion.expect_outputs(
+            self,
+            method_to_run=lambda: AnsibleRunnerLocal.create(
+                ctx=ctx, io_utils=IOUtils.create(ctx), paths=Paths.create(ctx)
+            ).run_fn(
+                selected_hosts=ANSIBLE_HOSTS,
+                playbook=ANSIBLE_DUMMY_PLAYBOOK,
+                ansible_vars=ANSIBLE_VARIABLES,
+            ),
+            expected=[
+                ANSIBLE_DUMMY_PLAYBOOK_NAME,
+                "name: Test Dummy Playbook",
+                "hosts: selected_hosts",
+                "role: DRY_RUN_RESPONSE/roles/hello_world",
+                "tags: ['hello']",
+                f"ansible-playbook -i {os.path.expanduser('~/.config/provisioner/ansible/hosts')} DRY_RUN_RESPONSE -e local_bin_folder='~/.local/bin' -e {ANSIBLE_VAR_1} -e {ANSIBLE_VAR_2} -vvvv",
+            ],
         )

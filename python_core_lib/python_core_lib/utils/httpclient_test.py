@@ -6,16 +6,26 @@ from unittest import mock
 import requests
 
 from python_core_lib.infra.context import Context
+from python_core_lib.test_lib.test_env import TestEnv
 from python_core_lib.utils.httpclient import HttpClient, HttpResponse
 from python_core_lib.utils.io_utils_fakes import FakeIOUtils
 from python_core_lib.utils.printer_fakes import FakePrinter
 
 
+#
+# To run these directly from the terminal use:
+#  poetry run coverage run -m pytest python_core_lib/utils/httpclient_test.py
+#
 class HttpClientTestShould(unittest.TestCase):
+
+    env = TestEnv.create()
+
     def create_fake_http_client(self) -> HttpClient:
-        ctx = Context.create()
-        fake_printer = FakePrinter.create(ctx)
-        return HttpClient.create(ctx, io_utils=FakeIOUtils.create(ctx), printer=fake_printer)
+        return HttpClient.create(
+            self.env.get_context(),
+            io_utils=self.env.get_collaborators().io_utils(),
+            printer=self.env.get_collaborators().printer(),
+        )
 
     def test_get_raw_client(self):
         http_client = self.create_fake_http_client()

@@ -33,7 +33,6 @@ from provisioner_single_board_plugin.common.remote.remote_network_configure impo
 ARG_GW_IP_ADDRESS = "1.1.1.1"
 ARG_DNS_IP_ADDRESS = "2.2.2.2"
 ARG_STATIC_IP_ADDRESS = "1.1.1.200"
-ARG_ANSIBLE_PLAYBOOK_RELATIVE_PATH_FROM_ROOT = "/test/path/ansible/configure_network.yaml"
 
 REMOTE_NETWORK_CONFIGURE_RUNNER_PATH = (
     "provisioner_single_board_plugin.common.remote.remote_network_configure.RemoteMachineNetworkConfigureRunner"
@@ -49,7 +48,6 @@ class RemoteMachineNetworkConfigureTestShould(unittest.TestCase):
             gw_ip_address=ARG_GW_IP_ADDRESS,
             dns_ip_address=ARG_DNS_IP_ADDRESS,
             static_ip_address=ARG_STATIC_IP_ADDRESS,
-            ansible_playbook_relative_path_from_module=ARG_ANSIBLE_PLAYBOOK_RELATIVE_PATH_FROM_ROOT,
             remote_opts=None,
         )
 

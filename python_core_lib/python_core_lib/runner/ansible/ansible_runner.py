@@ -15,13 +15,13 @@ ProvisionerAnsibleProjectPath = os.path.expanduser("~/.config/provisioner/ansibl
 
 ANSIBLE_HOSTS_FILE_NAME = "hosts"
 
-ANSIBLE_CFG_PYTHON_PACKAGE = "resources.ansible"
+ANSIBLE_CFG_PYTHON_PACKAGE = "python_core_lib.runner.ansible.resources"
 ANSIBLE_CFG_FILE_NAME = "ansible.cfg"
 
-ANSIBLE_CALLBACK_PLUGINS_PYTHON_PACKAGE = "resources.ansible.callback_plugins"
+ANSIBLE_CALLBACK_PLUGINS_PYTHON_PACKAGE = "python_core_lib.runner.ansible.resources.callback_plugins"
 ANSIBLE_CALLBACK_PLUGINS_DIR_NAME = "callback_plugins"
 
-ANSIBLE_PLAYBOOKS_PYTHON_PACKAGE = "external.ansible_playbooks"
+ANSIBLE_PLAYBOOKS_PYTHON_PACKAGE = "external.ansible_playbooks.playbooks"
 ANSIBLE_PLAYBOOKS_DIR_NAME = "playbooks"
 
 INVENTORY_FORMAT = """
@@ -43,11 +43,6 @@ REMOTE_MACHINE_LOCAL_BIN_FOLDER = "~/.local/bin"
 
 class AnsiblePlaybook:
     __name: str
-
-    """
-    Playbook content support the following string format values:
-      - ansible_playbooks_path: replace with the ansible-playbook resource root folder path 
-    """
     __content: str
 
     def __init__(self, name: str, content: str) -> None:
@@ -57,11 +52,23 @@ class AnsiblePlaybook:
     def get_name(self) -> str:
         return self.__name.replace(" ", "_").lower()
 
-    def get_content(self, paths: Paths) -> str:
+    def get_content(self, paths: Paths, ansible_playbook_package: str) -> str:
+        """
+        Playbook content support the following string format values:
+        - ansible_playbooks_path: replace with the ansible-playbook resource root folder path
+        """
+        if "ansible_playbooks_path" not in self.__content:
+            return self.__content
+
+        package_dir_split = ansible_playbook_package.rsplit(".", 1)
+        package_prefix = package_dir_split[0]
+        package_suffix = package_dir_split[0]
+
+        if len(package_dir_split) > 1:
+            package_suffix = package_dir_split[1]
+
         return self.__content.format(
-            ansible_playbooks_path=paths.get_dir_path_from_python_package(
-                ANSIBLE_PLAYBOOKS_PYTHON_PACKAGE, ANSIBLE_PLAYBOOKS_DIR_NAME
-            )
+            ansible_playbooks_path=paths.get_dir_path_from_python_package(package_prefix, package_suffix)
         )
 
     def __eq__(self, other):
@@ -229,16 +236,12 @@ class AnsibleRunnerLocal:
         #         cmdline_args += ['-b', '-c', 'paramiko', '--ask-pass']
         return cmdline_args
 
-    def _create_playbook_file(self, playbook: AnsiblePlaybook) -> str:
-        playbook_name_escaped = playbook.get_name()
+    def _create_playbook_file(self, name: str, content: str) -> str:
         playbooks_dest_dir = self._io_utils.create_directory_fn(
             f"{ProvisionerAnsibleProjectPath}/{ANSIBLE_PLAYBOOKS_DIR_NAME}"
         )
-        playbook_content = playbook.get_content(paths=self.paths)
-        logger.debug(f"Created playbook file. path: {playbooks_dest_dir}\n{playbook_content}")
-        return self._io_utils.write_file_fn(
-            content=playbook_content, file_name=playbook_name_escaped, dir_path=playbooks_dest_dir
-        )
+        logger.debug(f"Created playbook file. path: {playbooks_dest_dir}\n{content}")
+        return self._io_utils.write_file_fn(content=content, file_name=name, dir_path=playbooks_dest_dir)
 
     def _run(
         self,
@@ -246,6 +249,7 @@ class AnsibleRunnerLocal:
         playbook: AnsiblePlaybook,
         ansible_vars: Optional[List[str]] = None,
         ansible_tags: Optional[List[str]] = None,
+        ansible_playbook_package: Optional[str] = ANSIBLE_PLAYBOOKS_PYTHON_PACKAGE,
     ) -> str:
 
         # Problem:
@@ -267,12 +271,13 @@ class AnsibleRunnerLocal:
         self._create_ansible_callback_plugins_folder()
         self._create_inventory_hosts_file(selected_hosts)
 
-        playbook_file_path = self._create_playbook_file(playbook)
+        playbook_content_escaped = playbook.get_content(self.paths, ansible_playbook_package)
+        playbook_file_path = self._create_playbook_file(name=playbook.get_name(), content=playbook_content_escaped)
         ansible_playbook_args = self._generate_ansible_playbook_args(playbook_file_path, ansible_vars, ansible_tags)
         logger.debug(f"About to run command:\nansible-playbook {' '.join(map(str, ansible_playbook_args))}")
 
         if self._dry_run:
-            return "DRY_RUN_RESPONSE"
+            return f"name: {playbook.get_name()}\ncontent:\n{playbook_content_escaped}\ncommand:\nansible-playbook {' '.join(map(str, ansible_playbook_args))}"
 
         # Run ansible/generic commands in interactive mode locally
         out, err, rc = ansible_runner.run_command(

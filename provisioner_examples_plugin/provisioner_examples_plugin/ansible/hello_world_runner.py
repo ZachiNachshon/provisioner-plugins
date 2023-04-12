@@ -31,14 +31,10 @@ ANSIBLE_PLAYBOOK_HELLO_WORLD = """
 class HelloWorldRunnerArgs:
 
     username: str
-    ansible_playbook_relative_path_from_module: str
     remote_opts: CliRemoteOpts
 
-    def __init__(
-        self, username: str, ansible_playbook_relative_path_from_module: str, remote_opts: CliRemoteOpts
-    ) -> None:
+    def __init__(self, username: str, remote_opts: CliRemoteOpts) -> None:
         self.username = username
-        self.ansible_playbook_relative_path_from_module = ansible_playbook_relative_path_from_module
         self.remote_opts = remote_opts
 
 

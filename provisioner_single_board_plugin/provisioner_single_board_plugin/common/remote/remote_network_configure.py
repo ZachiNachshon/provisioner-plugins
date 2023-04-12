@@ -39,7 +39,6 @@ class RemoteMachineNetworkConfigureArgs:
     gw_ip_address: str
     dns_ip_address: str
     static_ip_address: str
-    ansible_playbook_relative_path_from_module: str
     remote_opts: CliRemoteOpts
 
     def __init__(
@@ -47,13 +46,11 @@ class RemoteMachineNetworkConfigureArgs:
         gw_ip_address: str,
         dns_ip_address: str,
         static_ip_address: str,
-        ansible_playbook_relative_path_from_module: str,
         remote_opts: CliRemoteOpts,
     ) -> None:
         self.gw_ip_address = gw_ip_address
         self.dns_ip_address = dns_ip_address
         self.static_ip_address = static_ip_address
-        self.ansible_playbook_relative_path_from_module = ansible_playbook_relative_path_from_module
         self.remote_opts = remote_opts
 
 

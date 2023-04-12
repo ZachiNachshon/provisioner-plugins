@@ -37,10 +37,6 @@ class FailedToSerializeConfiguration(Exception):
     pass
 
 
-class ExternalDependencyFileNotFound(Exception):
-    pass
-
-
 class InvalidAnsibleHostPair(Exception):
     pass
 
