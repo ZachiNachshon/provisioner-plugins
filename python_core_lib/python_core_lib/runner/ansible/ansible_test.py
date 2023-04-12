@@ -52,6 +52,10 @@ ANSIBLE_VAR_1 = "key1=value1"
 ANSIBLE_VAR_2 = "key2=value2"
 ANSIBLE_VARIABLES = [ANSIBLE_VAR_1, ANSIBLE_VAR_2]
 
+ANSIBLE_TAG_1 = "test_tag_1"
+ANSIBLE_TAG_2 = "test_tag_2"
+ANSIBLE_TAGS = [ANSIBLE_TAG_1, ANSIBLE_TAG_2]
+
 
 class AnsibleRunnerTestShould(unittest.TestCase):
     def test_run_ansible_fail_on_invalid_host_ip_pair(self):
@@ -79,6 +83,7 @@ class AnsibleRunnerTestShould(unittest.TestCase):
                 selected_hosts=ANSIBLE_HOSTS,
                 playbook=ANSIBLE_DUMMY_PLAYBOOK,
                 ansible_vars=ANSIBLE_VARIABLES,
+                ansible_tags=ANSIBLE_TAGS,
             ),
             expected=[
                 ANSIBLE_DUMMY_PLAYBOOK_NAME,
@@ -86,6 +91,6 @@ class AnsibleRunnerTestShould(unittest.TestCase):
                 "hosts: selected_hosts",
                 "role: DRY_RUN_RESPONSE/roles/hello_world",
                 "tags: ['hello']",
-                f"ansible-playbook -i {os.path.expanduser('~/.config/provisioner/ansible/hosts')} DRY_RUN_RESPONSE -e local_bin_folder='~/.local/bin' -e {ANSIBLE_VAR_1} -e {ANSIBLE_VAR_2} -vvvv",
+                f"ansible-playbook -i {os.path.expanduser('~/.config/provisioner/ansible/hosts')} DRY_RUN_RESPONSE -e local_bin_folder='~/.local/bin' -e {ANSIBLE_VAR_1} -e {ANSIBLE_VAR_2} --tags {ANSIBLE_TAG_1},{ANSIBLE_TAG_2} -vvvv",
             ],
         )

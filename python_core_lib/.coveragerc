@@ -18,11 +18,13 @@ omit =
     */templates/*
     *_test.py
     *test_lib*
+    */callback_plugins/*
     
 
 [report]
 omit = 
     */site-packages/*
+    */callback_plugins/*
     */external/*
     */loguru/*
     *__init__.py
