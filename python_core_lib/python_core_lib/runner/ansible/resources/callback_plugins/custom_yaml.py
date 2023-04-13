@@ -83,20 +83,12 @@ class CallbackModule(Default):
 
     CALLBACK_VERSION = 2.0
     CALLBACK_TYPE = "stdout"
-    CALLBACK_NAME = "community.general.yaml"
+    CALLBACK_NAME = "custom_yaml"
 
     def __init__(self):
         super(CallbackModule, self).__init__()
 
     def _dump_results(self, result, indent=None, sort_keys=True, keep_invocation=False):
-
-        print("----------------------------")
-        print("----------------------------")
-        print("----------------------------")
-        print("----------------------------")
-        print("----------------------------")
-        print("----------------------------")
-        print("----------------------------")
 
         if result.get("_ansible_no_log", False):
             return json.dumps(

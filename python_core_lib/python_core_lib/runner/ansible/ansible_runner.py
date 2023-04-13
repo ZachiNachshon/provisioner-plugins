@@ -24,6 +24,8 @@ ANSIBLE_CALLBACK_PLUGINS_DIR_NAME = "callback_plugins"
 ANSIBLE_PLAYBOOKS_PYTHON_PACKAGE = "external.ansible_playbooks.playbooks"
 ANSIBLE_PLAYBOOKS_DIR_NAME = "playbooks"
 
+ANSIBLE_STDOUT_PLUGIN_NAME = "custom_yaml"
+
 INVENTORY_FORMAT = """
 [all:vars]
 ansible_connection=ssh
@@ -36,6 +38,7 @@ ansible_connection=ssh
 ENV_VARS = {
     "ANSIBLE_CONFIG": f"{ProvisionerAnsibleProjectPath}/{ANSIBLE_CFG_FILE_NAME}",
     "ANSIBLE_CALLBACK_PLUGINS": f"{ProvisionerAnsibleProjectPath}/{ANSIBLE_CALLBACK_PLUGINS_DIR_NAME}",
+    "ANSIBLE_STDOUT_CALLBACK": ANSIBLE_STDOUT_PLUGIN_NAME,
 }
 
 REMOTE_MACHINE_LOCAL_BIN_FOLDER = "~/.local/bin"
