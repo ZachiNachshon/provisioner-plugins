@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 
 from typing import Callable, Optional
-from python_core_lib.infra.context import Context
 
 import typer
 
 from python_core_lib.cli.state import CliGlobalArgs
+from python_core_lib.infra.context import Context
 from python_core_lib.infra.log import LoggerManager
 from python_core_lib.utils.paths import Paths
 
@@ -76,7 +76,9 @@ def main_runner(
 def try_read_version() -> str:
     content = "no version"
     try:
-        file_path = Paths.create(Context.create()).get_file_path_from_python_package(STATIC_VERSION_PACKAGE_PATH, "version.txt")
+        file_path = Paths.create(Context.create()).get_file_path_from_python_package(
+            STATIC_VERSION_PACKAGE_PATH, "version.txt"
+        )
         with open(file_path, "r+") as opened_file:
             content = opened_file.read()
             opened_file.close()

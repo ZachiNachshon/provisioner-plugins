@@ -119,7 +119,7 @@ class PyFn(Generic[ENV, ERR, VAL]):
 
         def collect_and_return_value(value):
             if env.ctx.is_verbose():
-                print(f"for_each iteration: {value}")
+                logger.debug(f"PyFn for_each iteration: {value}")
             result.append(value)
             return value
 

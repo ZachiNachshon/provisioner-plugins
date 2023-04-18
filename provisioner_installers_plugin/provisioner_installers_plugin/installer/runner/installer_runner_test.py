@@ -32,7 +32,7 @@ from provisioner_installers_plugin.installer.domain.source import (
     InstallSources,
 )
 from provisioner_installers_plugin.installer.runner.installer_runner import (
-    ANSIBLE_PLAYBOOK_REMOTE_PROVISIONER_RUN,
+    ANSIBLE_PLAYBOOK_REMOTE_PROVISIONER_WRAPPER,
     InstallerEnv,
     ProvisionerInstallableBinariesPath,
     ProvisionerInstallableSymlinksPath,
@@ -243,25 +243,22 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
         Assertion.expect_call_argument(self, run_call, "env", fake_installer_env)
         Assertion.expect_call_argument(self, run_call, "utilities", utilities)
 
-    def test_install_utility_skips_on_missing_utility(self) -> None:
+    def test_print_pre_install_summary_skips_on_missing_utility(self) -> None:
         fake_installer_env = self.create_fake_installer_env(self.env)
         eval = self.create_evaluator(fake_installer_env)
-        result = eval << self.get_runner(eval)._install_utility(fake_installer_env, maybe_utility=None)
+        result = eval << self.get_runner(eval)._print_pre_install_summary(fake_installer_env, maybe_utility=None)
         self.assertIsNone(result)
 
-    @mock.patch(f"{UTILITY_INSTALLER_CMD_RUNNER_PATH}._install_utility_locally")
-    def test_install_utility_success(self, run_call: mock.MagicMock) -> None:
+    def test_print_pre_install_summary_success(self) -> None:
         utility = TestSupportedToolings["test_util_github"]
         test_env = TestEnv.create()
         fake_installer_env = self.create_fake_installer_env(test_env)
         eval = self.create_evaluator(fake_installer_env)
-        eval << self.get_runner(eval)._install_utility(fake_installer_env, maybe_utility=utility)
-        Assertion.expect_exists(self, run_call, "env")
-        Assertion.expect_call_argument(self, run_call, "utility", utility)
+        eval << self.get_runner(eval)._print_pre_install_summary(fake_installer_env, maybe_utility=utility)
         test_env.get_collaborators().summary().assert_show_summay_title(f"Installing Utility: {utility.display_name}")
 
     @mock.patch(
-        f"{UTILITY_INSTALLER_CMD_RUNNER_PATH}._install_utility",
+        f"{UTILITY_INSTALLER_CMD_RUNNER_PATH}._print_pre_install_summary",
         side_effect=[
             PyFn.of(TestSupportedToolings["test_util_github"]),
             PyFn.of(TestSupportedToolings["test_util_script"]),
@@ -696,11 +693,12 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
         )
         test_env.get_collaborators().ansible_runner().assert_command(
             selected_hosts=TestDataRemoteConnector.TEST_DATA_SSH_ANSIBLE_HOSTS,
-            playbook=AnsiblePlaybook(name="provisioner_run", content=ANSIBLE_PLAYBOOK_REMOTE_PROVISIONER_RUN),
+            playbook=AnsiblePlaybook(name="provisioner_wrapper", content=ANSIBLE_PLAYBOOK_REMOTE_PROVISIONER_WRAPPER),
             ansible_vars=[
-                f"provisioner_command='provisioner -y install cli --environment=Local {utility.binary_name}'"
+                f"provisioner_command='provisioner -vy install cli --environment=Local {utility.binary_name}'",
+                "required_plugins=['provisioner_installers_plugin:0.1.0']",
             ],
-            ansible_tags=["provisioner_run"],
+            ansible_tags=["provisioner_wrapper"],
         )
 
     @mock.patch(

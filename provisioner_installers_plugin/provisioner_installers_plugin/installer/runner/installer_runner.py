@@ -28,7 +28,7 @@ from provisioner_installers_plugin.installer.domain.source import ActiveInstallS
 ProvisionerInstallableBinariesPath = os.path.expanduser("~/.config/provisioner/binaries")
 ProvisionerInstallableSymlinksPath = os.path.expanduser("~/.local/bin")
 
-ANSIBLE_PLAYBOOK_REMOTE_PROVISIONER_RUN = """
+ANSIBLE_PLAYBOOK_REMOTE_PROVISIONER_WRAPPER = """
 ---
 - name: Provisioner run command
   hosts: selected_hosts
@@ -40,7 +40,7 @@ ANSIBLE_PLAYBOOK_REMOTE_PROVISIONER_RUN = """
 
   roles:
     - role: {ansible_playbooks_path}/roles/provisioner
-      tags: ['provisioner_run']
+      tags: ['provisioner_wrapper']
 """
 
 # Named Tuples
@@ -194,7 +194,7 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
                     lambda utilities: self._run_remote_installation(env=env, utilities=utilities)
                 )
 
-    def _install_utility(
+    def _print_pre_install_summary(
         self, env: InstallerEnv, maybe_utility: Optional[Installable.Utility]
     ) -> PyFn["UtilityInstallerCmdRunner", Exception, Installable.Utility]:
         if maybe_utility:
@@ -202,7 +202,7 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
                 lambda: env.collaborators.summary().show_summary_and_prompt_for_enter(
                     f"Installing Utility: {maybe_utility.display_name}"
                 )
-            ).flat_map(lambda _: self._install_utility_locally(env=env, utility=maybe_utility))
+            ).map(lambda _: maybe_utility)
         else:
             return PyFn.empty()
 
@@ -216,7 +216,12 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
                     env, utility_install_tuple.utility, utility_install_tuple.installed
                 )
             )
-            .flat_map(lambda maybe_utility: self._install_utility(env, maybe_utility))
+            .flat_map(lambda maybe_utility: self._print_pre_install_summary(env, maybe_utility))
+            .if_then_else(
+                predicate=lambda maybe_utility: maybe_utility is not None,
+                if_true=lambda maybe_utility: self._install_utility_locally(env, maybe_utility),
+                if_false=lambda _: PyFn.empty(),
+            )
         )
 
     def _check_if_utility_already_installed(
@@ -452,14 +457,18 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
             lambda: env.collaborators.printer().progress_indicator.status.long_running_process_fn(
                 call=lambda: env.collaborators.ansible_runner().run_fn(
                     selected_hosts=sshconninfo_utility_info.ssh_conn_info.ansible_hosts,
-                    playbook=AnsiblePlaybook(name="provisioner_run", content=ANSIBLE_PLAYBOOK_REMOTE_PROVISIONER_RUN),
+                    playbook=AnsiblePlaybook(
+                        name="provisioner_wrapper", content=ANSIBLE_PLAYBOOK_REMOTE_PROVISIONER_WRAPPER
+                    ),
                     ansible_vars=[
-                        f"provisioner_command='provisioner -y install cli --environment=Local {sshconninfo_utility_info.utility.binary_name}'"
+                        f"provisioner_command='provisioner -vy install cli --environment=Local {sshconninfo_utility_info.utility.binary_name}'",
+                        # f"provisioner_command='provisioner --version'",
+                        f"required_plugins=['provisioner_installers_plugin:0.1.0']",
                     ],
-                    ansible_tags=["provisioner_run"],
+                    ansible_tags=["provisioner_wrapper"],
                 ),
-                desc_run="Running Ansible playbook (Provisioner Run)",
-                desc_end="Ansible playbook finished (Provisioner Run).",
+                desc_run="Running Ansible playbook (Provisioner Wrapper)",
+                desc_end="Ansible playbook finished (Provisioner Wrapper).",
             )
         )
 
@@ -472,6 +481,11 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
         return PyFn.of(utilities).for_each(
             lambda utility: ssh_conn_info_chain.flat_map(
                 lambda ssh_conn_info: PyFn.of(SSHConnInfo_Utility_Tuple(ssh_conn_info, utility))
+            )
+            .flat_map(
+                lambda sshconninfo_utility_tuple: self._print_pre_install_summary(
+                    env, sshconninfo_utility_tuple.utility
+                ).map(lambda _: sshconninfo_utility_tuple)
             )
             .flat_map(lambda sshconninfo_utility_tuple: self._install_on_remote_machine(env, sshconninfo_utility_tuple))
             .map(lambda output: env.collaborators.printer().new_line_fn().print_fn(output))

@@ -89,7 +89,6 @@ class CallbackModule(Default):
         super(CallbackModule, self).__init__()
 
     def _dump_results(self, result, indent=None, sort_keys=True, keep_invocation=False):
-
         if result.get("_ansible_no_log", False):
             return json.dumps(
                 dict(
@@ -137,7 +136,11 @@ class CallbackModule(Default):
                 yaml.dump(abridged_result, allow_unicode=True, width=1000, Dumper=MyDumper, default_flow_style=False)
             )
             # For some reason, doesn't work when taking the escape logic to a method, haven't dug into it
-            ansi_escape = re.compile(r"(\[0)[0-?]*[ -\/]*[@-~]")
+            # ansi_escape = re.compile(r"(\[0)[0-?]*[ -\/]*[@-~]")
+            # Clears the following color codes:
+            # - '[0;32mINFO[0m'   (Shell)
+            # - '[34m[1mDEBUG[0m' (Python)
+            ansi_escape = re.compile(r"\[[0-9;]*m")
             dumped = ansi_escape.sub(repl="", string=dumped)
 
         # indent by a couple of spaces
