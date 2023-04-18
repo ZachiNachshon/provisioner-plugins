@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import traceback
 from typing import Any, Callable
 
 from loguru import logger
@@ -56,11 +57,13 @@ class Evaluator:
             is_failure = True
             raised = sef
         except Exception as ex:
+            if CliGlobalArgs.is_verbose():
+                traceback.print_exc()
             is_failure = True
             raised = ex
             should_re_raise = True
 
-        if is_failure or not response:
+        if CliGlobalArgs.is_verbose() and (is_failure or not response):
             logger.critical(
                 f"Failed to install CLI utility. name: {name}, ex: {raised.__class__.__name__}, message: {str(raised)}"
             )

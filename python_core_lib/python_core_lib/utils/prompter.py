@@ -127,10 +127,10 @@ class Prompter:
             idx += 1
         inq_opts.insert(idx, f"{idx + 1}. Cancel")
         questions = [inquirer.List("selection", message=enriched_msg, choices=inq_opts)]
-        inq_selection = inquirer.prompt(questions, theme=GreenPassion())
+        inq_selection = inquirer.prompt(questions, theme=GreenPassion(), raise_keyboard_interrupt=True)
 
         result = None
-        if "Cancel" in inq_selection["selection"]:
+        if inq_selection and len(inq_selection) > 0 and "Cancel" in inq_selection["selection"]:
             return result
 
         for opt in options:
@@ -160,7 +160,7 @@ class Prompter:
         enriched_msg = f"{message} (space to select)"
         # Multi selection should not have numbering prefixes
         questions = [inquirer.Checkbox("selection", message=enriched_msg, choices=options)]
-        inq_selection = inquirer.prompt(questions, theme=GreenPassion())
+        inq_selection = inquirer.prompt(questions, theme=GreenPassion(), raise_keyboard_interrupt=True)
         if not inq_selection:
             return None
         result = inq_selection["selection"]

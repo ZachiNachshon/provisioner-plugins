@@ -330,6 +330,9 @@ class RemoteMachineConnector:
     ) -> List[AnsibleHost]:
 
         result: List[AnsibleHost] = []
+        if option_to_value_dict is None or len(option_to_value_dict) == 0:
+            return result
+        
         if force_single_conn_info:
             selected_item_from_config: dict = self.collaborators.prompter().prompt_user_single_selection_fn(
                 message="Please choose a network device", options=options_list
