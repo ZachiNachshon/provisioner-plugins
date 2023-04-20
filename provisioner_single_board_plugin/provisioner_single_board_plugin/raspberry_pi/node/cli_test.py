@@ -21,6 +21,8 @@ ARG_STATIC_IP_ADDRESS = "1.1.1.200"
 
 RPI_NODE_MODULE_PATH = "provisioner_single_board_plugin.raspberry_pi.node"
 
+STEP_ERROR_OUTPUT = "This is a sample step error output for a test expected to fail"
+
 # To run as a single test target:
 #  poetry run coverage run -m pytest provisioner_single_board_plugin/raspberry_pi/node/cli_test.py
 #
@@ -67,11 +69,11 @@ class RaspberryPiNodeCliTestShould(unittest.TestCase):
         Assertion.expect_exists(self, run_call, arg_name="ctx")
         Assertion.expect_exists(self, run_call, arg_name="args")
 
-    @mock.patch(f"{RPI_NODE_MODULE_PATH}.configure_cmd.RPiOsConfigureCmd.run", side_effect=StepEvaluationFailure())
+    @mock.patch(f"{RPI_NODE_MODULE_PATH}.configure_cmd.RPiOsConfigureCmd.run", side_effect=StepEvaluationFailure(STEP_ERROR_OUTPUT))
     def test_run_rpi_node_configure_cmd_managed_failure(self, run_call: mock.MagicMock) -> None:
         Assertion.expect_output(
             self,
-            expected="StepEvaluationFailure",
+            expected=STEP_ERROR_OUTPUT,
             method_to_run=lambda: TestCliRunner.run(RaspberryPiNodeCliTestShould.create_os_configure_runner),
         )
 
@@ -111,11 +113,11 @@ class RaspberryPiNodeCliTestShould(unittest.TestCase):
         Assertion.expect_call_arguments(self, run_call, arg_name="args", assertion_callable=assertion_callback)
         Assertion.expect_exists(self, run_call, arg_name="ctx")
 
-    @mock.patch(f"{RPI_NODE_MODULE_PATH}.network_cmd.RPiNetworkConfigureCmd.run", side_effect=StepEvaluationFailure())
+    @mock.patch(f"{RPI_NODE_MODULE_PATH}.network_cmd.RPiNetworkConfigureCmd.run", side_effect=StepEvaluationFailure(STEP_ERROR_OUTPUT))
     def test_run_rpi_node_network_cmd_managed_failure(self, run_call: mock.MagicMock) -> None:
         Assertion.expect_output(
             self,
-            expected="StepEvaluationFailure",
+            expected=STEP_ERROR_OUTPUT,
             method_to_run=lambda: TestCliRunner.run(RaspberryPiNodeCliTestShould.create_network_configure_runner),
         )
 

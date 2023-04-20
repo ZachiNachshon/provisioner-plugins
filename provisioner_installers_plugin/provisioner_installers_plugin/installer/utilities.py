@@ -45,7 +45,7 @@ SupportedToolings = {
     ),
     "helm": Installable.Utility(
         display_name="helm",
-        binary_name="k3s",
+        binary_name="helm",
         version=ToolingVersions.helm_ver,
         active_source=ActiveInstallSource.GitHub,
         sources=InstallSources(

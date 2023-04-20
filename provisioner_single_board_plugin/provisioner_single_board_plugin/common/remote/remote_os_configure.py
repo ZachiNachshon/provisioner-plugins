@@ -23,6 +23,7 @@ ANSIBLE_PLAYBOOK_RPI_CONFIGURE_NODE = """
 - name: Configure Raspbian OS on remote RPi host
   hosts: selected_hosts
   gather_facts: no
+  {modifiers}
   roles:
     - role: {ansible_playbooks_path}/roles/rpi_config_node
       tags: ['configure_remote_node']

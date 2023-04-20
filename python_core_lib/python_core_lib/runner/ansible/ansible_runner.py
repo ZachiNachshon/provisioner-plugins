@@ -1,13 +1,18 @@
 # !/usr/bin/env python3
 
 import os
+import re
 from typing import List, Optional
 
 import ansible_runner
 from loguru import logger
 
-from python_core_lib.errors.cli_errors import InvalidAnsibleHostPair
+from python_core_lib.errors.cli_errors import (
+    AnsiblePlaybookRunnerException,
+    InvalidAnsibleHostPair,
+)
 from python_core_lib.infra.context import Context
+from python_core_lib.infra.remote_context import RemoteContext
 from python_core_lib.utils.io_utils import IOUtils
 from python_core_lib.utils.paths import Paths
 
@@ -47,10 +52,12 @@ REMOTE_MACHINE_LOCAL_BIN_FOLDER = "~/.local/bin"
 class AnsiblePlaybook:
     __name: str
     __content: str
+    __remote_context: RemoteContext
 
-    def __init__(self, name: str, content: str) -> None:
+    def __init__(self, name: str, content: str, remote_context: Optional[RemoteContext] = None) -> None:
         self.__name = name
         self.__content = content
+        self.__remote_context = remote_context
 
     def get_name(self) -> str:
         return self.__name.replace(" ", "_").lower()
@@ -58,11 +65,33 @@ class AnsiblePlaybook:
     def get_content(self, paths: Paths, ansible_playbook_package: str) -> str:
         """
         Playbook content support the following string format values:
-        - ansible_playbooks_path: replace with the ansible-playbook resource root folder path
+        - {ansible_playbooks_path}: replace with the ansible-playbook resource root folder path
+        - {modifiers}: Add modifier flags: DRY_RUN / VERBOSE / SILENT
         """
-        if "ansible_playbooks_path" not in self.__content:
-            return self.__content
+        resolved_path: str = ""
+        if "ansible_playbooks_path" in self.__content:
+            resolved_path = self._get_ansible_playbook_path(paths, ansible_playbook_package)
 
+        modifiers: str = ""
+        if "modifiers" in self.__content:
+            if self.__remote_context is None:
+                logger.debug(
+                    "Empty remote context, modifiers won't get added to the Ansible playbook (dry_run / verbose / silent)"
+                )
+            else:
+                modifiers = self._generate_modifiers(self.__remote_context)
+
+        return self.__content.format(ansible_playbooks_path=resolved_path, modifiers=modifiers)
+
+    def _generate_modifiers(self, remote_context: RemoteContext):
+        return f"""
+  environment:
+    {"DRY_RUN: True" if remote_context.is_dry_run() else ""}
+    {"VERBOSE: True" if remote_context.is_verbose() else ""}
+    {"SILENT: True" if remote_context.is_silent() else ""}
+"""
+
+    def _get_ansible_playbook_path(self, paths: Paths, ansible_playbook_package: str):
         package_dir_split = ansible_playbook_package.rsplit(".", 1)
         package_prefix = package_dir_split[0]
         package_suffix = package_dir_split[0]
@@ -70,9 +99,7 @@ class AnsiblePlaybook:
         if len(package_dir_split) > 1:
             package_suffix = package_dir_split[1]
 
-        return self.__content.format(
-            ansible_playbooks_path=paths.get_dir_path_from_python_package(package_prefix, package_suffix)
-        )
+        return paths.get_dir_path_from_python_package(package_prefix, package_suffix)
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
@@ -298,7 +325,20 @@ class AnsibleRunnerLocal:
         )
 
         if rc != 0:
-            raise Exception(err if err else out)
+            message = err if err else out
+            # If verbose enabled, we'll send the entire playbook log output
+            if not err and not self._verbose:
+                message = self._try_extract_stderr_message(message)
+            raise AnsiblePlaybookRunnerException(message)
         return str(out)
+
+    def _try_extract_stderr_message(self, ansible_run_output: str) -> str:
+        match = re.search(r'stderr: \|-\s+(.*?)\s+stderr_lines:', ansible_run_output, re.DOTALL)
+        extracted_text = ansible_run_output
+        if match:
+            extracted_text = match.group(1)
+        else:
+            logger.debug("Could not find Ansible stderr in playbook output")
+        return extracted_text
 
     run_fn = _run

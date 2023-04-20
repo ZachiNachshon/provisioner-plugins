@@ -33,10 +33,7 @@ ANSIBLE_PLAYBOOK_REMOTE_PROVISIONER_WRAPPER = """
 - name: Provisioner run command
   hosts: selected_hosts
   gather_facts: no
-  environment:
-    DRY_RUN: True
-    VERBOSE: True
-    # SILENT: True
+  {modifiers}
 
   roles:
     - role: {ansible_playbooks_path}/roles/provisioner
@@ -458,11 +455,12 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
                 call=lambda: env.collaborators.ansible_runner().run_fn(
                     selected_hosts=sshconninfo_utility_info.ssh_conn_info.ansible_hosts,
                     playbook=AnsiblePlaybook(
-                        name="provisioner_wrapper", content=ANSIBLE_PLAYBOOK_REMOTE_PROVISIONER_WRAPPER
+                        name="provisioner_wrapper",
+                        content=ANSIBLE_PLAYBOOK_REMOTE_PROVISIONER_WRAPPER,
+                        remote_context=env.args.remote_opts.get_remote_context(),
                     ),
                     ansible_vars=[
-                        f"provisioner_command='provisioner -vy install cli --environment=Local {sshconninfo_utility_info.utility.binary_name}'",
-                        # f"provisioner_command='provisioner --version'",
+                        f"provisioner_command='provisioner -y {'-v' if env.args.remote_opts.get_remote_context().is_verbose() else ''} install cli --environment=Local {sshconninfo_utility_info.utility.binary_name}'",
                         f"required_plugins=['provisioner_installers_plugin:0.1.0']",
                     ],
                     ansible_tags=["provisioner_wrapper"],
@@ -472,23 +470,33 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
             )
         )
 
+    def is_hosts_found(self, ssh_conn_info: SSHConnectionInfo) -> bool:
+        return ssh_conn_info.ansible_hosts is not None and len(ssh_conn_info.ansible_hosts) > 0
+
     def _run_remote_installation(
         self, env: InstallerEnv, utilities: List[Installable.Utility]
     ) -> PyFn["UtilityInstallerCmdRunner", Exception, List[Installable.Utility]]:
-        ssh_conn_info_chain = PyFn.of(RemoteMachineConnector(collaborators=env.collaborators)).flat_map(
-            lambda connector: self._collect_ssh_connection_info(env, connector)
-        )
-        return PyFn.of(utilities).for_each(
-            lambda utility: ssh_conn_info_chain.flat_map(
-                lambda ssh_conn_info: PyFn.of(SSHConnInfo_Utility_Tuple(ssh_conn_info, utility))
+        return (
+            PyFn.of(RemoteMachineConnector(collaborators=env.collaborators))
+            .flat_map(lambda connector: self._collect_ssh_connection_info(env, connector))
+            .if_then_else(
+                predicate=lambda ssh_conn_info: self.is_hosts_found(ssh_conn_info),
+                if_false=lambda _: PyFn.empty(),
+                if_true=lambda ssh_conn_info: PyFn.of(utilities).for_each(
+                    lambda utility: PyFn.of(SSHConnInfo_Utility_Tuple(ssh_conn_info, utility))
+                    .flat_map(
+                        lambda sshconninfo_utility_tuple: self._print_pre_install_summary(
+                            env, sshconninfo_utility_tuple.utility
+                        ).map(lambda _: sshconninfo_utility_tuple)
+                    )
+                    .flat_map(
+                        lambda sshconninfo_utility_tuple: self._install_on_remote_machine(
+                            env, sshconninfo_utility_tuple
+                        )
+                    )
+                    .map(lambda output: env.collaborators.printer().new_line_fn().print_fn(output)),
+                ),
             )
-            .flat_map(
-                lambda sshconninfo_utility_tuple: self._print_pre_install_summary(
-                    env, sshconninfo_utility_tuple.utility
-                ).map(lambda _: sshconninfo_utility_tuple)
-            )
-            .flat_map(lambda sshconninfo_utility_tuple: self._install_on_remote_machine(env, sshconninfo_utility_tuple))
-            .map(lambda output: env.collaborators.printer().new_line_fn().print_fn(output))
         )
 
 

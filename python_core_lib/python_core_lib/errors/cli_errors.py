@@ -45,6 +45,10 @@ class StepEvaluationFailure(Exception):
     pass
 
 
+class AnsiblePlaybookRunnerException(StepEvaluationFailure):
+    pass
+
+
 class CliEntrypointFailure(Exception):
     pass
 

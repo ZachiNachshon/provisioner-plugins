@@ -18,10 +18,8 @@ from python_core_lib.errors.cli_errors import (
 )
 from python_core_lib.func.pyfn import Environment, PyFn, PyFnEvaluator
 from python_core_lib.infra.context import Context
-from python_core_lib.runner.ansible.ansible_runner import (
-    AnsiblePlaybook,
-    AnsibleRunnerLocal,
-)
+from python_core_lib.infra.remote_context import RemoteContext
+from python_core_lib.runner.ansible.ansible_runner import AnsiblePlaybook
 from python_core_lib.test_lib.assertions import Assertion
 from python_core_lib.test_lib.test_env import TestEnv
 from python_core_lib.utils.os import OsArch
@@ -136,13 +134,14 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
         test_env: TestEnv,
         utilities: List[str] = ["test_util_github", "test_util_script"],
         environment: RunEnvironment = RunEnvironment.Local,
+        remote_context: RemoteContext = RemoteContext.no_op(),
     ) -> InstallerEnv:
         return InstallerEnv(
             ctx=test_env.get_context(),
             collaborators=test_env.get_collaborators(),
             args=UtilityInstallerRunnerCmdArgs(
                 utilities=utilities,
-                remote_opts=TestDataRemoteOpts.create_fake_cli_remote_opts(environment),
+                remote_opts=TestDataRemoteOpts.create_fake_cli_remote_opts(remote_context, environment),
                 github_access_token=TEST_GITHUB_ACCESS_TOKEN,
             ),
             supported_utilities=TestSupportedToolings,
@@ -682,11 +681,11 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
         #     value=TestDataRemoteConnector.create_fake_ssh_conn_info_fn()(),
         # )
 
-    def test_install_on_remote_machine(self) -> None:
+    def test_install_on_remote_machine_with_verbose_flag_enabled(self) -> None:
         utility = TestSupportedToolings["test_util_github"]
         test_env = TestEnv.create()
         ssh_conn_info = TestDataRemoteConnector.create_fake_ssh_conn_info_fn()()
-        fake_installer_env = self.create_fake_installer_env(test_env)
+        fake_installer_env = self.create_fake_installer_env(test_env, remote_context=RemoteContext.create(verbose=True))
         eval = self.create_evaluator(fake_installer_env)
         eval << self.get_runner(eval)._install_on_remote_machine(
             fake_installer_env, SSHConnInfo_Utility_Tuple(ssh_conn_info, utility)
@@ -695,7 +694,7 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
             selected_hosts=TestDataRemoteConnector.TEST_DATA_SSH_ANSIBLE_HOSTS,
             playbook=AnsiblePlaybook(name="provisioner_wrapper", content=ANSIBLE_PLAYBOOK_REMOTE_PROVISIONER_WRAPPER),
             ansible_vars=[
-                f"provisioner_command='provisioner -vy install cli --environment=Local {utility.binary_name}'",
+                f"provisioner_command='provisioner -y -v install cli --environment=Local {utility.binary_name}'",
                 "required_plugins=['provisioner_installers_plugin:0.1.0']",
             ],
             ansible_tags=["provisioner_wrapper"],
@@ -719,7 +718,7 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
         fake_installer_env = self.create_fake_installer_env(test_env)
         eval = self.create_evaluator(fake_installer_env)
         eval << self.get_runner(eval)._run_remote_installation(fake_installer_env, [utility_github, utility_script])
-        self.assertEqual(2, collect_call.call_count)
+        self.assertEqual(1, collect_call.call_count)
         self.assertEqual(2, install_call.call_count)
         test_env.get_collaborators().printer().assert_outputs(
             [

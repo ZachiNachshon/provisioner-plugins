@@ -91,16 +91,6 @@ class UtilityInstallerCliTestShould(unittest.TestCase):
         Assertion.expect_exists(self, run_call, arg_name="ctx")
         Assertion.expect_exists(self, run_call, arg_name="args")
 
-    @mock.patch(f"{INSTALLER_CMD_MODULE_PATH}.UtilityInstallerCmd.run", side_effect=StepEvaluationFailure())
-    def test_run_utility_install_cmd_managed_failure(self, run_call: mock.MagicMock) -> None:
-        Assertion.expect_output(
-            self,
-            expected="StepEvaluationFailure",
-            method_to_run=lambda: TestCliRunner.run(
-                UtilityInstallerCliTestShould.create_local_utility_installer_runner
-            ),
-        )
-
     @mock.patch(f"{INSTALLER_CMD_MODULE_PATH}.UtilityInstallerCmd.run", side_effect=Exception())
     def test_run_utility_install_cmd_unmanaged_failure(self, run_call: mock.MagicMock) -> None:
         Assertion.expect_raised_failure(

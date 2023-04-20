@@ -19,6 +19,8 @@ ARG_IMAGE_DOWNLOAD_URL = "http://test.image.download.url.com"
 AUTO_PROMPT_RESPONSE = "DRY_RUN_RESPONSE"
 RPI_OS_MODULE_PATH = "provisioner_single_board_plugin.raspberry_pi.os"
 
+STEP_ERROR_OUTPUT = "This is a sample step error output for a test expected to fail"
+
 # To run as a single test target:
 #  poetry run coverage run -m pytest provisioner_single_board_plugin/raspberry_pi/os/cli_test.py
 #
@@ -86,11 +88,11 @@ class RaspberryPiOsCliTestShould(unittest.TestCase):
         Assertion.expect_call_arguments(self, run_call, arg_name="args", assertion_callable=assertion_callback)
         Assertion.expect_exists(self, run_call, arg_name="ctx")
 
-    @mock.patch(f"{RPI_OS_MODULE_PATH}.burn_image_cmd.RPiOsBurnImageCmd.run", side_effect=StepEvaluationFailure())
+    @mock.patch(f"{RPI_OS_MODULE_PATH}.burn_image_cmd.RPiOsBurnImageCmd.run", side_effect=StepEvaluationFailure(STEP_ERROR_OUTPUT))
     def test_run_rpi_os_burn_image_cmd_managed_failure(self, run_call: mock.MagicMock) -> None:
         Assertion.expect_output(
             self,
-            expected="StepEvaluationFailure",
+            expected=STEP_ERROR_OUTPUT,
             method_to_run=lambda: TestCliRunner.run(RaspberryPiOsCliTestShould.create_os_burn_image_runner),
         )
 

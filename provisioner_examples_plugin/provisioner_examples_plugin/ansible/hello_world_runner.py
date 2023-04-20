@@ -17,10 +17,7 @@ ANSIBLE_PLAYBOOK_HELLO_WORLD = """
 - name: Hello World Run
   hosts: selected_hosts
   gather_facts: no
-  environment:
-    DRY_RUN: True
-    VERBOSE: True
-    # SILENT: True
+  {modifiers}
 
   roles:
     - role: {ansible_playbooks_path}/roles/hello_world

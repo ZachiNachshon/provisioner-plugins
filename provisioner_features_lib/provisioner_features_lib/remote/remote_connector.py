@@ -98,7 +98,7 @@ class RemoteMachineConnector:
                     ip_discovery_range=remote_opts.ip_discovery_range, force_single_conn_info=force_single_conn_info
                 ),
                 ctx=ctx,
-                err_msg="Failed to read host IP address from LAN scan",
+                err_msg="Failed to read hosts IP addresses from LAN scan",
             )
 
         elif network_device_selection_method == NetworkDeviceSelectionMethod.UserPrompt:
@@ -332,7 +332,7 @@ class RemoteMachineConnector:
         result: List[AnsibleHost] = []
         if option_to_value_dict is None or len(option_to_value_dict) == 0:
             return result
-        
+
         if force_single_conn_info:
             selected_item_from_config: dict = self.collaborators.prompter().prompt_user_single_selection_fn(
                 message="Please choose a network device", options=options_list

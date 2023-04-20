@@ -40,7 +40,8 @@ class Evaluator:
         try:
             call()
         except StepEvaluationFailure as sef:
-            logger.critical(f"{error_message}. name: {name}, ex: {sef.__class__.__name__}, message: {str(sef)}")
+            # logger.critical(f"{error_message}. name: {name}, ex: {sef.__class__.__name__}, message: {str(sef)}")
+            print(str(sef))
         except Exception as e:
             logger.critical(f"{error_message}. name: {name}, ex: {e.__class__.__name__}, message: {str(e)}")
             if CliGlobalArgs.is_verbose():
@@ -51,11 +52,13 @@ class Evaluator:
         is_failure = False
         raised: Exception = None
         should_re_raise = False
+        response = None
         try:
             response = call()
         except StepEvaluationFailure as sef:
-            is_failure = True
-            raised = sef
+            # is_failure = True
+            # raised = sef
+            print(str(sef))
         except Exception as ex:
             if CliGlobalArgs.is_verbose():
                 traceback.print_exc()

@@ -21,6 +21,7 @@ ANSIBLE_PLAYBOOK_RPI_CONFIGURE_NETWORK = """
 - name: Configure static IP address and hostname on remote RPi host
   hosts: selected_hosts
   gather_facts: no
+  {modifiers}
   roles:
     - role: {ansible_playbooks_path}/roles/rpi_config_network
       tags: ['configure_rpi_network']
