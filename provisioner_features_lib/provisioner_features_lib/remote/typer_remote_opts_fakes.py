@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 
+from python_core_lib.infra.remote_context import RemoteContext
+
 from provisioner_features_lib.remote.domain.config import RemoteConfig, RunEnvironment
 from provisioner_features_lib.remote.typer_remote_opts import (
     CliRemoteOpts,
     TyperRemoteOpts,
 )
-from python_core_lib.infra.remote_context import RemoteContext
 
 TEST_DATA_ENVIRONMENT: RunEnvironment = RunEnvironment.Local
 TEST_DATA_SSH_HOSTNAME_1 = "test-hostname-1"
@@ -53,7 +54,9 @@ class TestDataRemoteOpts:
         )
 
     @staticmethod
-    def create_fake_cli_remote_opts(remote_context: RemoteContext = None, environment: RunEnvironment = TEST_DATA_ENVIRONMENT) -> CliRemoteOpts:
+    def create_fake_cli_remote_opts(
+        remote_context: RemoteContext = None, environment: RunEnvironment = TEST_DATA_ENVIRONMENT
+    ) -> CliRemoteOpts:
         return CliRemoteOpts(
             environment=environment,
             node_username=TEST_DATA_REMOTE_NODE_USERNAME_1,

@@ -330,15 +330,29 @@ class AnsibleRunnerLocal:
             if not err and not self._verbose:
                 message = self._try_extract_stderr_message(message)
             raise AnsiblePlaybookRunnerException(message)
-        return str(out)
+
+        if self._verbose:
+            return str(out)
+        else:
+            return self._try_extract_stdout_message(out)
 
     def _try_extract_stderr_message(self, ansible_run_output: str) -> str:
-        match = re.search(r'stderr: \|-\s+(.*?)\s+stderr_lines:', ansible_run_output, re.DOTALL)
+        match = re.search(r"stderr: \|-\s+(.*?)\s+stderr_lines:", ansible_run_output, re.DOTALL)
         extracted_text = ansible_run_output
         if match:
             extracted_text = match.group(1)
         else:
             logger.debug("Could not find Ansible stderr in playbook output")
+        return extracted_text
+
+    def _try_extract_stdout_message(self, ansible_run_output: str) -> str:
+        # match = re.search(r'msg: \|-\s+(.*?)\s+PLAY RECAP', ansible_run_output, re.DOTALL)
+        match = re.search(r"(?<=msg: \|2-)(.*?)(?=PLAY RECAP)", ansible_run_output, re.DOTALL)
+        extracted_text = ansible_run_output
+        if match:
+            extracted_text = match.group(1)
+        else:
+            logger.debug("Could not find Ansible stdout in playbook output")
         return extracted_text
 
     run_fn = _run

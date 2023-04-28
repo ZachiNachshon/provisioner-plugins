@@ -88,7 +88,10 @@ class RaspberryPiOsCliTestShould(unittest.TestCase):
         Assertion.expect_call_arguments(self, run_call, arg_name="args", assertion_callable=assertion_callback)
         Assertion.expect_exists(self, run_call, arg_name="ctx")
 
-    @mock.patch(f"{RPI_OS_MODULE_PATH}.burn_image_cmd.RPiOsBurnImageCmd.run", side_effect=StepEvaluationFailure(STEP_ERROR_OUTPUT))
+    @mock.patch(
+        f"{RPI_OS_MODULE_PATH}.burn_image_cmd.RPiOsBurnImageCmd.run",
+        side_effect=StepEvaluationFailure(STEP_ERROR_OUTPUT),
+    )
     def test_run_rpi_os_burn_image_cmd_managed_failure(self, run_call: mock.MagicMock) -> None:
         Assertion.expect_output(
             self,

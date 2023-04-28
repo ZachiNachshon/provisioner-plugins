@@ -69,7 +69,10 @@ class RaspberryPiNodeCliTestShould(unittest.TestCase):
         Assertion.expect_exists(self, run_call, arg_name="ctx")
         Assertion.expect_exists(self, run_call, arg_name="args")
 
-    @mock.patch(f"{RPI_NODE_MODULE_PATH}.configure_cmd.RPiOsConfigureCmd.run", side_effect=StepEvaluationFailure(STEP_ERROR_OUTPUT))
+    @mock.patch(
+        f"{RPI_NODE_MODULE_PATH}.configure_cmd.RPiOsConfigureCmd.run",
+        side_effect=StepEvaluationFailure(STEP_ERROR_OUTPUT),
+    )
     def test_run_rpi_node_configure_cmd_managed_failure(self, run_call: mock.MagicMock) -> None:
         Assertion.expect_output(
             self,
@@ -113,7 +116,10 @@ class RaspberryPiNodeCliTestShould(unittest.TestCase):
         Assertion.expect_call_arguments(self, run_call, arg_name="args", assertion_callable=assertion_callback)
         Assertion.expect_exists(self, run_call, arg_name="ctx")
 
-    @mock.patch(f"{RPI_NODE_MODULE_PATH}.network_cmd.RPiNetworkConfigureCmd.run", side_effect=StepEvaluationFailure(STEP_ERROR_OUTPUT))
+    @mock.patch(
+        f"{RPI_NODE_MODULE_PATH}.network_cmd.RPiNetworkConfigureCmd.run",
+        side_effect=StepEvaluationFailure(STEP_ERROR_OUTPUT),
+    )
     def test_run_rpi_node_network_cmd_managed_failure(self, run_call: mock.MagicMock) -> None:
         Assertion.expect_output(
             self,
