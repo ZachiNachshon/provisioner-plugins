@@ -10,7 +10,7 @@ source "${ROOT_FOLDER_ABS_PATH}/strings.sh"
 source "${ROOT_FOLDER_ABS_PATH}/checks.sh"
 source "${ROOT_FOLDER_ABS_PATH}/github.sh"
 
-SCRIPT_MENU_TITLE="Poetry pip Installer"
+SCRIPT_MENU_TITLE="Poetry pip Releaser"
 
 CLI_ARGUMENT_INSTALL=""
 CLI_ARGUMENT_PUBLISH=""

@@ -66,17 +66,6 @@ test-all: ## Run Unit/E2E/IT tests
 	@coverage html
 	-@echo "\n====\n\nFull coverage report available on the following link:\n\n  • $(PWD)/htmlcov/index.html\n"
 
-.PHONY: pip-install-all
-pip-install-all: ## pip install all packages locally
-	@echo "\n\n========= PROVISIONER ===============================\n\n"
-	@cd provisioner; make pip-install; cd ..
-	@echo "\n\n========= PROVISIONER PLUGIN: EXAMPLES ==============\n\n"
-	@cd provisioner_examples_plugin; make pip-install; cd ..
-	@echo "\n\n========= PROVISIONER PLUGIN: INSTALLERS ============\n\n"
-	@cd provisioner_installers_plugin; make pip-install; cd ..
-	@echo "\n\n========= PROVISIONER PLUGIN: SINGLE BOARD ==========\n\n"
-	@cd provisioner_single_board_plugin; make pip-install; cd ..
-
 .PHONY: update-externals-all
 update-externals-all: ## Update external source dependents
 	@echo "\n\n========= PROVISIONER ===============================\n\n"
@@ -108,23 +97,54 @@ ci-test-all: ## Run Unit/E2E/IT tests
 	@echo "\n\n========= PROVISIONER PLUGIN: SINGLE BOARD ==========\n\n"
 	@cd provisioner_single_board_plugin; make test-ci; cd ..
 
-
-.PHONY: ci-install-deps-all
-ci-install-deps-all: ## Install all modules dependencies
-	@pip install coverage
+.PHONY: pip-install-all
+pip-install-all: ## Install all source distributions to local pip
 	@echo "\n\n========= PROVISIONER ===============================\n\n"
-	@cd provisioner; poetry install --all-extras; cd ..
-	@echo "\n\n========= PROVISIONER LIBRARY: CORE ==================\n\n"
-	@cd python_core_lib; poetry install; cd ..
-	@echo "\n\n========= PROVISIONER LIBRARY: FEATURES =============\n\n"
-	@cd provisioner_features_lib; poetry install; cd ..
+	@cd provisioner; make pip-install; cd ..
 	@echo "\n\n========= PROVISIONER PLUGIN: EXAMPLES ==============\n\n"
-	@cd provisioner_examples_plugin; poetry install; cd ..
+	@cd provisioner_examples_plugin; make pip-install; cd ..
 	@echo "\n\n========= PROVISIONER PLUGIN: INSTALLERS ============\n\n"
-	@cd provisioner_installers_plugin; poetry install; cd ..
+	@cd provisioner_installers_plugin; make pip-install; cd ..
 	@echo "\n\n========= PROVISIONER PLUGIN: SINGLE BOARD ==========\n\n"
-	@cd provisioner_single_board_plugin; poetry install; cd ..
-	@echo "\n\n========= COMBINING COVERAGE.XML FILES ==========\n\n"
+	@cd provisioner_single_board_plugin; make pip-install; cd ..
+
+.PHONY: pip-uninstall-all
+pip-uninstall-all: ## Uninstall all source distributions from local pip
+	@echo "\n\n========= PROVISIONER ===============================\n\n"
+	@cd provisioner; make pip-uninstall; cd ..
+	@echo "\n\n========= PROVISIONER PLUGIN: EXAMPLES ==============\n\n"
+	@cd provisioner_examples_plugin; make pip-uninstall; cd ..
+	@echo "\n\n========= PROVISIONER PLUGIN: INSTALLERS ============\n\n"
+	@cd provisioner_installers_plugin; make pip-uninstall; cd ..
+	@echo "\n\n========= PROVISIONER PLUGIN: SINGLE BOARD ==========\n\n"
+	@cd provisioner_single_board_plugin; make pip-uninstall; cd ..
+
+.PHONY: pip-github-publish
+pip-github-publish: ## Publish all pip packages tarballs as GitHub releases
+	@echo "\n\n========= PROVISIONER ===============================\n\n"
+	@cd provisioner; make pip-github-publish; cd ..
+	@echo "\n\n========= PROVISIONER PLUGIN: EXAMPLES ==============\n\n"
+	@cd provisioner_examples_plugin; make pip-github-publish; cd ..
+	@echo "\n\n========= PROVISIONER PLUGIN: INSTALLERS ============\n\n"
+	@cd provisioner_installers_plugin; make pip-github-publish; cd ..
+	@echo "\n\n========= PROVISIONER PLUGIN: SINGLE BOARD ==========\n\n"
+	@cd provisioner_single_board_plugin; make pip-github-publish; cd ..
+
+# .PHONY: ci-install-deps-all
+# ci-install-deps-all: ## Install all modules dependencies
+# 	@pip install coverage
+# 	@echo "\n\n========= PROVISIONER ===============================\n\n"
+# 	@cd provisioner; poetry install --all-extras; cd ..
+# 	@echo "\n\n========= PROVISIONER LIBRARY: CORE ==================\n\n"
+# 	@cd python_core_lib; poetry install; cd ..
+# 	@echo "\n\n========= PROVISIONER LIBRARY: FEATURES =============\n\n"
+# 	@cd provisioner_features_lib; poetry install; cd ..
+# 	@echo "\n\n========= PROVISIONER PLUGIN: EXAMPLES ==============\n\n"
+# 	@cd provisioner_examples_plugin; poetry install; cd ..
+# 	@echo "\n\n========= PROVISIONER PLUGIN: INSTALLERS ============\n\n"
+# 	@cd provisioner_installers_plugin; poetry install; cd ..
+# 	@echo "\n\n========= PROVISIONER PLUGIN: SINGLE BOARD ==========\n\n"
+# 	@cd provisioner_single_board_plugin; poetry install; cd ..
 
 .PHONY: help
 help:

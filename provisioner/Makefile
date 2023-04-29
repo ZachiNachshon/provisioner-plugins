@@ -3,8 +3,7 @@ default: help
 POETRY_WRAPPER=./runners/poetry_runner.sh
 POETRY_WRAPPER_DEV=./runners/poetry_runner_dev.sh
 PROJECT_LOCATION=.
-
-# @rm -rf ${HOME}/Library/Caches/pypoetry
+POETRY_PIP_RELEASER=./external/shell_scripts_lib/python/poetry_pip_releaser.sh
 
 .PHONY: update-externals
 update-externals: ## Update external source dependents
@@ -24,14 +23,6 @@ create-update-venv: ## Create/Update a Python virtual env
 	@${POETRY_WRAPPER_DEV} update                # Update latest changes in pyproject.toml lock file
 	@${POETRY_WRAPPER_DEV} install --all-extras  # Download and install dependencies
 	@${POETRY_WRAPPER_DEV} build-project         # Build a tarball package with local Python wheel
-
-.PHONY: pip-install
-pip-install: ## Install a source distribution to local pip
-	@./external/shell_scripts_lib/python/poetry_pip_install.sh package-type=sdist -y
-
-.PHONY: pip-uninstall
-pip-uninstall: ## Uninstall a source distribution from local pip
-	@./external/shell_scripts_lib/python/poetry_pip_install.sh package-type=sdist --delete -y
 
 .PHONY: fmt
 fmt: ## Format Python code using Black style and sort imports
@@ -80,6 +71,26 @@ test-ci: ## Run Unit/E2E/IT tests with XML report for app.codecov.io
 	@${POETRY_WRAPPER} run coverage xml
 	-@echo "\n====\n\nFull coverage report available on the following link:\n\n  • $(PWD)/coverage.xml\n"
 
+.PHONY: pip-install
+pip-install: ## Install a source distribution to local pip
+	@${POETRY_PIP_RELEASER} install --build-type sdist
+
+.PHONY: pip-uninstall
+pip-uninstall: ## Uninstall a source distribution from local pip
+	@${POETRY_PIP_RELEASER} delete --origin pypi-local
+
+.PHONY: pip-github-publish
+pip-github-publish: ## Publish a pip package tarball as a GitHub release
+	@GITHUB_TOKEN=${GITHUB_TOKEN} ${POETRY_PIP_RELEASER} publish \
+		--build-type sdist \
+		--release-type github \
+		--release-tag $(shell cat ./resources/version.txt)
+
+.PHONY: pip-github-delete-tag
+pip-github-delete-tag: ## Publish a pip package tarball as a GitHub release
+	@GITHUB_TOKEN=${GITHUB_TOKEN} ${POETRY_PIP_RELEASER} delete \
+		--origin github \
+		--delete-tag $(shell cat ./resources/version.txt)
 
 .PHONY: help
 help:
