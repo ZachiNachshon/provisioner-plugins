@@ -119,16 +119,16 @@ pip-uninstall-all: ## Uninstall all source distributions from local pip
 	@echo "\n\n========= PROVISIONER PLUGIN: SINGLE BOARD ==========\n\n"
 	@cd provisioner_single_board_plugin; make pip-uninstall; cd ..
 
-.PHONY: pip-github-publish
-pip-github-publish: ## Publish all pip packages tarballs as GitHub releases
+.PHONY: pip-publish-github
+pip-publish-github: ## Publish all pip packages tarballs as GitHub releases
 	@echo "\n\n========= PROVISIONER ===============================\n\n"
-	@cd provisioner; make pip-github-publish; cd ..
+	@cd provisioner; make pip-publish-github; cd ..
 	@echo "\n\n========= PROVISIONER PLUGIN: EXAMPLES ==============\n\n"
-	@cd provisioner_examples_plugin; make pip-github-publish; cd ..
+	@cd provisioner_examples_plugin; make pip-publish-github; cd ..
 	@echo "\n\n========= PROVISIONER PLUGIN: INSTALLERS ============\n\n"
-	@cd provisioner_installers_plugin; make pip-github-publish; cd ..
+	@cd provisioner_installers_plugin; make pip-publish-github; cd ..
 	@echo "\n\n========= PROVISIONER PLUGIN: SINGLE BOARD ==========\n\n"
-	@cd provisioner_single_board_plugin; make pip-github-publish; cd ..
+	@cd provisioner_single_board_plugin; make pip-publish-github; cd ..
 
 # .PHONY: ci-install-deps-all
 # ci-install-deps-all: ## Install all modules dependencies

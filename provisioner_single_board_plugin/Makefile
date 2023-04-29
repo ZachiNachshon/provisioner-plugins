@@ -71,19 +71,13 @@ pip-install: ## Install a source distribution to local pip
 pip-uninstall: ## Uninstall a source distribution from local pip
 	@${POETRY_PIP_RELEASER} delete --origin pypi-local
 
-.PHONY: pip-github-publish
-pip-github-publish: ## Publish a pip package tarball as a GitHub release
+.PHONY: pip-publish-github
+pip-publish-github: ## Publish a pip package tarball as a GitHub release
 	@GITHUB_TOKEN=${GITHUB_TOKEN} ${POETRY_PIP_RELEASER} publish \
 		--build-type sdist \
 		--plugin \
 		--release-type github \
-		--release-tag $(shell cat ./resources/version.txt)
-
-.PHONY: pip-github-delete-tag
-pip-github-delete-tag: ## Publish a pip package tarball as a GitHub release
-	@GITHUB_TOKEN=${GITHUB_TOKEN} ${POETRY_PIP_RELEASER} delete \
-		--origin github \
-		--delete-tag $(shell cat ./resources/version.txt)
+		--release-tag $(shell cat ../provisioner/resources/version.txt)
 
 .PHONY: help
 help:
