@@ -81,14 +81,14 @@ pip-uninstall: ## Uninstall a source distribution from local pip
 
 .PHONY: pip-publish-github
 pip-publish-github: ## Publish a pip package tarball as a GitHub release
-	@GITHUB_TOKEN=${GITHUB_TOKEN} ${POETRY_PIP_RELEASER} publish \
+	@${POETRY_PIP_RELEASER} publish \
 		--build-type sdist \
 		--release-type github \
 		--release-tag $(shell cat ./resources/version.txt)
 
 .PHONY: pip-github-delete-tag
 pip-github-delete-tag: ## Publish a pip package tarball as a GitHub release
-	@GITHUB_TOKEN=${GITHUB_TOKEN} ${POETRY_PIP_RELEASER} delete \
+	@${POETRY_PIP_RELEASER} delete \
 		--origin github \
 		--delete-tag $(shell cat ./resources/version.txt)
 
