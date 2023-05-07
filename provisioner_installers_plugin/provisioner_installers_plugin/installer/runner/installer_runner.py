@@ -203,6 +203,21 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
         else:
             return PyFn.empty()
 
+    def _print_post_install_summary(
+        self, env: InstallerEnv, maybe_utility: Optional[Installable.Utility]
+    ) -> PyFn["UtilityInstallerCmdRunner", Exception, Installable.Utility]:
+        if maybe_utility:
+            return PyFn.effect(
+                lambda: env.collaborators.printer().print_with_rich_table_fn(
+                    f"""Successfully installed utility: 
+  - name: {maybe_utility.display_name}
+  - version: {maybe_utility.version}
+  - binary: {maybe_utility.binary_name}"""
+                )
+            ).map(lambda _: maybe_utility)
+        else:
+            return PyFn.empty()
+
     def _run_local_utilities_installation(
         self, env: InstallerEnv, utilities: List[Installable.Utility]
     ) -> PyFn["UtilityInstallerCmdRunner", Exception, List[Installable.Utility]]:
@@ -216,7 +231,9 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
             .flat_map(lambda maybe_utility: self._print_pre_install_summary(env, maybe_utility))
             .if_then_else(
                 predicate=lambda maybe_utility: maybe_utility is not None,
-                if_true=lambda maybe_utility: self._install_utility_locally(env, maybe_utility),
+                if_true=lambda maybe_utility: self._install_utility_locally(env, maybe_utility).flat_map(
+                    lambda maybe_utility: self._print_post_install_summary(env, maybe_utility)
+                ),
                 if_false=lambda _: PyFn.empty(),
             )
         )
@@ -374,7 +391,7 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
 
     def _elevate_permission_and_symlink(
         self, env: InstallerEnv, unpackedreleasefolderpath_utility_tuple: UnpackedReleaseFolderPath_Utility_Tuple
-    ) -> PyFn["UtilityInstallerCmdRunner", Exception, str]:
+    ) -> PyFn["UtilityInstallerCmdRunner", Exception, Installable.Utility]:
         return (
             PyFn.of(unpackedreleasefolderpath_utility_tuple)
             .map(
@@ -413,6 +430,7 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
                         env, releasename_folderpath_util_tuple
                     )
                 )
+                .map(lambda _: utility)
             )
 
     @staticmethod

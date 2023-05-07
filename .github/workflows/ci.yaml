@@ -131,7 +131,7 @@ jobs:
           pip install coverage
 
       - name: Run tests
-        run: make ci-test-all
+        run: make test-coverage-xml-all
       
       # Requires CODECOV_TOKEN in GitHub repository secrets
       - name: Upload coverage

@@ -115,7 +115,7 @@ class UtilityInstallerCliTestShould(unittest.TestCase):
       {
         "display_name": "anchor",
         "binary_name": "anchor",
-        "version": "v0.10.0",
+        "version": "v0.12.0",
         "sources": {
           "github": {
             "owner": "ZachiNachshon",
@@ -137,7 +137,7 @@ class UtilityInstallerCliTestShould(unittest.TestCase):
     ]
   }
 }""",
-                f"Downloading from GitHub. owner: ZachiNachshon, repo: anchor, name: anchor_0.10.0_{os_arch_pair}.tar.gz, version: v0.10.0",
+                f"Downloading from GitHub. owner: ZachiNachshon, repo: anchor, name: anchor_0.12.0_{os_arch_pair}.tar.gz, version: v0.12.0",
             ],
             method_to_run=lambda: TestCliRunner.run(
                 UtilityInstallerCliTestShould.create_local_utility_installer_runner
