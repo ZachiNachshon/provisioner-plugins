@@ -17,7 +17,7 @@ CLI_ARGUMENT_PUBLISH=""
 CLI_ARGUMENT_DELETE=""
 
 CLI_FLAG_BUILD_TYPE=""             # options: sdist/wheel
-CLI_FLAG_IS_PLUGIN=""              # true/false if missing
+CLI_FLAG_IS_MULTI_PROJECT=""       # true/false if missing
 CLI_FLAG_FORCE_INSTALL_DEPS=""     # true/false if missing
 
 CLI_FLAG_RELEASE_TYPE=""           # options: pypi/github
@@ -55,11 +55,11 @@ get_build_type() {
   echo "${CLI_VALUE_BUILD_TYPE}"
 }
 
-is_plugin() {
-  [[ -n "${CLI_FLAG_IS_PLUGIN}" ]]
+is_multi_project() {
+  [[ -n "${CLI_FLAG_IS_MULTI_PROJECT}" ]]
 }
 
-is_force_install_deps() {
+i_install_deps() {
   [[ -n "${CLI_FLAG_FORCE_INSTALL_DEPS}" ]]
 }
 
@@ -241,12 +241,8 @@ install_dev_local_pip_package() {
   dev_copy_pip_pkg_tarball
   dev_unpack_pip_pkg_tarball
 
-  if is_plugin; then
-    log_warning "Python libraries does not support an executable dev launcher script"
-  else
-    local dev_launch_script=$(dev_generate_launcher_script "${POETRY_PACKAGE_NAME}")
-    dev_install_launcher_binary "${dev_launch_script}"
-  fi
+  local dev_launch_script=$(dev_generate_launcher_script "${POETRY_PACKAGE_NAME}")
+  dev_install_launcher_binary "${dev_launch_script}"
 }
 
 delete_dev_local_pip_package() {
@@ -331,12 +327,12 @@ delete_pip_package_from_wheel() {
 build_sdist_tarball()  {
   local build_cmd=""
 
-  if [[ -n "${CLI_FLAG_IS_PLUGIN}" ]]; then
-    log_info "Build a local Python source distribution ${COLOR_YELLOW}LIBRARY${COLOR_NONE} (sdist tarball)"
-    build_cmd="poetry build -f sdist"
-  else
-    log_info "Build a local Python source distribution ${COLOR_YELLOW}EXECUTABLE${COLOR_NONE} (sdist tarball)"
+  if is_multi_project; then
+    log_info "Build a local Python source distribution ${COLOR_YELLOW}BUNDLED MULTI PROJECT${COLOR_NONE} (sdist tarball)"
     build_cmd="poetry build-project -f sdist"
+  else
+    log_info "Build a local Python source distribution ${COLOR_YELLOW}NON-BUNDLED SINGLE PROJECT${COLOR_NONE} (sdist tarball)"
+    build_cmd="poetry build -f sdist"
   fi
 
   if is_verbose; then
@@ -512,7 +508,7 @@ print_help_menu_and_exit() {
   echo -e " "
   echo -e "${COLOR_WHITE}BUILD FLAGS${COLOR_NONE}"
   echo -e "  ${COLOR_LIGHT_CYAN}--build-type${COLOR_NONE} <option>     Type of the built pip package [${COLOR_GREEN}options: sdist/wheel${COLOR_NONE}]"
-  echo -e "  ${COLOR_LIGHT_CYAN}--plugin${COLOR_NONE}                  Build a non-executable standalone library package (without bundled deps)"
+  echo -e "  ${COLOR_LIGHT_CYAN}--multi-project${COLOR_NONE}           Build a multi-project with bundled dependencies (required Poetry plugin: ${COLOR_GREEN}build-project${COLOR_NONE})"
   echo -e "  ${COLOR_LIGHT_CYAN}--force-install-deps${COLOR_NONE}      Force install all dependencies to local pip"
   echo -e " "
   echo -e "${COLOR_WHITE}PUBLISH FLAGS${COLOR_NONE}"
@@ -563,8 +559,8 @@ parse_program_arguments() {
         CLI_VALUE_BUILD_TYPE=$(cut -d ' ' -f 2- <<<"${1}" | xargs)
         shift
         ;;
-      --plugin)
-        CLI_FLAG_IS_PLUGIN="true"
+      --multi-project)
+        CLI_FLAG_IS_MULTI_PROJECT="true"
         shift
         ;;
       --force-install-deps)

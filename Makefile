@@ -17,7 +17,6 @@ update-externals-all: ## Update external source dependents
 
 .PHONY: deps-all
 deps-all: ## Update and install pyproject.toml dependencies on all virtual environments
-	@pip install coverage
 	@echo "\n\n========= PROVISIONER ===============================\n\n"
 	@cd provisioner; make deps; cd ..
 	@echo "\n\n========= PROVISIONER LIBRARY: CORE ==================\n\n"
