@@ -34,7 +34,7 @@ class UtilityInstallerCmdArgs:
         if github_access_token:
             self.github_access_token = github_access_token
         else:
-            self.github_access_token = os.environ["GITHUB_TOKEN"]
+            self.github_access_token = os.getenv("GITHUB_TOKEN", default="")
 
     def print(self) -> None:
         if self.remote_opts:
