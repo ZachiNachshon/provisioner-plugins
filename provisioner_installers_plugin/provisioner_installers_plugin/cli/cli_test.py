@@ -6,7 +6,6 @@ from unittest import mock
 from python_core_lib.cli.state import CliGlobalArgs
 from python_core_lib.errors.cli_errors import (
     CliApplicationException,
-    StepEvaluationFailure,
 )
 from python_core_lib.infra.context import Context
 from python_core_lib.test_lib.assertions import Assertion

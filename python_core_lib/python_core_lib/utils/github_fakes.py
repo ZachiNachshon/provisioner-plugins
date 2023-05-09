@@ -79,7 +79,7 @@ class FakeGitHub(Checks):
         key = self._create_download_release_binary_key(owner, repo, version, binary_name, binary_folder_path)
         if key not in self.__registered_download_release_binary:
             raise FakeEnvironmentAssertionError(
-                f"GitHub expected to download a binary to a specific filepath but it never happened.\n"
+                "GitHub expected to download a binary to a specific filepath but it never happened.\n"
                 + f"Actual registered values:\n{self.__registered_download_release_binary.values()}\n"
                 + f"Expected value:\n{binary_folder_path}/{binary_name}"
             )

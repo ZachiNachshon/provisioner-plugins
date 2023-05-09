@@ -25,7 +25,7 @@ ANSIBLE_PLAYBOOK_RPI_CONFIGURE_NETWORK = """
   roles:
     - role: {ansible_playbooks_path}/roles/rpi_config_network
       tags: ['configure_rpi_network']
-      
+
     - role: {ansible_playbooks_path}/roles/dhcp_static_ip
       tags: ['define_static_ip']
 
@@ -190,7 +190,7 @@ class RemoteMachineNetworkConfigureRunner:
         if collaborators.prompter().prompt_yes_no_fn(
             message=f"Add entry '{network_info.ssh_hostname} {network_info.static_ip_address}' to /etc/hosts file ({color.RED}password required{color.NONE})",
             post_no_message="Skipped adding new entry to /etc/hosts",
-            post_yes_message=f"Selected to update /etc/hosts file",
+            post_yes_message="Selected to update /etc/hosts file",
         ):
             collaborators.hosts_file().add_entry_fn(
                 ip_address=network_info.static_ip_address,
@@ -233,7 +233,7 @@ class RemoteMachineNetworkConfigureRunner:
 
 
 def generate_logo_network() -> str:
-    return f"""
+    return """
  ██████╗ ███████╗    ███╗   ██╗███████╗████████╗██╗    ██╗ ██████╗ ██████╗ ██╗  ██╗
 ██╔═══██╗██╔════╝    ████╗  ██║██╔════╝╚══██╔══╝██║    ██║██╔═══██╗██╔══██╗██║ ██╔╝
 ██║   ██║███████╗    ██╔██╗ ██║█████╗     ██║   ██║ █╗ ██║██║   ██║██████╔╝█████╔╝
@@ -243,7 +243,7 @@ def generate_logo_network() -> str:
 
 
 def generate_instructions_pre_network() -> str:
-    return f"""
+    return """
   Select a remote Raspberry Pi node ([yellow]ethernet connected[/yellow]) to set a static IP address.
   It uses DHCPCD (Dynamic Host Configuration Protocol Client Daemon a.k.a DHCP client daemon).
 

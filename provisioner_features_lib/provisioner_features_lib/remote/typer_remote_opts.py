@@ -267,7 +267,7 @@ class CliRemoteOpts:
 
     def print(self) -> None:
         logger.debug(
-            f"CliRemoteOpts: \n"
+            "CliRemoteOpts: \n"
             + f"  remote_context: {str(self.remote_context.__dict__) if self.remote_context is not None else None}\n"
             + f"  environment: {self.environment}\n"
             + f"  node_username: {self.node_username}\n"

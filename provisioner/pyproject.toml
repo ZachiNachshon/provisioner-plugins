@@ -62,6 +62,7 @@ line-length = 120
 [tool.ruff]
 exclude = [".venv", "external", ".git-deps"]
 line-length = 120
+ignore = [ "E501", "E402", "F403", "F405" ]
 select = [
     # Pyflakes
     "F",

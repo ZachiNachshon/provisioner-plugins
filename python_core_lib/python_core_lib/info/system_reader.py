@@ -1,8 +1,5 @@
 #!/usr/bin/env python3
 
-from typing import Optional
-
-from loguru import logger
 
 from ..infra.context import Context
 from ..utils.io_utils import IOUtils

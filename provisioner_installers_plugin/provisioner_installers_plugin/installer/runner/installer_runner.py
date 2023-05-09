@@ -209,7 +209,7 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
         if maybe_utility:
             return PyFn.effect(
                 lambda: env.collaborators.printer().print_with_rich_table_fn(
-                    f"""Successfully installed utility: 
+                    f"""Successfully installed utility:
   - name: {maybe_utility.display_name}
   - version: {maybe_utility.version}
   - binary: {maybe_utility.binary_name}"""
@@ -277,7 +277,7 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
     ) -> PyFn["UtilityInstallerCmdRunner", InstallerSourceError, Installable.Utility]:
         # TODO: for custom command lines args we need to support additional install args
         if not utility.sources.script:
-            return PyFn.fail(error=InstallerSourceError(f"Missing installation source. name: Script"))
+            return PyFn.fail(error=InstallerSourceError("Missing installation source. name: Script"))
         else:
             return PyFn.effect(
                 lambda: env.collaborators.process().run_fn(
@@ -411,7 +411,7 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
         self, env: InstallerEnv, utility: Installable.Utility
     ) -> PyFn["UtilityInstallerCmdRunner", InstallerSourceError, Installable.Utility]:
         if not utility.sources.github:
-            return PyFn.fail(error=InstallerSourceError(f"Missing installation source. name: GitHub"))
+            return PyFn.fail(error=InstallerSourceError("Missing installation source. name: GitHub"))
         else:
             # TODO: for command lines we need to support additional install args
             return (
@@ -479,7 +479,7 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
                     ),
                     ansible_vars=[
                         f"provisioner_command='provisioner -y {'-v' if env.args.remote_opts.get_remote_context().is_verbose() else ''} install cli --environment=Local {sshconninfo_utility_info.utility.binary_name}'",
-                        f"required_plugins=['provisioner_installers_plugin:0.1.0']",
+                        "required_plugins=['provisioner_installers_plugin:0.1.0']",
                         f"git_access_token={env.args.github_access_token}",
                     ],
                     ansible_tags=["provisioner_wrapper"],

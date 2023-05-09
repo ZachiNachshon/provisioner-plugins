@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import traceback
 from abc import ABCMeta
 from dataclasses import dataclass
 from typing import Callable, Generic, NoReturn, TypeVar, Union

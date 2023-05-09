@@ -134,7 +134,7 @@ class FakeAnsibleRunnerLocal(AnsibleRunnerLocal):
             # print(str(cmd_args_json))
             # print("===========")
             raise FakeEnvironmentAssertionError(
-                f"Ansible command was not triggered with expected arguments. args:\n"
+                "Ansible command was not triggered with expected arguments. args:\n"
                 + f"All registered commands:\n{to_json(self.registered_commands)}\n"
                 + f"Expected command:\n{str(cmd_args_json)}"
             )

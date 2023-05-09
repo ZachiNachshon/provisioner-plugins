@@ -4,9 +4,7 @@ from __future__ import absolute_import, division, print_function
 
 __metaclass__ = type
 
-import os
 import sys
-import time
 
 from ansible.plugins.callback import CallbackBase
 
@@ -37,6 +35,6 @@ class CallbackModule(CallbackBase):
                 found_stats = True
                 break
 
-        if found_stats == False:
+        if found_stats is False:
             print(f"{RED}[ERROR] Could not connect to selected hosts or none supplied/matched{NONE}")
             sys.exit(10)

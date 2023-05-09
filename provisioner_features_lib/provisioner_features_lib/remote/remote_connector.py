@@ -351,7 +351,7 @@ class RemoteMachineConnector:
 
 
 def generate_instructions_network_scan() -> str:
-    return f"""
+    return """
   Required mandatory locally installed utility: [yellow]nmap[/yellow].
   [yellow]Elevated user permissions are required for this step ![/yellow]
 
@@ -391,7 +391,7 @@ def generate_instructions_dhcpcd_config(
 
     return f"""
   About to define a static IP via SSH on address:
-{ip_addresses}  
+{ip_addresses}
   Subnet mask used for static IPs is xxx.xxx.xxx.xxx/24 (255.255.255.0).
 
   [red]Static IP address must be unique !

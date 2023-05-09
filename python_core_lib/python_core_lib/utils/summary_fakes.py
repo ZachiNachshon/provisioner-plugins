@@ -51,7 +51,7 @@ class FakeSummary(Summary):
         value_hash = hash(value) if type(value) is not list else hash(tuple(value))
         if assert_hash != value_hash:
             raise FakeEnvironmentAssertionError(
-                f"Summary attribute value was not the same as expected.\n"
+                "Summary attribute value was not the same as expected.\n"
                 + f"Actual:\nname: {attribute_name}\nhash: {assert_hash}\nvalue: {to_json(registered_value)}\n"
                 + f"Expected:\nname: {attribute_name}\nhash: {value_hash}\nvalue: {to_json(value)}"
             )

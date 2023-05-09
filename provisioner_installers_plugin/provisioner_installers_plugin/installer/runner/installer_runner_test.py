@@ -696,7 +696,7 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
             ansible_vars=[
                 f"provisioner_command='provisioner -y -v install cli --environment=Local {utility.binary_name}'",
                 "required_plugins=['provisioner_installers_plugin:0.1.0']",
-                "git_access_token=top-secret"
+                "git_access_token=top-secret",
             ],
             ansible_tags=["provisioner_wrapper"],
         )

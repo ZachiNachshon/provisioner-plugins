@@ -46,7 +46,7 @@ class FakeProcess(Process):
         print(self.__registered_run_commands)
         if cmd_str not in self.__registered_run_commands:
             raise FakeEnvironmentAssertionError(
-                f"Process expected command args to be used but they were never provided.\n"
+                "Process expected command args to be used but they were never provided.\n"
                 + f"Actual commands :\n{self.__registered_run_commands}\n"
                 + f"Expected:\n{args}"
             )

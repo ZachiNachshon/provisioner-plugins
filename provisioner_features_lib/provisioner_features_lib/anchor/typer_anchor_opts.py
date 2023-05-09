@@ -68,4 +68,4 @@ class CliAnchorOpts:
         return None
 
     def print(self) -> None:
-        logger.debug(f"CliAnchorOpts: \n" + f"  github_access_token: {self.github_access_token}\n")
+        logger.debug("CliAnchorOpts: \n" + f"  github_access_token: {self.github_access_token}\n")

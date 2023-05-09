@@ -5,11 +5,8 @@ from unittest import mock
 
 import requests
 
-from python_core_lib.infra.context import Context
 from python_core_lib.test_lib.test_env import TestEnv
 from python_core_lib.utils.httpclient import HttpClient, HttpResponse
-from python_core_lib.utils.io_utils_fakes import FakeIOUtils
-from python_core_lib.utils.printer_fakes import FakePrinter
 
 
 #

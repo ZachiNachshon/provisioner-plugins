@@ -90,13 +90,13 @@ class PackageLoader:
     def _is_module_loaded(self, module_name: str) -> bool:
         result = False
         try:
-            module = importlib.import_module(module_name)
+            importlib.import_module(module_name)
             result = True
             # print(f"Module {module_name} imported successfully!")
         except ModuleNotFoundError:
             # print(f"Module {module_name} not found.")
             pass
-        except ImportError as e:
+        except ImportError:
             # print(f"ImportError occurred: {e}")
             pass
         return result

@@ -44,7 +44,7 @@ class FakeChecks(Checks):
             )
         elif exist != self.__registered_is_tool_exists[name]:
             raise FakeEnvironmentAssertionError(
-                f"Checks expected a check if tool exists but the result differ.\n"
+                "Checks expected a check if tool exists but the result differ.\n"
                 + f"Actual:\n{self.__registered_is_tool_exists[name]}\n"
                 + f"Expected:\n{exist}"
             )
@@ -65,7 +65,7 @@ class FakeChecks(Checks):
             )
         elif status != self.__registered_check_tool[name]:
             raise FakeEnvironmentAssertionError(
-                f"Checks expected a check for a tool status but the result differ.\n"
+                "Checks expected a check for a tool status but the result differ.\n"
                 + f"Actual:\n{self.__registered_check_tool[name]}\n"
                 + f"Expected:\n{status}"
             )

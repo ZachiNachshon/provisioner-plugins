@@ -1,22 +1,11 @@
 #!/usr/bin/env python3
 
 import unittest
-from unittest import mock
 
-from provisioner_features_lib.remote.typer_remote_opts_fakes import TestDataRemoteOpts
-from python_core_lib.test_lib.assertions import Assertion
 from python_core_lib.test_lib.test_env import TestEnv
 from python_core_lib.utils.os import MAC_OS, OsArch
 
-from provisioner_installers_plugin.installer.cmd.installer_cmd import (
-    UtilityInstallerCmd,
-    UtilityInstallerCmdArgs,
-)
 from provisioner_installers_plugin.installer.domain.source import InstallSources
-from provisioner_installers_plugin.installer.runner.installer_runner import (
-    UtilityInstallerRunnerCmdArgs,
-)
-from provisioner_installers_plugin.installer.utilities import SupportedToolings
 
 TEST_GITHUB_OWNER = "test-owner"
 TEST_GITHUB_REPO = "test-repo"

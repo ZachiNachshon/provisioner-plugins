@@ -36,7 +36,7 @@ class RPiNetworkConfigureCmdArgs:
         if self.remote_opts:
             self.remote_opts.print()
         logger.debug(
-            f"RPiNetworkConfigureCmdArgs: \n"
+            "RPiNetworkConfigureCmdArgs: \n"
             + f"  gw_ip_address: {self.gw_ip_address}\n"
             + f"  dns_ip_address: {self.dns_ip_address}\n"
             + f"  static_ip_address: {self.static_ip_address}\n"

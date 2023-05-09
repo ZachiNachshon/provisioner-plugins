@@ -110,7 +110,7 @@ class ConfigReaderTestShould(unittest.TestCase):
         config_reader = ConfigReader.create(yaml_util)
 
         with self.assertRaises(FileNotFoundError):
-            output: FakeDomainObj = config_reader.read_config_fn(
+            config_reader.read_config_fn(
                 internal_path="/path/to/unknown", class_name=FakeDomainObj, user_path="/path/to/unknown"
             )
 
@@ -156,7 +156,7 @@ class ConfigReaderTestShould(unittest.TestCase):
         config_reader = ConfigReader.create(yaml_util)
 
         with self.assertRaises(FailedToReadConfigurationFile):
-            output: FakeDomainObj = config_reader.read_config_fn(
+            config_reader.read_config_fn(
                 internal_path=INTERNAL_CONFIG_TEST_DATA_FILE_PATH,
                 class_name=FakeDomainObj,
                 user_path=USER_CONFIG_TEST_DATA_FILE_PATH,

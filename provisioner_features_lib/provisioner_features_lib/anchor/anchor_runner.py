@@ -140,7 +140,7 @@ def generate_summary(ansible_hosts: List[AnsibleHost], anchor_cmd: str):
             ip_addresses.append(host.ip_address)
     return f"""
   You have successfully ran an Anchor command on the following remote machines:
-  
+
     • Host Names.....: [yellow]{host_names}[/yellow]
     • IP Addresses...: [yellow]{ip_addresses}[/yellow]
     • Command........: [yellow]anchor {anchor_cmd}[/yellow]

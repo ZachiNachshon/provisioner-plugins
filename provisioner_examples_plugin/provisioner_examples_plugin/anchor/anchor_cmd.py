@@ -40,12 +40,12 @@ class AnchorCmdArgs:
         if self.remote_opts:
             self.remote_opts.print()
         logger.debug(
-            f"AnchorCmdArgs: \n"
+            "AnchorCmdArgs: \n"
             + f"  anchor_run_command: {self.anchor_run_command}\n"
             + f"  github_organization: {self.github_organization}\n"
             + f"  repository_name: {self.repository_name}\n"
             + f"  branch_name: {self.branch_name}\n"
-            + f"  github_access_token: REDACTED\n"
+            + "  github_access_token: REDACTED\n"
         )
 
 

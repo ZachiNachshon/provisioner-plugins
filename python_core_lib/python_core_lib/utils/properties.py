@@ -47,7 +47,7 @@ class Properties:
         try:
             self.config_parser.read_string(props_output)
             value = self.config_parser.get(self.fake_section_name, key)
-        except Exception as ex:
+        except Exception:
             pass
 
         if value:

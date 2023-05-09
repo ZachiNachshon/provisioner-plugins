@@ -6,6 +6,7 @@ from provisioner_installers_plugin.cli.anchor.cli import anchor
 from provisioner_installers_plugin.cli.helm.cli import helm
 from provisioner_installers_plugin.cli.k3s.cli import k3s_agent, k3s_server
 
+
 def get_all_cli_items():
     pass
 

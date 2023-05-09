@@ -22,7 +22,7 @@ class IOUtils:
 
     @staticmethod
     def create(ctx: Context) -> "IOUtils":
-        logger.debug(f"Creating IO utils...")
+        logger.debug("Creating IO utils...")
         return IOUtils(ctx)
 
     def _create_directory(self, folder_path) -> str:

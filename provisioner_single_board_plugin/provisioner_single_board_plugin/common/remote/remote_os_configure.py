@@ -13,7 +13,6 @@ from python_core_lib.infra.evaluator import Evaluator
 from python_core_lib.runner.ansible.ansible_runner import (
     AnsibleHost,
     AnsiblePlaybook,
-    AnsibleRunnerLocal,
 )
 from python_core_lib.shared.collaborators import CoreCollaborators
 from python_core_lib.utils.checks import Checks
@@ -31,7 +30,7 @@ ANSIBLE_PLAYBOOK_RPI_CONFIGURE_NODE = """
   tasks:
     - name: Reboot and wait
       include_tasks: {ansible_playbooks_path}/reboot.yaml
-      tags: ['reboot'] 
+      tags: ['reboot']
 """
 
 
@@ -123,7 +122,7 @@ class RemoteMachineOsConfigureRunner:
 
 
 def generate_logo_configure() -> str:
-    return f"""
+    return """
  ██████╗ ███████╗     ██████╗ ██████╗ ███╗   ██╗███████╗██╗ ██████╗ ██╗   ██╗██████╗ ███████╗
 ██╔═══██╗██╔════╝    ██╔════╝██╔═══██╗████╗  ██║██╔════╝██║██╔════╝ ██║   ██║██╔══██╗██╔════╝
 ██║   ██║███████╗    ██║     ██║   ██║██╔██╗ ██║█████╗  ██║██║  ███╗██║   ██║██████╔╝█████╗
@@ -134,7 +133,7 @@ def generate_logo_configure() -> str:
 
 
 def generate_instructions_pre_configure() -> str:
-    return f"""
+    return """
   Select a remote Raspberry Pi node to configure Raspbian OS software and hardware settings.
   Configuration is aimed for an optimal headless Raspberry Pi used as a Kubernetes cluster node.
 
@@ -149,7 +148,7 @@ def generate_instructions_pre_configure() -> str:
 def generate_instructions_post_configure(ansible_host: AnsibleHost):
     return f"""
   You have successfully configured hardware and system settings for a Raspberry Pi node:
-  
+
     • Host Name....: [yellow]{ansible_host.host}[/yellow]
     • IP Address...: [yellow]{ansible_host.ip_address}[/yellow]
 """

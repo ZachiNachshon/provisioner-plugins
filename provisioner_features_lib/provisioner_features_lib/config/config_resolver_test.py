@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import unittest
-from typing import List
 from unittest import mock
 
 from python_core_lib.domain.serialize import SerializationBase

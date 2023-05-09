@@ -40,4 +40,4 @@ class FakeConfigReader(ConfigReader):
             if internal_path in self.registered_internal_config_path_to_object:
                 return self.registered_internal_config_path_to_object.get(internal_path)
 
-        raise LookupError(f"Fake config reader is missing user-path and/or internal-path, cannot mock")
+        raise LookupError("Fake config reader is missing user-path and/or internal-path, cannot mock")

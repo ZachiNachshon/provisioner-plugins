@@ -250,8 +250,8 @@ class ImageBurnerCmdRunner:
 
 
 def generate_logo_image_burner() -> str:
-    return f"""
-██╗███╗   ███╗ █████╗  ██████╗ ███████╗    ██████╗ ██╗   ██╗██████╗ ███╗   ██╗███████╗██████╗ 
+    return """
+██╗███╗   ███╗ █████╗  ██████╗ ███████╗    ██████╗ ██╗   ██╗██████╗ ███╗   ██╗███████╗██████╗
 ██║████╗ ████║██╔══██╗██╔════╝ ██╔════╝    ██╔══██╗██║   ██║██╔══██╗████╗  ██║██╔════╝██╔══██╗
 ██║██╔████╔██║███████║██║  ███╗█████╗      ██████╔╝██║   ██║██████╔╝██╔██╗ ██║█████╗  ██████╔╝
 ██║██║╚██╔╝██║██╔══██║██║   ██║██╔══╝      ██╔══██╗██║   ██║██╔══██╗██║╚██╗██║██╔══╝  ██╔══██╗
@@ -260,7 +260,7 @@ def generate_logo_image_burner() -> str:
 
 
 def generate_instructions_pre_image_burn() -> str:
-    return f"""
+    return """
   Select a block device to burn an image onto (example: SD-Card or HDD)
 
   [yellow]Elevated user permissions might be required for this step ![/yellow]

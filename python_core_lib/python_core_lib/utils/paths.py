@@ -23,7 +23,7 @@ class Paths:
 
     @staticmethod
     def create(ctx: Context) -> "Paths":
-        logger.debug(f"Creating Paths utils...")
+        logger.debug("Creating Paths utils...")
         return Paths(ctx)
 
     def _get_home_directory(self) -> str:
@@ -96,7 +96,7 @@ class Paths:
         """
         try:
             sFile = os.path.abspath(sys.modules["__main__"].__file__)
-        except:
+        except Exception:
             sFile = sys.executable
         return os.path.dirname(sFile)
 

@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 
-from configparser import ConfigParser, Error
+from configparser import ConfigParser
 from os.path import expandvars
-from typing import List, Optional
 
 from loguru import logger
 
@@ -48,7 +47,7 @@ class Patterns:
         try:
             self.config_parser.read_string(patterns_output)
             value = self.config_parser.get(self.fake_section_name, key)
-        except Exception as ex:
+        except Exception:
             pass
 
         if value:

@@ -34,13 +34,13 @@ class UtilityInstallerCmdArgs:
         if github_access_token:
             self.github_access_token = github_access_token
         else:
-            self.github_access_token = os.environ['GITHUB_TOKEN']
+            self.github_access_token = os.environ["GITHUB_TOKEN"]
 
     def print(self) -> None:
         if self.remote_opts:
             self.remote_opts.print()
         logger.debug(
-            f"InstallerCmdArgs: \n" + f"  utilities: {str(self.utilities)}\n" + f"  github_access_token: REDACTED\n"
+            "InstallerCmdArgs: \n" + f"  utilities: {str(self.utilities)}\n" + "  github_access_token: REDACTED\n"
         )
 
 

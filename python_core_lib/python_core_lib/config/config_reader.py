@@ -26,7 +26,7 @@ class ConfigReader:
         try:
             config = self.yaml_util.read_file_fn(file_path=path, class_name=class_name)
             return config
-        except Exception as ex:
+        except Exception:
             logger.debug(f"Config file does not exists for safe read. path {path}")
         return None
 
@@ -59,14 +59,14 @@ class ConfigReader:
 
         logger.debug("Try reading user config")
         user_config = self._safe_read_config_path(path=user_path, class_name=class_name)
-        if user_config == None:
-            logger.debug(f"Could not find or serialize user config")
+        if user_config is None:
+            logger.debug("Could not find or serialize user config")
             return internal_config
         else:
             merged_config = self._merge_user_config_with_internal(
                 internal_config=internal_config, user_config=user_config
             )
-            if merged_config == None:
+            if merged_config is None:
                 raise FailedToReadConfigurationFile("Failed to merge user and internal configuration.")
             return merged_config
 

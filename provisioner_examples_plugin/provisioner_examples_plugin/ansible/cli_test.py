@@ -20,7 +20,7 @@ runner = CliRunner()
 class AnsibleHelloCliTestShould(unittest.TestCase):
     @mock.patch(f"{HELLO_WORLD_COMMAND_PATH}.run")
     def test_cli_ansible_hello_cmd_with_args_success(self, run_call: mock.MagicMock) -> None:
-        result = runner.invoke(
+        runner.invoke(
             get_fake_app(),
             ["--dry-run", "--verbose", "examples", "ansible", "hello", f"--username={EXPECTED_USERNAME}"],
         )

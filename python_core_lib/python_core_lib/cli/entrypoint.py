@@ -82,7 +82,7 @@ def try_read_version() -> str:
         with open(file_path, "r+") as opened_file:
             content = opened_file.read()
             opened_file.close()
-    except Exception as error:
+    except Exception:
         pass
     return content
 

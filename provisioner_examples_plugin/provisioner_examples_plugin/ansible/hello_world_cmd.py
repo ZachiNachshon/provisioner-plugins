@@ -24,7 +24,7 @@ class HelloWorldCmdArgs:
     def print(self) -> None:
         if self.remote_opts:
             self.remote_opts.print()
-        logger.debug(f"HelloWorldCmdArgs: \n" + f"  username: {self.username}\n")
+        logger.debug("HelloWorldCmdArgs: \n" + f"  username: {self.username}\n")
 
 
 class HelloWorldCmd:

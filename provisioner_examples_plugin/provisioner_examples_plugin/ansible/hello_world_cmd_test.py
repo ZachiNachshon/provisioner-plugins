@@ -4,7 +4,6 @@ import unittest
 from unittest import mock
 
 from provisioner_features_lib.remote.domain.config import RunEnvironment
-from provisioner_features_lib.remote.typer_remote_opts import CliRemoteOpts
 from provisioner_features_lib.remote.typer_remote_opts_fakes import TestDataRemoteOpts
 from python_core_lib.test_lib.assertions import Assertion
 from python_core_lib.test_lib.test_env import TestEnv

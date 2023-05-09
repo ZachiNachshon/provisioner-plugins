@@ -74,7 +74,7 @@ class FakeIOUtils(IOUtils):
             )
         elif is_archive != self.__registered_is_archive[file_path]:
             raise FakeEnvironmentAssertionError(
-                f"IOUtils expected a file to have a specific archive state but it never matched.\n"
+                "IOUtils expected a file to have a specific archive state but it never matched.\n"
                 + f"Actual:\n{self.__registered_is_archive[file_path]}\n"
                 + f"Expected:\n{is_archive}"
             )
@@ -92,7 +92,7 @@ class FakeIOUtils(IOUtils):
     def assert_unpack_archive(self, file_path: str) -> None:
         if file_path not in self.__registered_unpack_archive:
             raise FakeEnvironmentAssertionError(
-                f"IOUtils expected to unpack an archive but it never triggered.\n"
+                "IOUtils expected to unpack an archive but it never triggered.\n"
                 + f"Actual:\n{self.__registered_unpack_archive.keys()}\n"
                 + f"Expected:\n{file_path}"
             )
@@ -104,7 +104,7 @@ class FakeIOUtils(IOUtils):
     def assert_set_file_permissions(self, file_path: str, permissions_octal: int) -> None:
         if f"{file_path}__{permissions_octal}" not in self.__registered_set_file_permissions:
             raise FakeEnvironmentAssertionError(
-                f"IOUtils expected to set file permissions but it never triggered.\n"
+                "IOUtils expected to set file permissions but it never triggered.\n"
                 + f"Actual:\n{self.__registered_set_file_permissions}\n"
                 + f"Expected:\n{file_path}__{permissions_octal}"
             )
@@ -116,7 +116,7 @@ class FakeIOUtils(IOUtils):
     def assert_write_symlink(self, file_path: str, symlink_path: str) -> None:
         if f"{file_path}__{symlink_path}" not in self.__registered_write_symlink:
             raise FakeEnvironmentAssertionError(
-                f"IOUtils expected to write symlink but it never triggered.\n"
+                "IOUtils expected to write symlink but it never triggered.\n"
                 + f"Actual:\n{self.__registered_write_symlink}\n"
                 + f"Expected:\n{file_path}__{symlink_path}"
             )
