@@ -25,11 +25,22 @@ exclude = [
 [tool.poetry.scripts]
 test_runner = "provisioner_single_board_plugin.main_fake:main"
 
-[tool.isort]
-profile = "black"
-
 [tool.black]
 line-length = 120
+
+[tool.ruff]
+exclude = [".venv", "external", ".git-deps"]
+line-length = 120
+select = [
+    # Pyflakes
+    "F",
+    # Pycodestyle
+    "E",
+    # isort
+    "I",
+    # Whitespaces
+    "W", 
+]
 
 [tool.mypy]
 exclude = ["external"]
@@ -62,7 +73,7 @@ pytest = "^7.1.3"
 mypy = "^0.971"
 coverage = "^6.4.4"
 diagrams = "^0.22.0"
-isort = "^5.10.1"
+ruff = "^0.0.265"
 python_core_lib = { path = "../python_core_lib", develop = true }
 provisioner_features_lib = { path = "../provisioner_features_lib", develop = true }
 

@@ -480,6 +480,7 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
                     ansible_vars=[
                         f"provisioner_command='provisioner -y {'-v' if env.args.remote_opts.get_remote_context().is_verbose() else ''} install cli --environment=Local {sshconninfo_utility_info.utility.binary_name}'",
                         f"required_plugins=['provisioner_installers_plugin:0.1.0']",
+                        f"git_access_token={env.args.github_access_token}",
                     ],
                     ansible_tags=["provisioner_wrapper"],
                 ),

@@ -56,11 +56,22 @@ include = [
 provisioner = "provisioner.main:main"
 # rpi_diagrams = "rpi.os.diagrams.install_diag:main"
 
-[tool.isort]
-profile = "black"
-
 [tool.black]
 line-length = 120
+
+[tool.ruff]
+exclude = [".venv", "external", ".git-deps"]
+line-length = 120
+select = [
+    # Pyflakes
+    "F",
+    # Pycodestyle
+    "E",
+    # isort
+    "I",
+    # Whitespaces
+    "W", 
+]
 
 [tool.mypy]
 exclude = ["external"]
@@ -109,7 +120,7 @@ pytest = "^7.1.3"
 mypy = "^0.991"
 coverage = "^6.4.4"
 diagrams = "^0.22.0"
-isort = "^5.10.1"
+ruff = "^0.0.265"
 poetry-multiproject-plugin = "^1.1.4"
 provisioner_installers_plugin = { path = "../provisioner_installers_plugin", develop = true, optional = true }
 provisioner_examples_plugin = { path = "../provisioner_examples_plugin", develop = true, optional = true }

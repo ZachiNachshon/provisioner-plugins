@@ -371,10 +371,6 @@ def generate_instructions_connect_via_ssh(ansible_hosts: List[AnsibleHost]):
     return f"""
   Gathering SSH connection information for IP addresses:
 {ip_addresses}
-  Requirements:
-    • Ansible or Docker
-      If Ansible is missing, a Docker image will be built and used instead.
-
   This step prompts for connection access information (press ENTER for defaults):
     • Raspberry Pi node user
     • Raspberry Pi node password
@@ -400,10 +396,6 @@ def generate_instructions_dhcpcd_config(
 
   [red]Static IP address must be unique !
   Make sure it is not used anywhere else within LAN network or DHCP address pool range.[/red]
-
-  Requirements:
-    • Ansible or Docker
-      If Ansible is missing, a Docker image will be built and used instead.
 
   This step requires the following values (press ENTER for defaults):
     • Single board node desired static IP address

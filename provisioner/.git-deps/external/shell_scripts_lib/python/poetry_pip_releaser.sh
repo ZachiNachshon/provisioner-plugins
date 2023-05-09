@@ -9,6 +9,7 @@ source "${ROOT_FOLDER_ABS_PATH}/cmd.sh"
 source "${ROOT_FOLDER_ABS_PATH}/strings.sh"
 source "${ROOT_FOLDER_ABS_PATH}/checks.sh"
 source "${ROOT_FOLDER_ABS_PATH}/github.sh"
+source "${ROOT_FOLDER_ABS_PATH}/prompter.sh"
 
 SCRIPT_MENU_TITLE="Poetry pip Releaser"
 
@@ -59,7 +60,7 @@ is_multi_project() {
   [[ -n "${CLI_FLAG_IS_MULTI_PROJECT}" ]]
 }
 
-i_install_deps() {
+is_install_deps() {
   [[ -n "${CLI_FLAG_FORCE_INSTALL_DEPS}" ]]
 }
 
@@ -92,7 +93,7 @@ is_delete() {
 }
 
 is_delete_tag_exist() {
-  [[ -n "${CLI_FLAG_DELETE_TAG}" ]]
+  [[ -n "${CLI_FLAG_DELETE_TAG}" && -n "${CLI_VALUE_DELETE_TAG}" ]]
 }
 
 get_delete_tag() {
@@ -302,18 +303,26 @@ delete_pip_package_from_remote_pypi() {
   log_fatal "Deleting a remote pip pacakge release tag from PyPi is not yet supported"
 }
 
-delete_pip_package_from_github() {
-  local tag=$(get_delete_tag)
-  if github_is_release_tag_exist "${tag}"; then
-      log_info "GitHub release tag was found. tag: ${tag}"
-      if github_prompt_for_approval_before_delete "${tag}"; then
-        github_delete_release_tag "${tag}"
+delete_release_from_github() {
+  local tag="no-tag"
+  if is_delete_tag_exist; then
+    tag=$(get_delete_tag)
+  else
+    tag=$(prompt_user_input "Insert tag to delete")
+  fi
+  if [[ -n "${tag}" ]]; then
+    if github_is_release_tag_exist "${tag}"; then
+        log_info "GitHub release tag was found. tag: ${tag}"
+        new_line
+        if github_prompt_for_approval_before_delete "${tag}"; then
+          github_delete_release_tag "${tag}"
+        else
+          log_info "No GitHub release tag was deleted."
+        fi
       else
-        log_info "No GitHub release tag was deleted."
+        log_warning "No GitHub release tag was found. tag: ${tag}"
       fi
-    else
-      log_warning "No GitHub release tag was found. tag: ${tag}"
-    fi
+  fi
 }
 
 install_pip_package_from_wheel() {
@@ -386,7 +395,7 @@ delete_pip_package() {
   elif is_pypi_remote_delete_origin; then
     delete_pip_package_from_remote_pypi
   elif is_github_delete_origin; then
-    delete_pip_package_from_github
+    delete_release_from_github
   else
     log_fatal "Flag --origin has invalid value or missing a value. value: ${CLI_VALUE_DELETE_ORIGIN}"
   fi
@@ -698,7 +707,7 @@ verify_program_arguments() {
   fi
   check_publish_release_type_missing_tokens
   check_publish_release_type_missing_tag
-  check_delete_missing_tag
+  # check_delete_missing_tag
   check_no_dev_mode_for_publish
   check_unsupported_actions
   evaluate_dry_run_mode
@@ -727,13 +736,13 @@ main() {
   prerequisites
   resolve_project_name_version
 
-  if is_delete; then
-    delete_pip_package
-  fi
-
   if is_install; then
     build_pip_package
     install_pip_package
+  fi
+
+  if is_delete; then
+    delete_pip_package
   fi
 
   if is_publish; then

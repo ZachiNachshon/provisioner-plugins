@@ -248,7 +248,7 @@ def generate_instructions_pre_network() -> str:
   It uses DHCPCD (Dynamic Host Configuration Protocol Client Daemon a.k.a DHCP client daemon).
 
   It is vital for a RPi server to have a predictable address to interact with.
-  Every time the Raspberry Pi node will connects to the network, it will use the same address.
+  Every time the Raspberry Pi node will connect to the network, it will use the same address.
 """
 
 

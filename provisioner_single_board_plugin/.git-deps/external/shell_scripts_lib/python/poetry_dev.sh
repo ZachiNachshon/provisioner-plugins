@@ -14,6 +14,7 @@ SCRIPT_MENU_TITLE="Poetry Development Commands"
 
 DEFAULT_PROJECT_LOCATION="."
 DEFAULT_TYPE_CHECK_PATH="*/**/*.py"
+DEFAULT_UNUSED_IMPORTS_PATH="."
 
 DEFAULT_TESTS_PATH=$(pwd)
 
@@ -132,29 +133,28 @@ report_on_format_errors() {
   log_info "Checking that Python code complies with black requirements..."
   new_line
   cmd_run "poetry run black ${DEFAULT_PROJECT_LOCATION} --check"
-  
   new_line
-  
-  log_info "Checking import statements validity..."
+
+  log_info "Checking for unused & unordered import statements..."
   new_line
-  cmd_run "poetry run isort ${DEFAULT_PROJECT_LOCATION} --check-only"
+  cmd_run "poetry run ruff check ${DEFAULT_UNUSED_IMPORTS_PATH} --show-fixes "
+  new_line
 }
 
 format_python_sources() {
   log_info "Formatting Python source code using Black style..."
   new_line
   cmd_run "poetry run black ${DEFAULT_PROJECT_LOCATION}"
-  
   new_line
 
-  log_info "Sorting/cleaning import statements..."
+  log_info "Removing unused and ordering import statements..."
+  cmd_run "poetry run ruff check ${DEFAULT_UNUSED_IMPORTS_PATH} --show-fixes --fix"
   new_line
-  cmd_run "poetry run isort ${DEFAULT_PROJECT_LOCATION}"
 }
 
 maybe_format_python_sources() {
   check_poetry_dev_dep "black"
-  check_poetry_dev_dep "isort"
+  check_poetry_dev_dep "ruff"
   if is_fmt_check_only; then
     report_on_format_errors
   else

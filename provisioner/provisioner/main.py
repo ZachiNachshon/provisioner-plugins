@@ -13,7 +13,7 @@ CONFIG_USER_PATH = os.path.expanduser("~/.config/provisioner/config.yaml")
 CONFIG_INTERNAL_PATH = f"{pathlib.Path(__file__).parent}/config/config.yaml"
 
 """
-The --dry-run and --verbose flags aren't available on the pre-init phase 
+The --dry-run and --verbose flags aren't available on the pre-init phase
 since logger is being set-up after Typer is initialized.
 I've added pre Typer run env var to contorl if such components debug logs
 should be visible (config-loader, package-loader etc..)

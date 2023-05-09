@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import os
 from typing import List
 
 from loguru import logger
@@ -30,7 +31,10 @@ class UtilityInstallerCmdArgs:
 
         self.utilities = utilities
         self.remote_opts = remote_opts
-        self.github_access_token = github_access_token
+        if github_access_token:
+            self.github_access_token = github_access_token
+        else:
+            self.github_access_token = os.environ['GITHUB_TOKEN']
 
     def print(self) -> None:
         if self.remote_opts:
