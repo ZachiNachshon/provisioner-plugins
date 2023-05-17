@@ -5,11 +5,11 @@ from typing import Any, List, Optional
 
 from loguru import logger
 from provisioner_features_lib.remote.typer_remote_opts import CliRemoteOpts
-from provisioner_installers_plugin.installer.domain.command import InstallerSubCommandName
-from provisioner_installers_plugin.installer.domain.dynamic_args import DynamicArgs
 from python_core_lib.infra.context import Context
 from python_core_lib.shared.collaborators import CoreCollaborators
 
+from provisioner_installers_plugin.installer.domain.command import InstallerSubCommandName
+from provisioner_installers_plugin.installer.domain.dynamic_args import DynamicArgs
 from provisioner_installers_plugin.installer.runner.installer_runner import (
     InstallerEnv,
     UtilityInstallerCmdRunner,
@@ -32,7 +32,7 @@ class UtilityInstallerCmdArgs:
         remote_opts: CliRemoteOpts,
         sub_command_name: InstallerSubCommandName,
         git_access_token: str = None,
-        dynamic_args: Optional[dict[str, Any]] = None
+        dynamic_args: Optional[dict[str, Any]] = None,
     ) -> None:
 
         self.utilities = utilities
@@ -48,11 +48,11 @@ class UtilityInstallerCmdArgs:
         if self.remote_opts:
             self.remote_opts.print()
         logger.debug(
-            "InstallerCmdArgs: \n" + 
-            f"  utilities: {str(self.utilities)}\n" + 
-            f"  dynamic_args: {str(self.dynamic_args)}\n" + 
-            f"  sub_command_name: {str(self.sub_command_name)}\n" + 
-            f"  git_access_token: REDACTED\n"
+            "InstallerCmdArgs: \n"
+            + f"  utilities: {str(self.utilities)}\n"
+            + f"  dynamic_args: {str(self.dynamic_args)}\n"
+            + f"  sub_command_name: {str(self.sub_command_name)}\n"
+            + "  git_access_token: REDACTED\n"
         )
 
 
@@ -70,7 +70,7 @@ class UtilityInstallerCmd:
                     remote_opts=args.remote_opts,
                     sub_command_name=args.sub_command_name,
                     git_access_token=args.git_access_token,
-                    dynamic_args=DynamicArgs(args.dynamic_args)
+                    dynamic_args=DynamicArgs(args.dynamic_args),
                 ),
             )
         )

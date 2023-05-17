@@ -60,9 +60,9 @@ class AnsiblePlaybook:
         self.__name = name
         self.__content = content
         self.__remote_context = remote_context
-    
+
     @staticmethod
-    def copy_and_add_context(copy_from: "AnsiblePlaybook", remote_context : RemoteContext) -> "AnsiblePlaybook":
+    def copy_and_add_context(copy_from: "AnsiblePlaybook", remote_context: RemoteContext) -> "AnsiblePlaybook":
         return AnsiblePlaybook(copy_from.__name, copy_from.__content, remote_context)
 
     def get_name(self) -> str:
@@ -278,16 +278,16 @@ class AnsibleRunnerLocal:
         )
         logger.debug(f"Created playbook file. path: {playbooks_dest_dir}\n{content}")
         return self._io_utils.write_file_fn(content=content, file_name=name, dir_path=playbooks_dest_dir)
-    
+
     def _filter_out_vars_with_sensitive_data(self, ansible_vars: Optional[List[str]] = None) -> str:
         if not ansible_vars or len(ansible_vars) == 0:
             return ansible_vars
         filtered_vars: List[str] = []
         for ansible_var in ansible_vars:
-            key_value=ansible_var.split('=')
+            key_value = ansible_var.split("=")
             if len(key_value) < 2:
                 continue
-            ansible_var_key=key_value[0]
+            ansible_var_key = key_value[0]
             found = False
             for keyword in ANSIBLE_VALUES_SENSITIVE_KEYWORDS:
                 if keyword in ansible_var_key:

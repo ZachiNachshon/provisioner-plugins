@@ -2,8 +2,8 @@
 
 from enum import Enum
 from typing import Callable, List, Optional
-from python_core_lib.runner.ansible.ansible_runner import AnsiblePlaybook
 
+from python_core_lib.runner.ansible.ansible_runner import AnsiblePlaybook
 from python_core_lib.utils.os import OsArch
 
 
@@ -29,18 +29,19 @@ class InstallSource:
         ansible_tags: Optional[List[str]] = None
 
         def __init__(
-                self, 
-                playbook: AnsiblePlaybook, 
-                ansible_tags: Optional[List[str]] = None,
-                cli_args_to_ansible_vars: Optional[List[str]] = None):
-            
+            self,
+            playbook: AnsiblePlaybook,
+            ansible_tags: Optional[List[str]] = None,
+            cli_args_to_ansible_vars: Optional[List[str]] = None,
+        ):
+
             self.playbook = playbook
             self.ansible_tags = ansible_tags
             self.cli_args_to_ansible_vars = cli_args_to_ansible_vars
 
         def as_summary_object(self, verbose: Optional[bool] = False) -> "InstallSource.Ansible":
             return self if verbose else None
-        
+
     class GitHub:
         owner: str
         repo: str
@@ -64,7 +65,11 @@ class InstallSource:
             self.release_name_resolver = release_name_resolver
 
         def as_summary_object(self, verbose: Optional[bool] = False) -> "InstallSource.GitHub":
-            return InstallSource.GitHub(owner=self.owner, repo=self.repo, supported_releases=self.supported_releases) if verbose else None
+            return (
+                InstallSource.GitHub(owner=self.owner, repo=self.repo, supported_releases=self.supported_releases)
+                if verbose
+                else None
+            )
 
         def _is_binary_supported_by_os_arch(self, os_arch: OsArch) -> bool:
             os_arch_pair = os_arch.as_pair(mapping={"x86_64": "amd64"})
@@ -78,7 +83,7 @@ class InstallSource:
     def as_summary_object(self, verbose: Optional[bool] = False) -> "InstallSource":
         if not verbose:
             return None
-        
+
         result = InstallSource()
         if self.github:
             result.github = self.github.as_summary_object(verbose)
@@ -89,11 +94,12 @@ class InstallSource:
         return result
 
     def __init__(
-            self, 
-            github: "InstallSource.GitHub" = None, 
-            script: "InstallSource.Script" = None,
-            ansible: "InstallSource.Ansible" = None) -> None:
-        
+        self,
+        github: "InstallSource.GitHub" = None,
+        script: "InstallSource.Script" = None,
+        ansible: "InstallSource.Ansible" = None,
+    ) -> None:
+
         self.github = github
         self.script = script
         self.ansible = ansible

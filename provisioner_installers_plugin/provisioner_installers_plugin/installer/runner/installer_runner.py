@@ -11,8 +11,6 @@ from provisioner_features_lib.remote.remote_connector import (
     SSHConnectionInfo,
 )
 from provisioner_features_lib.remote.typer_remote_opts import CliRemoteOpts
-from provisioner_installers_plugin.installer.domain.command import InstallerSubCommandName
-from provisioner_installers_plugin.installer.domain.dynamic_args import DynamicArgs
 from python_core_lib.errors.cli_errors import (
     InstallerSourceError,
     InstallerUtilityNotSupported,
@@ -24,6 +22,8 @@ from python_core_lib.infra.context import Context
 from python_core_lib.runner.ansible.ansible_runner import AnsibleHost, AnsiblePlaybook
 from python_core_lib.shared.collaborators import CoreCollaborators
 
+from provisioner_installers_plugin.installer.domain.command import InstallerSubCommandName
+from provisioner_installers_plugin.installer.domain.dynamic_args import DynamicArgs
 from provisioner_installers_plugin.installer.domain.installable import Installable
 from provisioner_installers_plugin.installer.domain.source import ActiveInstallSource
 
@@ -98,7 +98,7 @@ class UtilityInstallerRunnerCmdArgs:
         remote_opts: CliRemoteOpts,
         sub_command_name: InstallerSubCommandName,
         git_access_token: str = None,
-        dynamic_args: Optional[DynamicArgs] = None
+        dynamic_args: Optional[DynamicArgs] = None,
     ) -> None:
         self.utilities = utilities
         self.remote_opts = remote_opts
@@ -152,7 +152,12 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
         self, env: InstallerEnv, utilities: List[Installable.Utility]
     ) -> PyFn["UtilityInstallerCmdRunner", Exception, List[Installable.Utility]]:
         return PyFn.effect(
-            lambda: [ env.collaborators.summary().append(utility.display_name, utility.as_summary_object(env.ctx.is_verbose())) for utility in utilities ]
+            lambda: [
+                env.collaborators.summary().append(
+                    utility.display_name, utility.as_summary_object(env.ctx.is_verbose())
+                )
+                for utility in utilities
+            ]
         ).map(lambda _: utilities)
 
     def _print_installer_welcome(
@@ -268,7 +273,7 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
             ).map(lambda _: None)
         else:
             return PyFn.of(utility)
-        
+
     def _get_ssh_conn_info_localhost(self) -> SSHConnectionInfo:
         return SSHConnectionInfo(
             ansible_hosts=[
@@ -279,7 +284,7 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
                 )
             ]
         )
-    
+
     def _install_utility_locally(
         self, env: InstallerEnv, utility: Installable.Utility
     ) -> PyFn["UtilityInstallerCmdRunner", InstallerSourceError, Installable.Utility]:
@@ -307,16 +312,17 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
                         selected_hosts=self._get_ssh_conn_info_localhost().ansible_hosts,
                         playbook=AnsiblePlaybook.copy_and_add_context(
                             copy_from=utility.source.ansible.playbook,
-                            remote_context=env.args.remote_opts.get_remote_context()
+                            remote_context=env.args.remote_opts.get_remote_context(),
                         ),
-                        ansible_vars=env.args.dynamic_args.as_ansible_vars() + [f"git_access_token={env.args.git_access_token}"],
+                        ansible_vars=env.args.dynamic_args.as_ansible_vars()
+                        + [f"git_access_token={env.args.git_access_token}"],
                         ansible_tags=utility.source.ansible.ansible_tags,
                     ),
                     desc_run=f"Running Ansible playbook ({utility.source.ansible.playbook.get_name()})).",
                     desc_end=f"Ansible playbook finished ({utility.source.ansible.playbook.get_name()})).",
                 )
             ).map(lambda _: utility)
-        
+
     def _install_from_script(
         self, env: InstallerEnv, utility: Installable.Utility
     ) -> PyFn["UtilityInstallerCmdRunner", InstallerSourceError, Installable.Utility]:

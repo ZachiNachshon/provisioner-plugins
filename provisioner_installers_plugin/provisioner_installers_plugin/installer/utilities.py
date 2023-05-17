@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 
+from python_core_lib.runner.ansible.ansible_runner import AnsiblePlaybook
+
 from provisioner_installers_plugin.installer.domain.installable import Installable
 from provisioner_installers_plugin.installer.domain.source import (
     ActiveInstallSource,
     InstallSource,
 )
 from provisioner_installers_plugin.installer.versions import ToolingVersions
-from python_core_lib.runner.ansible.ansible_runner import AnsiblePlaybook
 
 SupportedOS = ["linux", "darwin"]
 SupportedArchitectures = ["x86_64", "arm", "amd64", "armv6l", "armv7l", "arm64", "aarch64"]
@@ -44,10 +45,10 @@ SupportedToolings = {
 
   roles:
     - role: {ansible_playbooks_path}/roles/k3s
-"""
+""",
                 ),
                 ansible_tags=["k3s_master_install"],
-                cli_args_to_ansible_vars=["k3s_token"]
+                cli_args_to_ansible_vars=["k3s_token"],
             ),
         ),
     ),

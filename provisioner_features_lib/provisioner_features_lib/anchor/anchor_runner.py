@@ -88,7 +88,8 @@ class AnchorCmdRunner:
                 playbook=AnsiblePlaybook(
                     name="anchor_run",
                     content=ANSIBLE_PLAYBOOK_ANCHOR_RUN,
-                    remote_context=args.remote_opts.get_remote_context()),
+                    remote_context=args.remote_opts.get_remote_context(),
+                ),
                 ansible_vars=[
                     "anchor_command=Run",
                     f"\"anchor_args='{args.anchor_run_command}'\"",

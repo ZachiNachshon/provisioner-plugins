@@ -46,9 +46,9 @@ class Installable:
 
         def as_summary_object(self, verbose: Optional[bool] = False) -> "Installable.Utility":
             return Installable.Utility(
-                display_name=self.display_name, 
-                binary_name=self.binary_name, 
-                version=self.version, 
-                active_source=self.active_source, 
-                sources=self.source.as_summary_object(verbose)
-            ) 
+                display_name=self.display_name,
+                binary_name=self.binary_name,
+                version=self.version,
+                active_source=self.active_source,
+                sources=self.source.as_summary_object(verbose),
+            )
