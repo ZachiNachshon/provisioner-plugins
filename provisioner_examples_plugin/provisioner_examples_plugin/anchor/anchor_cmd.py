@@ -16,7 +16,7 @@ class AnchorCmdArgs:
     github_organization: str
     repository_name: str
     branch_name: str
-    github_access_token: str
+    git_access_token: str
     remote_opts: CliRemoteOpts
 
     def __init__(
@@ -25,7 +25,7 @@ class AnchorCmdArgs:
         github_organization: str,
         repository_name: str,
         branch_name: str,
-        github_access_token: str,
+        git_access_token: str,
         remote_opts: CliRemoteOpts = None,
     ) -> None:
 
@@ -33,7 +33,7 @@ class AnchorCmdArgs:
         self.github_organization = github_organization
         self.repository_name = repository_name
         self.branch_name = branch_name
-        self.github_access_token = github_access_token
+        self.git_access_token = git_access_token
         self.remote_opts = remote_opts
 
     def print(self) -> None:
@@ -45,7 +45,7 @@ class AnchorCmdArgs:
             + f"  github_organization: {self.github_organization}\n"
             + f"  repository_name: {self.repository_name}\n"
             + f"  branch_name: {self.branch_name}\n"
-            + "  github_access_token: REDACTED\n"
+            + "  git_access_token: REDACTED\n"
         )
 
 
@@ -61,7 +61,7 @@ class AnchorCmd:
                 github_organization=args.github_organization,
                 repository_name=args.repository_name,
                 branch_name=args.branch_name,
-                github_access_token=args.github_access_token,
+                git_access_token=args.git_access_token,
                 remote_opts=args.remote_opts,
             ),
             collaborators=CoreCollaborators(ctx),

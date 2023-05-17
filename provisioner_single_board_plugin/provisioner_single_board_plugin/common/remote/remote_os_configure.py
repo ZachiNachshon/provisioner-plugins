@@ -23,6 +23,7 @@ ANSIBLE_PLAYBOOK_RPI_CONFIGURE_NODE = """
   hosts: selected_hosts
   gather_facts: no
   {modifiers}
+
   roles:
     - role: {ansible_playbooks_path}/roles/rpi_config_node
       tags: ['configure_remote_node']
@@ -72,9 +73,16 @@ class RemoteMachineOsConfigureRunner:
         output = collaborators.printer().progress_indicator.status.long_running_process_fn(
             call=lambda: collaborators.ansible_runner().run_fn(
                 selected_hosts=ssh_conn_info.ansible_hosts,
-                playbook=AnsiblePlaybook(name="rpi_configure_node", content=ANSIBLE_PLAYBOOK_RPI_CONFIGURE_NODE),
+                playbook=AnsiblePlaybook(
+                    name="rpi_configure_node",
+                    content=ANSIBLE_PLAYBOOK_RPI_CONFIGURE_NODE,
+                    remote_context=args.remote_opts.get_remote_context(),
+                ),
                 ansible_vars=[f"host_name={ansible_host.host}"],
-                ansible_tags=["configure_remote_node", "reboot"],
+                ansible_tags=[
+                    "configure_remote_node",
+                    "reboot" if not args.remote_opts.get_remote_context().is_dry_run else "",
+                ],
             ),
             desc_run="Running Ansible playbook (Configure OS)",
             desc_end="Ansible playbook finished (Configure OS).",

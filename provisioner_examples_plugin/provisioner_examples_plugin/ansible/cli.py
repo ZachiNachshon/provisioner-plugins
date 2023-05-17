@@ -15,12 +15,13 @@ from provisioner_examples_plugin.ansible.hello_world_cmd import (
 example_ansible_cli_app = typer.Typer()
 
 
-def register_ansible_commands(app: typer.Typer):
+def register_ansible_commands(app: typer.Typer, callback_remote_args):
     app.add_typer(
         example_ansible_cli_app,
         name="ansible",
         invoke_without_command=True,
         no_args_is_help=True,
+        callback=callback_remote_args,
     )
 
 

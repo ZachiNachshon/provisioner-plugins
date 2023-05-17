@@ -37,8 +37,8 @@ def run_anchor_command(
     ),
     repository_name: str = typer.Option(None, show_default=False, help="Repository name", envvar="ANCHOR_REPO_NAME"),
     branch_name: str = typer.Option("master", help="Repository branch name", envvar="ANCHOR_REPO_BRANCH_NAME"),
-    github_access_token: str = typer.Option(
-        ConfigResolver.get_config().anchor.github.github_access_token,
+    git_access_token: str = typer.Option(
+        ConfigResolver.get_config().anchor.github.git_access_token,
         help="GitHub access token (only for private repos)",
         envvar="GITHUB_ACCESS_TOKEN",
     ),
@@ -55,7 +55,7 @@ def run_anchor_command(
                 github_organization=github_organization,
                 repository_name=repository_name,
                 branch_name=branch_name,
-                github_access_token=github_access_token,
+                git_access_token=git_access_token,
                 remote_opts=CliRemoteOpts.maybe_get(),
             ),
         ),

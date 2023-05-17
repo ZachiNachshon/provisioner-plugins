@@ -27,7 +27,7 @@ from python_core_lib.utils.os import OsArch
 from provisioner_installers_plugin.installer.domain.installable import Installable
 from provisioner_installers_plugin.installer.domain.source import (
     ActiveInstallSource,
-    InstallSources,
+    InstallSource,
 )
 from provisioner_installers_plugin.installer.runner.installer_runner import (
     ANSIBLE_PLAYBOOK_REMOTE_PROVISIONER_WRAPPER,
@@ -62,8 +62,8 @@ TestSupportedToolings = {
         binary_name="test_util_github",
         version="test_util_github-ver_1",
         active_source=ActiveInstallSource.GitHub,
-        sources=InstallSources(
-            github=InstallSources.GitHub(
+        sources=InstallSource(
+            github=InstallSource.GitHub(
                 owner="TestOwner",
                 repo="TestRepo",
                 supported_releases=[
@@ -83,8 +83,8 @@ TestSupportedToolings = {
         binary_name="test_util_script",
         version="test_util_script-ver_2",
         active_source=ActiveInstallSource.Script,
-        sources=InstallSources(
-            script=InstallSources.Script(install_cmd="curl -sfL https://my.test.install.domain.io | sh - "),
+        sources=InstallSource(
+            script=InstallSource.Script(install_cmd="curl -sfL https://my.test.install.domain.io | sh - "),
         ),
     ),
     "test_util_no_source": Installable.Utility(
@@ -92,22 +92,22 @@ TestSupportedToolings = {
         binary_name="test_util_no_source",
         version="test_util_no_source-ver_none",
         active_source=None,
-        sources=InstallSources(),
+        sources=InstallSource(),
     ),
     "test_util_no_version_no_source": Installable.Utility(
         display_name="test_util_no_version_no_source",
         binary_name="test_util_no_version_no_source",
         version=None,
         active_source=None,
-        sources=InstallSources(),
+        sources=InstallSource(),
     ),
     "test_util_github_no_version": Installable.Utility(
         display_name="test_util_github",
         binary_name="test_util_github",
         version=None,
         active_source=ActiveInstallSource.GitHub,
-        sources=InstallSources(
-            github=InstallSources.GitHub(
+        sources=InstallSource(
+            github=InstallSource.GitHub(
                 owner="TestOwner",
                 repo="TestRepo",
                 supported_releases=[
@@ -142,7 +142,7 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
             args=UtilityInstallerRunnerCmdArgs(
                 utilities=utilities,
                 remote_opts=TestDataRemoteOpts.create_fake_cli_remote_opts(remote_context, environment),
-                github_access_token=TEST_GITHUB_ACCESS_TOKEN,
+                git_access_token=TEST_GITHUB_ACCESS_TOKEN,
             ),
             supported_utilities=TestSupportedToolings,
         )
@@ -402,7 +402,7 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
         fake_installer_env = self.create_fake_installer_env(test_env)
         eval = self.create_evaluator(fake_installer_env)
         result = eval << self.get_runner(eval)._install_from_script(fake_installer_env, utility)
-        test_env.get_collaborators().process().assert_run_command(args=[utility.sources.script.install_cmd])
+        test_env.get_collaborators().process().assert_run_command(args=[utility.source.script.install_cmd])
         Assertion.expect_equal_objects(self, result, utility)
 
     def test_resolve_utility_version_when_version_is_defined(self) -> None:
@@ -437,13 +437,13 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
         utility = TestSupportedToolings["test_util_github"]
         test_env = TestEnv.create()
         test_env.get_collaborators().github().mock_get_latest_version(
-            owner=utility.sources.github.owner, repo=utility.sources.github.repo, version=utility.version
+            owner=utility.source.github.owner, repo=utility.source.github.repo, version=utility.version
         )
         fake_installer_env = self.create_fake_installer_env(test_env)
         eval = self.create_evaluator(fake_installer_env)
         result = eval << self.get_runner(eval)._try_resolve_version_from_github(fake_installer_env, utility)
         test_env.get_collaborators().github().assert_get_latest_version(
-            owner=utility.sources.github.owner, repo=utility.sources.github.repo, version=utility.version
+            owner=utility.source.github.owner, repo=utility.source.github.repo, version=utility.version
         )
         Assertion.expect_equal_objects(self, result, Utility_Version_Tuple(utility, utility.version))
 
@@ -451,7 +451,7 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
         utility = TestSupportedToolings["test_util_github"]
         test_env = TestEnv.create()
         test_env.get_collaborators().github().mock_get_latest_version(
-            owner=utility.sources.github.owner, repo=utility.sources.github.repo, version=None
+            owner=utility.source.github.owner, repo=utility.source.github.repo, version=None
         )
         fake_installer_env = self.create_fake_installer_env(test_env)
         eval = self.create_evaluator(fake_installer_env)
@@ -466,7 +466,7 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
         test_env = TestEnv.create()
         utility = TestSupportedToolings["test_util_github_no_version"]
         version_from_github = "v9.9.9"
-        release_filename = utility.sources.github.release_name_resolver(
+        release_filename = utility.source.github.release_name_resolver(
             version_from_github, test_env.get_context().os_arch.os, test_env.get_context().os_arch.arch
         )
         fake_installer_env = self.create_fake_installer_env(test_env)
@@ -517,8 +517,8 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
         UtilityInstallerCmdRunner(test_env.get_context())._print_github_binary_info(fake_installer_env, expected_tuple)
         test_env.get_collaborators().printer().assert_outputs(
             messages=[
-                utility.sources.github.owner,
-                utility.sources.github.repo,
+                utility.source.github.owner,
+                utility.source.github.repo,
                 utility.version,
                 "http://download-url.com",
             ]
@@ -527,7 +527,7 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
     def test_download_binary_by_version(self) -> None:
         test_env = TestEnv.create()
         utility = TestSupportedToolings["test_util_github"]
-        release_filename = utility.sources.github.release_name_resolver(utility.version, "test-os", "test-arch")
+        release_filename = utility.source.github.release_name_resolver(utility.version, "test-os", "test-arch")
         dl_folderpath = f"{ProvisionerInstallableBinariesPath}/{utility.binary_name}/{utility.version}"
         dl_filepath = f"{dl_folderpath}/{release_filename}"
         expected_input = Utility_Version_ReleaseFileName_Tuple(utility, utility.version, release_filename)
@@ -537,13 +537,13 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
         result = eval << self.get_runner(eval)._download_binary_by_version(fake_installer_env, expected_input)
         Assertion.expect_equal_objects(self, result, expected_output)
         test_env.get_collaborators().github().assert_download_binary(
-            utility.sources.github.owner, utility.sources.github.repo, utility.version, release_filename, dl_folderpath
+            utility.source.github.owner, utility.source.github.repo, utility.version, release_filename, dl_folderpath
         )
 
     def test_maybe_extract_downloaded_binary_success_with_archive(self) -> None:
         utility = TestSupportedToolings["test_util_github"]
         test_env = TestEnv.create()
-        release_filename = utility.sources.github.release_name_resolver(
+        release_filename = utility.source.github.release_name_resolver(
             utility.version, test_env.get_context().os_arch.os, test_env.get_context().os_arch.arch
         )
         unpacked_release_folderpath = f"/home/user/provisioner/binaries/{utility.binary_name}/{utility.version}"
@@ -564,7 +564,7 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
     def test_maybe_extract_downloaded_binary_success_with_regular_file(self) -> None:
         utility = TestSupportedToolings["test_util_github"]
         test_env = TestEnv.create()
-        release_filename = utility.sources.github.release_name_resolver(
+        release_filename = utility.source.github.release_name_resolver(
             utility.version, test_env.get_context().os_arch.os, test_env.get_context().os_arch.arch
         )
         unpacked_release_folderpath = f"/home/user/provisioner/binaries/{utility.binary_name}/{utility.version}"

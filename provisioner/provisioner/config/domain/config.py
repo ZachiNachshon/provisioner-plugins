@@ -68,8 +68,8 @@ class ProvisionerConfig(SerializationBase):
                 self.anchor.github.repository = github_block["repository"]
             if "branch" in github_block:
                 self.anchor.github.branch = github_block["branch"]
-            if "github_access_token" in github_block:
-                self.anchor.github.github_access_token = github_block["github_access_token"]
+            if "git_access_token" in github_block:
+                self.anchor.github.git_access_token = github_block["git_access_token"]
 
     def _parse_dummy_block(self, dummy_block: dict):
         if "hello_world" in dummy_block:
@@ -124,8 +124,8 @@ class ProvisionerConfig(SerializationBase):
             self.anchor.github.repository = other.anchor.github.repository
         if other.anchor.github.branch:
             self.anchor.github.branch = other.anchor.github.branch
-        if other.anchor.github.github_access_token:
-            self.anchor.github.github_access_token = other.anchor.github.github_access_token
+        if other.anchor.github.git_access_token:
+            self.anchor.github.git_access_token = other.anchor.github.git_access_token
 
         if other.dummmy.hello_world.username:
             self.dummmy.hello_world.username = other.dummmy.hello_world.username

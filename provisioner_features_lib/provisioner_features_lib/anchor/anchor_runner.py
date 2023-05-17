@@ -19,10 +19,7 @@ ANSIBLE_PLAYBOOK_ANCHOR_RUN = """
 - name: Anchor run command
   hosts: selected_hosts
   gather_facts: no
-  environment:
-    DRY_RUN: True
-    VERBOSE: True
-    # SILENT: True
+  {modifiers}
 
   roles:
     - role: {ansible_playbooks_path}/roles/anchor
@@ -36,7 +33,7 @@ class AnchorRunnerCmdArgs:
     github_organization: str
     repository_name: str
     branch_name: str
-    github_access_token: str
+    git_access_token: str
     remote_opts: CliRemoteOpts
 
     def __init__(
@@ -45,14 +42,14 @@ class AnchorRunnerCmdArgs:
         github_organization: str,
         repository_name: str,
         branch_name: str,
-        github_access_token: str,
+        git_access_token: str,
         remote_opts: Optional[CliRemoteOpts] = None,
     ) -> None:
         self.anchor_run_command = anchor_run_command
         self.github_organization = github_organization
         self.repository_name = repository_name
         self.branch_name = branch_name
-        self.github_access_token = github_access_token
+        self.git_access_token = git_access_token
         self.remote_opts = remote_opts
 
 
@@ -77,27 +74,28 @@ class AnchorCmdRunner:
 
     def _start_remote_run_command_flow(self, ctx: Context, args: AnchorRunnerCmdArgs, collaborators: CoreCollaborators):
         remote_connector = RemoteMachineConnector(collaborators)
-        ssh_conn_info = collaborators.summary().append_result(
-            attribute_name="ssh_conn_info",
-            call=lambda: Evaluator.eval_step_return_value_throw_on_failure(
-                call=lambda: remote_connector.collect_ssh_connection_info(ctx, args.remote_opts),
-                ctx=ctx,
-                err_msg="Could not resolve SSH connection info",
-            ),
+        ssh_conn_info = Evaluator.eval_step_return_value_throw_on_failure(
+            call=lambda: remote_connector.collect_ssh_connection_info(ctx, args.remote_opts),
+            ctx=ctx,
+            err_msg="Could not resolve SSH connection info",
         )
+        collaborators.summary().append(attribute_name="ssh_conn_info", value=ssh_conn_info)
 
         collaborators.printer().new_line_fn()
         output = collaborators.printer().progress_indicator.status.long_running_process_fn(
             call=lambda: collaborators.ansible_runner().run_fn(
                 selected_hosts=ssh_conn_info.ansible_hosts,
-                playbook=AnsiblePlaybook("anchor_run", ANSIBLE_PLAYBOOK_ANCHOR_RUN),
+                playbook=AnsiblePlaybook(
+                    name="anchor_run",
+                    content=ANSIBLE_PLAYBOOK_ANCHOR_RUN,
+                    remote_context=args.remote_opts.get_remote_context()),
                 ansible_vars=[
                     "anchor_command=Run",
                     f"\"anchor_args='{args.anchor_run_command}'\"",
                     f"anchor_github_organization={args.github_organization}",
                     f"anchor_github_repository={args.repository_name}",
                     f"anchor_github_repo_branch={args.branch_name}",
-                    f"github_access_token={args.github_access_token}",
+                    f"git_access_token={args.git_access_token}",
                 ],
                 ansible_tags=["anchor_run"],
             ),

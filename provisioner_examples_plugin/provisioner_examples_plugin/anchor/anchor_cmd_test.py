@@ -31,7 +31,7 @@ class AnchorCmdTestShould(unittest.TestCase):
             self.assertEqual(EXPECTED_GITHUB_ORGANIZATION, args.github_organization)
             self.assertEqual(EXPECTED_REPOSITORY_NAME, args.repository_name)
             self.assertEqual(EXPECTED_BRANCH_NAME, args.branch_name)
-            self.assertEqual(EXPECTED_GITHUB_ACCESS_TOKEN, args.github_access_token)
+            self.assertEqual(EXPECTED_GITHUB_ACCESS_TOKEN, args.git_access_token)
 
         AnchorCmd().run(
             ctx=ctx,
@@ -40,7 +40,7 @@ class AnchorCmdTestShould(unittest.TestCase):
                 github_organization=EXPECTED_GITHUB_ORGANIZATION,
                 repository_name=EXPECTED_REPOSITORY_NAME,
                 branch_name=EXPECTED_BRANCH_NAME,
-                github_access_token=EXPECTED_GITHUB_ACCESS_TOKEN,
+                git_access_token=EXPECTED_GITHUB_ACCESS_TOKEN,
             ),
         )
         Assertion.expect_call_argument(self, run_call, arg_name="ctx", expected_value=env.get_context())

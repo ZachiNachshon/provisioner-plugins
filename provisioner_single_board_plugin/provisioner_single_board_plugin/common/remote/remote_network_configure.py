@@ -22,6 +22,7 @@ ANSIBLE_PLAYBOOK_RPI_CONFIGURE_NETWORK = """
   hosts: selected_hosts
   gather_facts: no
   {modifiers}
+
   roles:
     - role: {ansible_playbooks_path}/roles/rpi_config_network
       tags: ['configure_rpi_network']
@@ -114,7 +115,7 @@ class RemoteMachineNetworkConfigureRunner:
                 dns_ip_address=args.dns_ip_address,
             ),
             ctx=ctx,
-            err_msg="Could not resolve SSH connection info",
+            err_msg="Could not resolve DHCPCD configure info",
         )
         collaborators.summary().append("dhcpcd_configure_info", dhcpcd_configure_info)
         return dhcpcd_configure_info
@@ -139,14 +140,22 @@ class RemoteMachineNetworkConfigureRunner:
         output = collaborators.printer().progress_indicator.status.long_running_process_fn(
             call=lambda: collaborators.ansible_runner().run_fn(
                 selected_hosts=ssh_conn_info.ansible_hosts,
-                playbook=AnsiblePlaybook(name="rpi_configure_network", content=ANSIBLE_PLAYBOOK_RPI_CONFIGURE_NETWORK),
+                playbook=AnsiblePlaybook(
+                    name="rpi_configure_network",
+                    content=ANSIBLE_PLAYBOOK_RPI_CONFIGURE_NETWORK,
+                    remote_context=args.remote_opts.get_remote_context(),
+                ),
                 ansible_vars=[
                     f"host_name={network_info.ssh_hostname}",
                     f"static_ip={dhcpcd_configure_info.static_ip_address}",
                     f"gateway_address={dhcpcd_configure_info.gw_ip_address}",
                     f"dns_address={dhcpcd_configure_info.dns_ip_address}",
                 ],
-                ansible_tags=["configure_rpi_network", "define_static_ip", "reboot"],
+                ansible_tags=[
+                    "configure_rpi_network",
+                    "define_static_ip",
+                    "reboot" if not args.remote_opts.get_remote_context().is_dry_run else "",
+                ],
             ),
             desc_run="Running Ansible playbook (Configure Network)",
             desc_end="Ansible playbook finished (Configure Network).",
@@ -264,7 +273,8 @@ def generate_instructions_post_network(ip_address: str, static_ip: str, username
                           [yellow]ssh {username}@{hostname}[/yellow]
     • Update password   - [yellow]sudo /usr/bin/raspi-config nonint do_change_pass[/yellow]
 
-  To declare the new static node in the provisioner config, add to ~/.config/provisioner/config.yaml:
+  To declare the new static node in the provisioner config,
+  update the following file ~/.config/provisioner/config.yaml with:
 
     provisioner:
         remote:

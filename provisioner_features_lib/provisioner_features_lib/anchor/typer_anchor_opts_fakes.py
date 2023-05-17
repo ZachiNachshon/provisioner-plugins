@@ -19,7 +19,7 @@ class TestDataAnchorOpts:
                     organization=TestDataAnchorOpts.TEST_DATA_ANCHOR_GITHUB_ORGANIZATION,
                     repository=TestDataAnchorOpts.TEST_DATA_ANCHOR_GITHUB_REPOSITORY,
                     branch=TestDataAnchorOpts.TEST_DATA_ANCHOR_GITHUB_BRANCH,
-                    github_access_token=TestDataAnchorOpts.TEST_DATA_ANCHOR_GITHUB_ACCESS_TOKEN,
+                    git_access_token=TestDataAnchorOpts.TEST_DATA_ANCHOR_GITHUB_ACCESS_TOKEN,
                 )
             )
         )

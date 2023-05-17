@@ -3,9 +3,10 @@
 from provisioner_installers_plugin.installer.domain.installable import Installable
 from provisioner_installers_plugin.installer.domain.source import (
     ActiveInstallSource,
-    InstallSources,
+    InstallSource,
 )
 from provisioner_installers_plugin.installer.versions import ToolingVersions
+from python_core_lib.runner.ansible.ansible_runner import AnsiblePlaybook
 
 SupportedOS = ["linux", "darwin"]
 SupportedArchitectures = ["x86_64", "arm", "amd64", "armv6l", "armv7l", "arm64", "aarch64"]
@@ -16,8 +17,8 @@ SupportedToolings = {
         binary_name="anchor",
         version=ToolingVersions.anchor_ver,
         active_source=ActiveInstallSource.GitHub,
-        sources=InstallSources(
-            github=InstallSources.GitHub(
+        sources=InstallSource(
+            github=InstallSource.GitHub(
                 owner="ZachiNachshon",
                 repo="anchor",
                 supported_releases=["darwin_amd64", "darwin_arm64", "linux_amd64", "linux_arm", "linux_arm64"],
@@ -26,21 +27,37 @@ SupportedToolings = {
         ),
     ),
     "k3s-server": Installable.Utility(
-        display_name="k3s-server",
+        display_name="server",
         binary_name="k3s",
         version=ToolingVersions.k3s_server_ver,
-        active_source=ActiveInstallSource.Script,
-        sources=InstallSources(
-            script=InstallSources.Script(install_cmd="curl -sfL https://get.k3s.io | sh - "),
+        active_source=ActiveInstallSource.Ansible,
+        sources=InstallSource(
+            ansible=InstallSource.Ansible(
+                playbook=AnsiblePlaybook(
+                    name="k3s_install",
+                    content="""
+---
+- name: Install K3s master server
+  hosts: selected_hosts
+  gather_facts: no
+  {modifiers}
+
+  roles:
+    - role: {ansible_playbooks_path}/roles/k3s
+"""
+                ),
+                ansible_tags=["k3s_master_install"],
+                cli_args_to_ansible_vars=["k3s_token"]
+            ),
         ),
     ),
     "k3s-agent": Installable.Utility(
-        display_name="k3s-agent",
+        display_name="agent",
         binary_name="k3s",
         version=ToolingVersions.k3s_agent_ver,
         active_source=ActiveInstallSource.Script,
-        sources=InstallSources(
-            script=InstallSources.Script(install_cmd="curl -sfL https://get.k3s.io | sh - "),
+        sources=InstallSource(
+            script=InstallSource.Script(install_cmd="curl -sfL https://get.k3s.io | sh - "),
         ),
     ),
     "helm": Installable.Utility(
@@ -48,8 +65,8 @@ SupportedToolings = {
         binary_name="helm",
         version=ToolingVersions.helm_ver,
         active_source=ActiveInstallSource.GitHub,
-        sources=InstallSources(
-            github=InstallSources.GitHub(
+        sources=InstallSource(
+            github=InstallSource.GitHub(
                 owner="helm",
                 repo="helm",
                 supported_releases=["darwin_amd64", "darwin_arm64", "linux_amd64", "linux_arm", "linux_arm64"],

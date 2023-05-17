@@ -119,7 +119,7 @@ provisioner:
       organization: ZachiNachshon
       repository: provisioner
       branch: master
-      github_access_token: SECRET
+      git_access_token: SECRET
 
   dummy:
     hello_world:
@@ -153,7 +153,7 @@ provisioner:
       organization: TestOrg
       repository: test-repo
       branch: test
-      github_access_token: TEST-SECRET
+      git_access_token: TEST-SECRET
 
   dummy:
     hello_world:
@@ -197,7 +197,7 @@ provisioner:
         self.assertEqual(merged_config_obj.anchor.github.organization, "TestOrg")
         self.assertEqual(merged_config_obj.anchor.github.repository, "test-repo")
         self.assertEqual(merged_config_obj.anchor.github.branch, "test")
-        self.assertEqual(merged_config_obj.anchor.github.github_access_token, "TEST-SECRET")
+        self.assertEqual(merged_config_obj.anchor.github.git_access_token, "TEST-SECRET")
 
         self.assertEqual(merged_config_obj.dummmy.hello_world.username, "Config Test User")
 

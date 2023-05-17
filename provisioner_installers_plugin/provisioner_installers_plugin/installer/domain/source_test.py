@@ -5,7 +5,7 @@ import unittest
 from python_core_lib.test_lib.test_env import TestEnv
 from python_core_lib.utils.os import MAC_OS, OsArch
 
-from provisioner_installers_plugin.installer.domain.source import InstallSources
+from provisioner_installers_plugin.installer.domain.source import InstallSource
 
 TEST_GITHUB_OWNER = "test-owner"
 TEST_GITHUB_REPO = "test-repo"
@@ -23,12 +23,12 @@ class InstallSourcesTestShould(unittest.TestCase):
 
     env = TestEnv.create()
 
-    def create_fake_github_source(self) -> InstallSources.GitHub:
-        return InstallSources.GitHub(
+    def create_fake_github_source(self) -> InstallSource.GitHub:
+        return InstallSource.GitHub(
             owner=TEST_GITHUB_OWNER,
             repo=TEST_GITHUB_REPO,
             supported_releases=TEST_GITHUB_SUPPORTED_RELEASES,
-            github_access_token=TEST_GITHUB_ACCESS_TOKEN,
+            git_access_token=TEST_GITHUB_ACCESS_TOKEN,
             release_name_resolver=lambda version, os, arch: f"{TEST_GITHUB_RELEASE_NAME}_{version}_{os}_{arch}.tar.gz",
         )
 

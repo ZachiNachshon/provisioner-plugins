@@ -39,8 +39,9 @@ class Summary:
         logger.debug(f"Creating a summary generator (dry_run: {dry_run}, verbose: {verbose})...")
         return Summary(dry_run, verbose, auto_prompt, json_util, printer, prompter)
 
-    def append(self, attribute_name: str, value: Any) -> None:
+    def append(self, attribute_name: str, value: Any) -> "Summary":
         self._summary_dict[attribute_name] = value
+        return self
 
     def append_result(self, attribute_name: str, call: Callable[[], str]) -> Any:
         result = call()

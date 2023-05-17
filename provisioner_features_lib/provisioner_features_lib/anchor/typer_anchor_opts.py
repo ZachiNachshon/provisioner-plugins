@@ -26,9 +26,9 @@ class TyperAnchorOpts:
     def load(anchor_config: AnchorConfig) -> None:
         TyperAnchorOpts.anchor_config = anchor_config
 
-    def github_access_token():
+    def git_access_token():
         return typer.Option(
-            TyperAnchorOpts.anchor_config.github.github_access_token,
+            TyperAnchorOpts.anchor_config.github.git_access_token,
             show_default=False,
             help="GitHub access token for accessing installers private repo",
             envvar="GITHUB_ACCESS_TOKEN",
@@ -40,32 +40,32 @@ class TyperResolvedAnchorOpts:
 
     _github_access_token: Optional[str] = None
 
-    def __init__(self, github_access_token: Optional[str] = None) -> None:
-        self._github_access_token = github_access_token
+    def __init__(self, git_access_token: Optional[str] = None) -> None:
+        self._github_access_token = git_access_token
 
     @staticmethod
     def create(
-        github_access_token: Optional[str] = None,
+        git_access_token: Optional[str] = None,
     ) -> None:
 
         global GLOBAL_TYPER_CLI_ANCHOR_OPTS
-        GLOBAL_TYPER_CLI_ANCHOR_OPTS = TyperResolvedAnchorOpts(github_access_token=github_access_token)
+        GLOBAL_TYPER_CLI_ANCHOR_OPTS = TyperResolvedAnchorOpts(git_access_token=git_access_token)
 
 
 GLOBAL_TYPER_CLI_ANCHOR_OPTS: TyperResolvedAnchorOpts = None
 
 
 class CliAnchorOpts:
-    github_access_token: Optional[str]
+    git_access_token: Optional[str]
 
-    def __init__(self, github_access_token: Optional[str] = None) -> None:
-        self.github_access_token = github_access_token
+    def __init__(self, git_access_token: Optional[str] = None) -> None:
+        self.git_access_token = git_access_token
 
     @staticmethod
     def maybe_get() -> "CliAnchorOpts":
         if GLOBAL_TYPER_CLI_ANCHOR_OPTS:
-            return CliAnchorOpts(github_access_token=GLOBAL_TYPER_CLI_ANCHOR_OPTS._github_access_token)
+            return CliAnchorOpts(git_access_token=GLOBAL_TYPER_CLI_ANCHOR_OPTS._github_access_token)
         return None
 
     def print(self) -> None:
-        logger.debug("CliAnchorOpts: \n" + f"  github_access_token: {self.github_access_token}\n")
+        logger.debug("CliAnchorOpts: \n" + f"  git_access_token: {self.git_access_token}\n")

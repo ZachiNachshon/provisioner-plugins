@@ -13,9 +13,8 @@ from python_core_lib.test_lib.test_cli_runner import TestCliRunner
 from python_core_lib.test_lib.test_env import TestEnv
 from typer.testing import CliRunner
 
-from provisioner_installers_plugin.cli.anchor.cli import anchor
-from provisioner_installers_plugin.cli.helm.cli import helm
-from provisioner_installers_plugin.cli.k3s.cli import k3s_agent, k3s_server
+from provisioner_installers_plugin.cli.cli import anchor, helm
+from provisioner_installers_plugin.kubernetes.cli import k3s_agent, k3s_server
 from provisioner_installers_plugin.main_fake import get_fake_app
 
 INSTALLER_CMD_MODULE_PATH = "provisioner_installers_plugin.installer.cmd.installer_cmd"
@@ -126,7 +125,7 @@ class UtilityInstallerCliTestShould(unittest.TestCase):
               "linux_arm",
               "linux_arm64"
             ],
-            "github_access_token": null,
+            "git_access_token": null,
             "release_name_resolver": {}
           },
           "script": null

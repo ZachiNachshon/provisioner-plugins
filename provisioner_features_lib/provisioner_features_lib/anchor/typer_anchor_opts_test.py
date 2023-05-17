@@ -47,7 +47,7 @@ class TyperAnchorOptsTestShould(unittest.TestCase):
 
         # This is a simulation of typer triggering the remote_args_callback
         # DO NOT SET AUTH VARIABLES SINCE THOSE WOULD BE TREATED AS CLI ARGUMENTS OVERRIDES
-        TyperResolvedAnchorOpts.create(github_access_token=TestDataAnchorOpts.TEST_DATA_ANCHOR_GITHUB_ACCESS_TOKEN)
+        TyperResolvedAnchorOpts.create(git_access_token=TestDataAnchorOpts.TEST_DATA_ANCHOR_GITHUB_ACCESS_TOKEN)
 
         # Assert TyperResolvedAnchorOpts
         from provisioner_features_lib.anchor.typer_anchor_opts import (
@@ -61,13 +61,13 @@ class TyperAnchorOptsTestShould(unittest.TestCase):
         # Assert CliAnchorOpts
         cli_anchor_opts = CliAnchorOpts.maybe_get()
         self.assertIsNotNone(cli_anchor_opts)
-        self.assertEqual(cli_anchor_opts.github_access_token, TestDataAnchorOpts.TEST_DATA_ANCHOR_GITHUB_ACCESS_TOKEN)
+        self.assertEqual(cli_anchor_opts.git_access_token, TestDataAnchorOpts.TEST_DATA_ANCHOR_GITHUB_ACCESS_TOKEN)
 
     def test_override_typer_anchor_opts_from_cli_arguments(self) -> None:
         self.load_fake_anchor_config()
 
         # This is a simulation of typer triggering the anchor_args_callback
-        TyperResolvedAnchorOpts.create(github_access_token=ARG_CLI_OVERRIDE_GITHUB_ACCESS_TOKEN)
+        TyperResolvedAnchorOpts.create(git_access_token=ARG_CLI_OVERRIDE_GITHUB_ACCESS_TOKEN)
 
         # Assert TyperResolvedAnchorOpts
         from provisioner_features_lib.anchor.typer_anchor_opts import (
@@ -79,7 +79,7 @@ class TyperAnchorOptsTestShould(unittest.TestCase):
         # Assert CliAnchorOpts
         cli_anchor_opts = CliAnchorOpts.maybe_get()
         self.assertIsNotNone(cli_anchor_opts)
-        self.assertEqual(cli_anchor_opts.github_access_token, ARG_CLI_OVERRIDE_GITHUB_ACCESS_TOKEN)
+        self.assertEqual(cli_anchor_opts.git_access_token, ARG_CLI_OVERRIDE_GITHUB_ACCESS_TOKEN)
 
     def test_override_typer_anchor_args_callback(self) -> None:
         self.load_fake_anchor_config()
@@ -88,7 +88,7 @@ class TyperAnchorOptsTestShould(unittest.TestCase):
             anchor_args_callback,
         )
 
-        anchor_args_callback(github_access_token=TestDataAnchorOpts.TEST_DATA_ANCHOR_GITHUB_ACCESS_TOKEN)
+        anchor_args_callback(git_access_token=TestDataAnchorOpts.TEST_DATA_ANCHOR_GITHUB_ACCESS_TOKEN)
 
         from provisioner_features_lib.anchor.typer_anchor_opts import (
             GLOBAL_TYPER_CLI_ANCHOR_OPTS,

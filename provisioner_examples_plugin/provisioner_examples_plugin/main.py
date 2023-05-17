@@ -16,4 +16,4 @@ def append_to_cli(app: typer.Typer):
 
     from provisioner_examples_plugin.ansible.cli import register_ansible_commands
 
-    register_ansible_commands(app=examples_cli)
+    register_ansible_commands(app=examples_cli, callback_remote_args=remote_args_callback)

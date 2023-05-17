@@ -6,7 +6,7 @@ from provisioner_features_lib.anchor.typer_anchor_opts import (
 )
 
 
-def anchor_args_callback(github_access_token: str = TyperAnchorOpts.github_access_token()):
+def anchor_args_callback(git_access_token: str = TyperAnchorOpts.git_access_token()):
     TyperResolvedAnchorOpts.create(
-        github_access_token,
+        git_access_token,
     )

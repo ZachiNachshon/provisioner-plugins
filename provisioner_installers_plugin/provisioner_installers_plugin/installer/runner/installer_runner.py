@@ -11,6 +11,8 @@ from provisioner_features_lib.remote.remote_connector import (
     SSHConnectionInfo,
 )
 from provisioner_features_lib.remote.typer_remote_opts import CliRemoteOpts
+from provisioner_installers_plugin.installer.domain.command import InstallerSubCommandName
+from provisioner_installers_plugin.installer.domain.dynamic_args import DynamicArgs
 from python_core_lib.errors.cli_errors import (
     InstallerSourceError,
     InstallerUtilityNotSupported,
@@ -19,7 +21,7 @@ from python_core_lib.errors.cli_errors import (
 )
 from python_core_lib.func.pyfn import Environment, PyFn, PyFnEnvBase, PyFnEvaluator
 from python_core_lib.infra.context import Context
-from python_core_lib.runner.ansible.ansible_runner import AnsiblePlaybook
+from python_core_lib.runner.ansible.ansible_runner import AnsibleHost, AnsiblePlaybook
 from python_core_lib.shared.collaborators import CoreCollaborators
 
 from provisioner_installers_plugin.installer.domain.installable import Installable
@@ -86,17 +88,23 @@ class SSHConnInfo_Utility_Tuple(NamedTuple):
 class UtilityInstallerRunnerCmdArgs:
     utilities: List[str]
     remote_opts: CliRemoteOpts
-    github_access_token: str
+    dynamic_args: DynamicArgs
+    sub_command_name: InstallerSubCommandName
+    git_access_token: str
 
     def __init__(
         self,
         utilities: List[str],
         remote_opts: CliRemoteOpts,
-        github_access_token: str = None,
+        sub_command_name: InstallerSubCommandName,
+        git_access_token: str = None,
+        dynamic_args: Optional[DynamicArgs] = None
     ) -> None:
         self.utilities = utilities
         self.remote_opts = remote_opts
-        self.github_access_token = github_access_token
+        self.sub_command_name = sub_command_name
+        self.dynamic_args = dynamic_args
+        self.git_access_token = git_access_token
 
 
 class InstallerEnv:
@@ -137,13 +145,15 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
         self, env: InstallerEnv
     ) -> PyFn["UtilityInstallerCmdRunner", Exception, List[Installable.Utility]]:
         return PyFn.effect(
-            lambda: env.collaborators.summary().append_result(
-                attribute_name="utilities",
-                call=lambda: [
-                    env.supported_utilities[name] for name in env.args.utilities if name in env.supported_utilities
-                ],
-            )
+            lambda: [env.supported_utilities[name] for name in env.args.utilities if name in env.supported_utilities]
         )
+
+    def _create_utils_summary(
+        self, env: InstallerEnv, utilities: List[Installable.Utility]
+    ) -> PyFn["UtilityInstallerCmdRunner", Exception, List[Installable.Utility]]:
+        return PyFn.effect(
+            lambda: [ env.collaborators.summary().append(utility.display_name, utility.as_summary_object(env.ctx.is_verbose())) for utility in utilities ]
+        ).map(lambda _: utilities)
 
     def _print_installer_welcome(
         self, env: InstallerEnv, utilities: List[Installable.Utility]
@@ -212,7 +222,7 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
                     f"""Successfully installed utility:
   - name: {maybe_utility.display_name}
   - version: {maybe_utility.version}
-  - binary: {maybe_utility.binary_name}"""
+  - binary: {self._genreate_binary_symlink_path(maybe_utility.binary_name)}"""
                 )
             ).map(lambda _: maybe_utility)
         else:
@@ -258,13 +268,26 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
             ).map(lambda _: None)
         else:
             return PyFn.of(utility)
-
+        
+    def _get_ssh_conn_info_localhost(self) -> SSHConnectionInfo:
+        return SSHConnectionInfo(
+            ansible_hosts=[
+                AnsibleHost(
+                    host="localhost",
+                    ip_address="ansible_connection=local",
+                    username="localhost",
+                )
+            ]
+        )
+    
     def _install_utility_locally(
         self, env: InstallerEnv, utility: Installable.Utility
     ) -> PyFn["UtilityInstallerCmdRunner", InstallerSourceError, Installable.Utility]:
         match utility.active_source:
             case ActiveInstallSource.Script:
                 return PyFn.of(utility).flat_map(lambda _: self._install_from_script(env, utility))
+            case ActiveInstallSource.Ansible:
+                return PyFn.of(utility).flat_map(lambda _: self._install_locally_from_ansible_playbook(env, utility))
             case ActiveInstallSource.GitHub:
                 return PyFn.of(utility).flat_map(lambda _: self._install_from_github(env, utility))
             case _:
@@ -272,16 +295,38 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
                     error=InstallerSourceError(f"Invalid installation active source. value: {utility.active_source}")
                 )
 
+    def _install_locally_from_ansible_playbook(
+        self, env: InstallerEnv, utility: Installable.Utility
+    ) -> PyFn["UtilityInstallerCmdRunner", InstallerSourceError, Installable.Utility]:
+        if not utility.source.ansible:
+            return PyFn.fail(error=InstallerSourceError("Missing installation source. name: Ansible"))
+        else:
+            return PyFn.effect(
+                lambda: env.collaborators.printer().progress_indicator.status.long_running_process_fn(
+                    call=lambda: env.collaborators.ansible_runner().run_fn(
+                        selected_hosts=self._get_ssh_conn_info_localhost().ansible_hosts,
+                        playbook=AnsiblePlaybook.copy_and_add_context(
+                            copy_from=utility.source.ansible.playbook,
+                            remote_context=env.args.remote_opts.get_remote_context()
+                        ),
+                        ansible_vars=env.args.dynamic_args.as_ansible_vars() + [f"git_access_token={env.args.git_access_token}"],
+                        ansible_tags=utility.source.ansible.ansible_tags,
+                    ),
+                    desc_run=f"Running Ansible playbook ({utility.source.ansible.playbook.get_name()})).",
+                    desc_end=f"Ansible playbook finished ({utility.source.ansible.playbook.get_name()})).",
+                )
+            ).map(lambda _: utility)
+        
     def _install_from_script(
         self, env: InstallerEnv, utility: Installable.Utility
     ) -> PyFn["UtilityInstallerCmdRunner", InstallerSourceError, Installable.Utility]:
         # TODO: for custom command lines args we need to support additional install args
-        if not utility.sources.script:
+        if not utility.source.script:
             return PyFn.fail(error=InstallerSourceError("Missing installation source. name: Script"))
         else:
             return PyFn.effect(
                 lambda: env.collaborators.process().run_fn(
-                    args=[utility.sources.script.install_cmd], allow_single_shell_command_str=True
+                    args=[utility.source.script.install_cmd], allow_single_shell_command_str=True
                 ),
             ).map(lambda _: utility)
 
@@ -305,14 +350,14 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
     ) -> PyFn["UtilityInstallerCmdRunner", VersionResolverError, Utility_Version_Tuple]:
         return PyFn.effect(
             lambda: env.collaborators.github().get_latest_version_fn(
-                owner=utility.sources.github.owner, repo=utility.sources.github.repo
+                owner=utility.source.github.owner, repo=utility.source.github.repo
             )
         ).if_then_else(
             predicate=lambda version: version is not None and len(version) > 0,
             if_true=lambda version: PyFn.success(Utility_Version_Tuple(utility, version)),
             if_false=lambda _: PyFn.fail(
                 VersionResolverError(
-                    f"Failed to resolve latest version from GitHub. owner: {utility.sources.github.owner}, repo: {utility.sources.github.repo}"
+                    f"Failed to resolve latest version from GitHub. owner: {utility.source.github.owner}, repo: {utility.source.github.repo}"
                 )
             ),
         )
@@ -320,7 +365,7 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
     def _try_get_github_release_name_by_os_arch(
         self, env: InstallerEnv, util_ver_tuple: Utility_Version_Tuple
     ) -> PyFn["UtilityInstallerCmdRunner", OsArchNotSupported, Utility_Version_ReleaseFileName_Tuple]:
-        release_filename = util_ver_tuple.utility.sources.github.resolve_binary_release_name(
+        release_filename = util_ver_tuple.utility.source.github.resolve_binary_release_name(
             env.ctx.os_arch, util_ver_tuple.version
         )
         if not release_filename:
@@ -344,7 +389,7 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
         self, env: InstallerEnv, util_ver_name_tuple: Utility_Version_ReleaseFileName_Tuple
     ) -> None:
         env.collaborators.printer().new_line_fn().print_fn(
-            f"Downloading from GitHub. owner: {util_ver_name_tuple.utility.sources.github.owner}, repo: {util_ver_name_tuple.utility.sources.github.repo}, name: {util_ver_name_tuple.release_filename}, version: {util_ver_name_tuple.version}"
+            f"Downloading from GitHub. owner: {util_ver_name_tuple.utility.source.github.owner}, repo: {util_ver_name_tuple.utility.source.github.repo}, name: {util_ver_name_tuple.release_filename}, version: {util_ver_name_tuple.version}"
         )
 
     def _download_binary_by_version(
@@ -352,8 +397,8 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
     ) -> PyFn["UtilityInstallerCmdRunner", Exception, ReleaseFilename_ReleaseDownloadFilePath_Utility_Tuple]:
         return PyFn.effect(
             lambda: env.collaborators.github().download_release_binary_fn(
-                owner=util_ver_name_tuple.utility.sources.github.owner,
-                repo=util_ver_name_tuple.utility.sources.github.repo,
+                owner=util_ver_name_tuple.utility.source.github.owner,
+                repo=util_ver_name_tuple.utility.source.github.repo,
                 version=util_ver_name_tuple.version,
                 binary_name=util_ver_name_tuple.release_filename,
                 binary_folder_path=self._genreate_binary_folder_path(
@@ -410,7 +455,7 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
     def _install_from_github(
         self, env: InstallerEnv, utility: Installable.Utility
     ) -> PyFn["UtilityInstallerCmdRunner", InstallerSourceError, Installable.Utility]:
-        if not utility.sources.github:
+        if not utility.source.github:
             return PyFn.fail(error=InstallerSourceError("Missing installation source. name: GitHub"))
         else:
             # TODO: for command lines we need to support additional install args
@@ -441,6 +486,7 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
         run_env_utils_tuple = eval << (
             chain._verify_selected_utilities(env)
             .flat_map(lambda _: chain._map_to_utilities_list(env))
+            .flat_map(lambda utilities: chain._create_utils_summary(env, utilities))
             .flat_map(lambda utilities: chain._print_installer_welcome(env, utilities))
             .flat_map(lambda utilities: chain._resolve_run_environment(env, utilities))
         )
@@ -478,9 +524,9 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
                         remote_context=env.args.remote_opts.get_remote_context(),
                     ),
                     ansible_vars=[
-                        f"provisioner_command='provisioner -y {'-v' if env.args.remote_opts.get_remote_context().is_verbose() else ''} install cli --environment=Local {sshconninfo_utility_info.utility.binary_name}'",
+                        f"provisioner_command='provisioner -y {'-v ' if env.args.remote_opts.get_remote_context().is_verbose() else ''}install {env.args.sub_command_name} --environment=Local {sshconninfo_utility_info.utility.display_name}'",
                         "required_plugins=['provisioner_installers_plugin:0.1.0']",
-                        f"git_access_token={env.args.github_access_token}",
+                        f"git_access_token={env.args.git_access_token}",
                     ],
                     ansible_tags=["provisioner_wrapper"],
                 ),
