@@ -79,7 +79,8 @@ class AnsiblePlaybook:
             resolved_path = self._get_ansible_playbook_path(paths, ansible_playbook_package)
 
         modifiers: str = ""
-        if "modifiers" in self.__content and not dry_run:
+        # if "modifiers" in self.__content and not dry_run:
+        if "modifiers" in self.__content:
             if self.__remote_context is None:
                 logger.debug(
                     "Empty remote context, modifiers won't get added to the Ansible playbook (dry_run / verbose / silent)"
@@ -90,6 +91,8 @@ class AnsiblePlaybook:
         return self.__content.format(ansible_playbooks_path=resolved_path, modifiers=modifiers)
 
     def _generate_modifiers(self, remote_context: RemoteContext):
+        if not remote_context.is_dry_run() and not remote_context.is_silent() and not remote_context.is_verbose():
+            return ""
         return f"""
   environment:
     {"DRY_RUN: True" if remote_context.is_dry_run() else ""}
@@ -279,23 +282,24 @@ class AnsibleRunnerLocal:
         logger.debug(f"Created playbook file. path: {playbooks_dest_dir}\n{content}")
         return self._io_utils.write_file_fn(content=content, file_name=name, dir_path=playbooks_dest_dir)
 
-    def _filter_out_vars_with_sensitive_data(self, ansible_vars: Optional[List[str]] = None) -> str:
-        if not ansible_vars or len(ansible_vars) == 0:
-            return ansible_vars
-        filtered_vars: List[str] = []
-        for ansible_var in ansible_vars:
+    def _clear_sensitive_data_from_args(self, ansible_args: Optional[List[str]] = None) -> str:
+        if not ansible_args or len(ansible_args) == 0:
+            return ansible_args
+        reduced_args: List[str] = []
+        for ansible_var in ansible_args:
             key_value = ansible_var.split("=")
-            if len(key_value) < 2:
-                continue
-            ansible_var_key = key_value[0]
-            found = False
-            for keyword in ANSIBLE_VALUES_SENSITIVE_KEYWORDS:
-                if keyword in ansible_var_key:
-                    found = True
-                    filtered_vars.append(f"{ansible_var_key}=REDACTED")
-            if not found:
-                filtered_vars.append(ansible_var)
-        return filtered_vars
+            if len(key_value) == 2:
+                ansible_var_key = key_value[0]
+                found = False
+                for keyword in ANSIBLE_VALUES_SENSITIVE_KEYWORDS:
+                    if keyword in ansible_var_key:
+                        found = True
+                        reduced_args.append(f"{ansible_var_key}=REDACTED")
+                if not found:
+                    reduced_args.append(ansible_var)
+            else:
+                reduced_args.append(ansible_var)
+        return reduced_args
 
     def _run(
         self,
@@ -328,8 +332,9 @@ class AnsibleRunnerLocal:
         playbook_content_escaped = playbook.get_content(self.paths, ansible_playbook_package, self._dry_run)
         playbook_file_path = self._create_playbook_file(name=playbook.get_name(), content=playbook_content_escaped)
         ansible_playbook_args = self._generate_ansible_playbook_args(playbook_file_path, ansible_vars, ansible_tags)
-        ansible_playbook_args_reducted = self._filter_out_vars_with_sensitive_data(ansible_vars)
+        ansible_playbook_args_reducted = self._clear_sensitive_data_from_args(ansible_playbook_args)
         logger.debug(f"About to run command:\nansible-playbook {' '.join(map(str, ansible_playbook_args_reducted))}")
+        logger.debug(f"About to run command:\nansible-playbook {' '.join(map(str, ansible_playbook_args))}")
 
         if self._dry_run:
             return f"name: {playbook.get_name()}\ncontent:\n{playbook_content_escaped}\ncommand:\nansible-playbook {' '.join(map(str, ansible_playbook_args_reducted))}"

@@ -22,7 +22,7 @@ class RemoteContext:
         ctx = RemoteContext()
         ctx._dry_run = dry_run
         ctx._verbose = verbose
-        ctx.silent = silent
+        ctx._silent = silent
         return ctx
 
     def is_verbose(self) -> bool:

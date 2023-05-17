@@ -12,7 +12,7 @@ EXPECTED_ANCHOR_RUN_COMMAND = "run --action=test-action"
 EXPECTED_GITHUB_ORGANIZATION = "test-org"
 EXPECTED_REPOSITORY_NAME = "test-repo"
 EXPECTED_BRANCH_NAME = "test-branch"
-EXPECTED_GITHUB_ACCESS_TOKEN = "test-github-access-token"
+EXPECTED_GIT_ACCESS_TOKEN = "test-git-access-token"
 
 ANCHOR_COMMAND_PATH = "provisioner_examples_plugin.anchor.anchor_cmd.AnchorCmd"
 
@@ -36,7 +36,7 @@ class AnchorCliTestShould(unittest.TestCase):
                 f"--github-organization={EXPECTED_GITHUB_ORGANIZATION}",
                 f"--repository-name={EXPECTED_REPOSITORY_NAME}",
                 f"--branch-name={EXPECTED_BRANCH_NAME}",
-                f"--github-access-token={EXPECTED_GITHUB_ACCESS_TOKEN}",
+                f"--git-access-token={EXPECTED_GIT_ACCESS_TOKEN}",
             ],
         )
 
@@ -45,6 +45,6 @@ class AnchorCliTestShould(unittest.TestCase):
             self.assertEqual(EXPECTED_GITHUB_ORGANIZATION, args.github_organization)
             self.assertEqual(EXPECTED_REPOSITORY_NAME, args.repository_name)
             self.assertEqual(EXPECTED_BRANCH_NAME, args.branch_name)
-            self.assertEqual(EXPECTED_GITHUB_ACCESS_TOKEN, args.git_access_token)
+            self.assertEqual(EXPECTED_GIT_ACCESS_TOKEN, args.git_access_token)
 
         Assertion.expect_call_arguments(self, run_call, arg_name="args", assertion_callable=assertion_callback)

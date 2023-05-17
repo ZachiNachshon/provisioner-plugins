@@ -83,7 +83,6 @@ class InstallSource:
     def as_summary_object(self, verbose: Optional[bool] = False) -> "InstallSource":
         if not verbose:
             return None
-
         result = InstallSource()
         if self.github:
             result.github = self.github.as_summary_object(verbose)

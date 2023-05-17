@@ -81,7 +81,7 @@ class RemoteMachineOsConfigureRunner:
                 ansible_vars=[f"host_name={ansible_host.host}"],
                 ansible_tags=[
                     "configure_remote_node",
-                    "reboot" if not args.remote_opts.get_remote_context().is_dry_run else "",
+                    "reboot" if not args.remote_opts.get_remote_context().is_dry_run() else "",
                 ],
             ),
             desc_run="Running Ansible playbook (Configure OS)",

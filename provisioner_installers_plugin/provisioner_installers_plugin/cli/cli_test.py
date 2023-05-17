@@ -14,7 +14,7 @@ from python_core_lib.test_lib.test_env import TestEnv
 from typer.testing import CliRunner
 
 from provisioner_installers_plugin.cli.cli import anchor, helm
-from provisioner_installers_plugin.kubernetes.cli import k3s_agent, k3s_server
+from provisioner_installers_plugin.k3s.cli import k3s_agent, k3s_server
 from provisioner_installers_plugin.main_fake import get_fake_app
 
 INSTALLER_CMD_MODULE_PATH = "provisioner_installers_plugin.installer.cmd.installer_cmd"
@@ -57,8 +57,9 @@ class UtilityInstallerCliTestShould(unittest.TestCase):
         )
 
     @mock.patch(f"{INSTALLER_CMD_MODULE_PATH}.UtilityInstallerCmd.run")
-    def test_e2e_run_local_utility_install_all_utilities_success(self, run_call: mock.MagicMock) -> None:
+    def test_e2e_run_all_cli_commands_success(self, run_call: mock.MagicMock) -> None:
         CliGlobalArgs.create(verbose=True, dry_run=True, auto_prompt=True, os_arch="DARWIN_ARM64")
+
         anchor()
         Assertion.expect_exists(self, run_call, arg_name="ctx")
         Assertion.expect_call_arguments(
@@ -70,6 +71,10 @@ class UtilityInstallerCliTestShould(unittest.TestCase):
         Assertion.expect_call_arguments(
             self, run_call, arg_name="args", assertion_callable=lambda args: self.assertIn("helm", args.utilities)
         )
+
+    @mock.patch(f"{INSTALLER_CMD_MODULE_PATH}.UtilityInstallerCmd.run")
+    def test_e2e_run_all_k3s_commands_success(self, run_call: mock.MagicMock) -> None:
+        CliGlobalArgs.create(verbose=True, dry_run=True, auto_prompt=True, os_arch="DARWIN_ARM64")
 
         k3s_server()
         Assertion.expect_exists(self, run_call, arg_name="ctx")
@@ -109,30 +114,29 @@ class UtilityInstallerCliTestShould(unittest.TestCase):
                 "Running on Local environment",
                 """{
   "summary": {
-    "utilities": [
-      {
-        "display_name": "anchor",
-        "binary_name": "anchor",
-        "version": "v0.12.0",
-        "sources": {
-          "github": {
-            "owner": "ZachiNachshon",
-            "repo": "anchor",
-            "supported_releases": [
-              "darwin_amd64",
-              "darwin_arm64",
-              "linux_amd64",
-              "linux_arm",
-              "linux_arm64"
-            ],
-            "git_access_token": null,
-            "release_name_resolver": {}
-          },
-          "script": null
+    "anchor": {
+      "display_name": "anchor",
+      "binary_name": "anchor",
+      "version": "v0.12.0",
+      "source": {
+        "github": {
+          "owner": "ZachiNachshon",
+          "repo": "anchor",
+          "supported_releases": [
+            "darwin_amd64",
+            "darwin_arm64",
+            "linux_amd64",
+            "linux_arm",
+            "linux_arm64"
+          ],
+          "git_access_token": null,
+          "release_name_resolver": null
         },
-        "active_source": "GitHub"
-      }
-    ]
+        "script": null,
+        "ansible": null
+      },
+      "active_source": "GitHub"
+    }
   }
 }""",
                 f"Downloading from GitHub. owner: ZachiNachshon, repo: anchor, name: anchor_0.12.0_{os_arch_pair}.tar.gz, version: v0.12.0",

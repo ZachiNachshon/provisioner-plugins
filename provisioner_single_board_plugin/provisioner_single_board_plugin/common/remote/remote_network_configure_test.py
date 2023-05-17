@@ -10,8 +10,10 @@ from provisioner_features_lib.remote.remote_connector import (
 from provisioner_features_lib.remote.remote_connector_fakes import (
     TestDataRemoteConnector,
 )
+from provisioner_features_lib.remote.typer_remote_opts_fakes import TestDataRemoteOpts
 from python_core_lib.errors.cli_errors import MissingUtilityException
 from python_core_lib.infra.context import Context
+from python_core_lib.infra.remote_context import RemoteContext
 from python_core_lib.runner.ansible.ansible_runner import (
     AnsiblePlaybook,
 )
@@ -37,6 +39,8 @@ REMOTE_NETWORK_CONFIGURE_RUNNER_PATH = (
     "provisioner_single_board_plugin.common.remote.remote_network_configure.RemoteMachineNetworkConfigureRunner"
 )
 
+REMOTE_CONTEXT = RemoteContext.create(verbose=True, dry_run=False, silent=False)
+
 
 class RemoteMachineNetworkConfigureTestShould(unittest.TestCase):
 
@@ -47,7 +51,7 @@ class RemoteMachineNetworkConfigureTestShould(unittest.TestCase):
             gw_ip_address=ARG_GW_IP_ADDRESS,
             dns_ip_address=ARG_DNS_IP_ADDRESS,
             static_ip_address=ARG_STATIC_IP_ADDRESS,
-            remote_opts=None,
+            remote_opts=TestDataRemoteOpts.create_fake_cli_remote_opts(remote_context=REMOTE_CONTEXT),
         )
 
     def create_fake_network_info_bundle() -> RemoteMachineNetworkConfigureRunner.NetworkInfoBundle:
@@ -195,7 +199,11 @@ class RemoteMachineNetworkConfigureTestShould(unittest.TestCase):
             .ansible_runner()
             .assert_command(
                 selected_hosts=TestDataRemoteConnector.TEST_DATA_SSH_ANSIBLE_HOSTS,
-                playbook=AnsiblePlaybook(name="rpi_configure_network", content=ANSIBLE_PLAYBOOK_RPI_CONFIGURE_NETWORK),
+                playbook=AnsiblePlaybook(
+                    name="rpi_configure_network",
+                    content=ANSIBLE_PLAYBOOK_RPI_CONFIGURE_NETWORK,
+                    remote_context=REMOTE_CONTEXT,
+                ),
                 ansible_vars=[
                     f"host_name={TestDataRemoteConnector.TEST_DATA_SSH_HOSTNAME_1}",
                     f"static_ip={TestDataRemoteConnector.TEST_DATA_DHCP_STATIC_IP_ADDRESS}",

@@ -13,7 +13,7 @@ from provisioner_features_lib.anchor.typer_anchor_opts_fakes import TestDataAnch
 from provisioner_features_lib.config.config_resolver import ConfigResolver
 from provisioner_features_lib.remote.domain.config import RemoteConfig
 
-ARG_CLI_OVERRIDE_GITHUB_ACCESS_TOKEN = "test-override-github-access-token"
+ARG_CLI_OVERRIDE_GITHUB_ACCESS_TOKEN = "test-override-git-access-token"
 
 
 # To run as a single test target:

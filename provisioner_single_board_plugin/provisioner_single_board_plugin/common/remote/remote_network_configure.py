@@ -154,7 +154,7 @@ class RemoteMachineNetworkConfigureRunner:
                 ansible_tags=[
                     "configure_rpi_network",
                     "define_static_ip",
-                    "reboot" if not args.remote_opts.get_remote_context().is_dry_run else "",
+                    "reboot" if not args.remote_opts.get_remote_context().is_dry_run() else "",
                 ],
             ),
             desc_run="Running Ansible playbook (Configure Network)",

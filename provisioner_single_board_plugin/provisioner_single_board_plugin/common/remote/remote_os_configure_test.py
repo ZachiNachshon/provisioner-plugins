@@ -6,8 +6,10 @@ from unittest import mock
 from provisioner_features_lib.remote.remote_connector_fakes import (
     TestDataRemoteConnector,
 )
+from provisioner_features_lib.remote.typer_remote_opts_fakes import TestDataRemoteOpts
 from python_core_lib.errors.cli_errors import MissingUtilityException
 from python_core_lib.infra.context import Context
+from python_core_lib.infra.remote_context import RemoteContext
 from python_core_lib.runner.ansible.ansible_runner import (
     AnsiblePlaybook,
 )
@@ -33,6 +35,8 @@ REMOTE_NETWORK_CONFIGURE_RUNNER_PATH = (
     "provisioner_single_board_plugin.common.remote.remote_os_configure.RemoteMachineOsConfigureRunner"
 )
 
+REMOTE_CONTEXT = RemoteContext.create(verbose=True, dry_run=False, silent=False)
+
 
 class RemoteMachineConfigureTestShould(unittest.TestCase):
 
@@ -40,7 +44,7 @@ class RemoteMachineConfigureTestShould(unittest.TestCase):
 
     def create_fake_configure_args(self) -> RemoteMachineOsConfigureArgs:
         return RemoteMachineOsConfigureArgs(
-            remote_opts=None,
+            remote_opts=TestDataRemoteOpts.create_fake_cli_remote_opts(remote_context=REMOTE_CONTEXT),
         )
 
     def test_prerequisites_fail_missing_utility(self) -> None:
