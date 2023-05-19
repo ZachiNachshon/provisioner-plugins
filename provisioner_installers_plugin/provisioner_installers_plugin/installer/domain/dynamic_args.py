@@ -12,4 +12,4 @@ class DynamicArgs:
         self.dynamic_args = dynamic_args
 
     def as_ansible_vars(self) -> List[str]:
-        return [f"{key}={value}" for key, value in self.dynamic_args.items()]
+        return [f"{key}='{value}'" for key, value in self.dynamic_args.items()]

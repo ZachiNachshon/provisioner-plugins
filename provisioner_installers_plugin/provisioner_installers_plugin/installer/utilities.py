@@ -35,7 +35,7 @@ SupportedToolings = {
         sources=InstallSource(
             ansible=InstallSource.Ansible(
                 playbook=AnsiblePlaybook(
-                    name="k3s_master_install",
+                    name="k3s_server_install",
                     content="""
 ---
 - name: Install K3s master server
@@ -47,7 +47,7 @@ SupportedToolings = {
     - role: {ansible_playbooks_path}/roles/k3s
 """,
                 ),
-                ansible_vars=["master_install=True", f"k3s_version={ToolingVersions.k3s_server_ver}"],
+                ansible_vars=["server_install=True", f"k3s_version={ToolingVersions.k3s_server_ver}"],
             ),
         ),
     ),
@@ -71,7 +71,7 @@ SupportedToolings = {
     - role: {ansible_playbooks_path}/roles/k3s
 """,
                 ),
-                ansible_vars=["master_install=True", f"k3s_version={ToolingVersions.k3s_agent_ver}"],
+                ansible_vars=["agent_install=True", f"k3s_version={ToolingVersions.k3s_agent_ver}"],
             ),
         ),
     ),

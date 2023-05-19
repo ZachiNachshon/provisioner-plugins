@@ -36,6 +36,12 @@ def register_k3s_commands(app: typer.Typer, callback_remote_args):
 
 def k3s_server(
     k3s_token: str = typer.Option(..., show_default=False, envvar="K3S_TOKEN", help="k3s server token"),
+    additional_cli_args: Optional[str] = typer.Option(
+        "--disable traefik --disable kubernetes-dashboard",
+        envvar="ADDITIONAL_CLI_ARGS",
+        is_flag=False,
+        help="Optional server configuration as CLI arguments",
+    ),
     install_as_binary: Optional[bool] = typer.Option(
         False,
         "--install-as-binary",
@@ -54,7 +60,11 @@ def k3s_server(
             args=UtilityInstallerCmdArgs(
                 utilities=["k3s-server"],
                 sub_command_name=InstallerSubCommandName.K3S,
-                dynamic_args={"k3s_token": k3s_token, "k3s_install_as_binary": install_as_binary},
+                dynamic_args={
+                    "k3s_token": k3s_token,
+                    "k3s_additional_cli_args": additional_cli_args,
+                    "k3s_install_as_binary": install_as_binary,
+                },
                 remote_opts=CliRemoteOpts.maybe_get(),
             ),
         ),
@@ -64,6 +74,12 @@ def k3s_server(
 def k3s_agent(
     k3s_token: str = typer.Option(..., show_default=False, envvar="K3S_TOKEN", help="k3s server token"),
     k3s_url: str = typer.Option(..., show_default=False, envvar="K3S_URL", help="K3s server address"),
+    additional_cli_args: Optional[str] = typer.Option(
+        None,
+        envvar="ADDITIONAL_CLI_ARGS",
+        is_flag=False,
+        help="Optional server configuration as CLI arguments",
+    ),
     install_as_binary: Optional[bool] = typer.Option(
         False,
         "--install-as-binary",
@@ -82,7 +98,12 @@ def k3s_agent(
             args=UtilityInstallerCmdArgs(
                 utilities=["k3s-agent"],
                 sub_command_name=InstallerSubCommandName.K3S,
-                dynamic_args={"k3s_token": k3s_token, "k3s_url": k3s_url, "k3s_install_as_binary": install_as_binary},
+                dynamic_args={
+                    "k3s_token": k3s_token,
+                    "k3s_url": k3s_url,
+                    "k3s_additional_cli_args": additional_cli_args,
+                    "k3s_install_as_binary": install_as_binary,
+                },
                 remote_opts=CliRemoteOpts.maybe_get(),
             ),
         ),
