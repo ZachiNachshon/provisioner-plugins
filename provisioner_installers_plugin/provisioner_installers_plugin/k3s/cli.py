@@ -35,17 +35,17 @@ def register_k3s_commands(app: typer.Typer, callback_remote_args):
 
 
 def k3s_server(
-    k3s_token: str = typer.Argument(..., show_default=False, envvar="K3S_TOKEN", help="k3s server token"),
-    install_as_service: Optional[bool] = typer.Option(
+    k3s_token: str = typer.Option(..., show_default=False, envvar="K3S_TOKEN", help="k3s server token"),
+    install_as_binary: Optional[bool] = typer.Option(
         False,
-        "--install-as-service",
-        envvar="INSTALL_AS_SERVICE",
+        "--install-as-binary",
+        envvar="INSTALL_AS_BINARY",
         is_flag=True,
-        help="Install K3s as a service on systemd and openrc based systems",
+        help="Install K3s server as a binary instead of system service",
     ),
 ) -> None:
     """
-    Install a Rancher K3s Server
+    Install a Rancher K3s Server as a service on systemd and openrc based systems
     """
     Evaluator.eval_installer_cli_entrypoint_pyfn_step(
         name="k3s-server",
@@ -54,7 +54,7 @@ def k3s_server(
             args=UtilityInstallerCmdArgs(
                 utilities=["k3s-server"],
                 sub_command_name=InstallerSubCommandName.K3S,
-                dynamic_args={"k3s_token": k3s_token, "install_as_service": install_as_service},
+                dynamic_args={"k3s_token": k3s_token, "k3s_install_as_binary": install_as_binary},
                 remote_opts=CliRemoteOpts.maybe_get(),
             ),
         ),
@@ -62,18 +62,18 @@ def k3s_server(
 
 
 def k3s_agent(
-    k3s_token: str = typer.Argument(..., show_default=False, envvar="K3S_TOKEN", help="k3s server token"),
-    k3s_url: str = typer.Argument(..., show_default=False, envvar="K3S_URL", help="K3s server address"),
-    install_as_service: Optional[bool] = typer.Option(
+    k3s_token: str = typer.Option(..., show_default=False, envvar="K3S_TOKEN", help="k3s server token"),
+    k3s_url: str = typer.Option(..., show_default=False, envvar="K3S_URL", help="K3s server address"),
+    install_as_binary: Optional[bool] = typer.Option(
         False,
-        "--install-as-service",
-        envvar="INSTALL_AS_SERVICE",
+        "--install-as-binary",
+        envvar="INSTALL_AS_BINARY",
         is_flag=True,
-        help="Install K3s as a service on systemd and openrc based systems",
+        help="Install K3s agent as a binary instead of system service",
     ),
 ) -> None:
     """
-    Install a Rancher K3s Agent
+    Install a Rancher K3s Agent as a service on systemd and openrc based systems
     """
     Evaluator.eval_installer_cli_entrypoint_pyfn_step(
         name="k3s-agent",
@@ -82,7 +82,7 @@ def k3s_agent(
             args=UtilityInstallerCmdArgs(
                 utilities=["k3s-agent"],
                 sub_command_name=InstallerSubCommandName.K3S,
-                dynamic_args={"k3s_token": k3s_token, "k3s_url": k3s_url, "install_as_service": install_as_service},
+                dynamic_args={"k3s_token": k3s_token, "k3s_url": k3s_url, "k3s_install_as_binary": install_as_binary},
                 remote_opts=CliRemoteOpts.maybe_get(),
             ),
         ),

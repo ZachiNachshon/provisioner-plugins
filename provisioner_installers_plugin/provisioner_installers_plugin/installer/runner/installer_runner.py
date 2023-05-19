@@ -292,7 +292,12 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
             case ActiveInstallSource.Script:
                 return PyFn.of(utility).flat_map(lambda _: self._install_from_script(env, utility))
             case ActiveInstallSource.Ansible:
-                return PyFn.of(utility).flat_map(lambda _: self._install_locally_from_ansible_playbook(env, utility))
+                return (
+                    PyFn.of(utility)
+                    .flat_map(lambda _: self._install_locally_from_ansible_playbook(env, utility))
+                    .flat_map(lambda output: self._print_ansible_response(env, output))
+                    .map(lambda _: utility)
+                )
             case ActiveInstallSource.GitHub:
                 return PyFn.of(utility).flat_map(lambda _: self._install_from_github(env, utility))
             case _:
@@ -300,9 +305,12 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
                     error=InstallerSourceError(f"Invalid installation active source. value: {utility.active_source}")
                 )
 
+    def _print_ansible_response(self, env: InstallerEnv, output: str):
+        return PyFn.effect(lambda: env.collaborators.printer().print_fn(output))
+
     def _install_locally_from_ansible_playbook(
         self, env: InstallerEnv, utility: Installable.Utility
-    ) -> PyFn["UtilityInstallerCmdRunner", InstallerSourceError, Installable.Utility]:
+    ) -> PyFn["UtilityInstallerCmdRunner", InstallerSourceError, str]:
         if not utility.source.ansible:
             return PyFn.fail(error=InstallerSourceError("Missing installation source. name: Ansible"))
         else:
@@ -315,13 +323,14 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
                             remote_context=env.args.remote_opts.get_remote_context(),
                         ),
                         ansible_vars=env.args.dynamic_args.as_ansible_vars()
+                        + utility.source.ansible.ansible_vars
                         + [f"git_access_token={env.args.git_access_token}"],
-                        ansible_tags=utility.source.ansible.ansible_tags,
+                        ansible_tags=utility.source.ansible.ansible_tags + [env.ctx.os_arch.os]
                     ),
                     desc_run=f"Running Ansible playbook ({utility.source.ansible.playbook.get_name()})).",
                     desc_end=f"Ansible playbook finished ({utility.source.ansible.playbook.get_name()})).",
                 )
-            ).map(lambda _: utility)
+            )
 
     def _install_from_script(
         self, env: InstallerEnv, utility: Installable.Utility

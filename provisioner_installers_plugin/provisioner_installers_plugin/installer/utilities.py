@@ -28,14 +28,14 @@ SupportedToolings = {
         ),
     ),
     "k3s-server": Installable.Utility(
-        display_name="server",
+        display_name="k3s-server",
         binary_name="k3s",
         version=ToolingVersions.k3s_server_ver,
         active_source=ActiveInstallSource.Ansible,
         sources=InstallSource(
             ansible=InstallSource.Ansible(
                 playbook=AnsiblePlaybook(
-                    name="k3s_install",
+                    name="k3s_master_install",
                     content="""
 ---
 - name: Install K3s master server
@@ -47,18 +47,32 @@ SupportedToolings = {
     - role: {ansible_playbooks_path}/roles/k3s
 """,
                 ),
-                ansible_tags=["k3s_master_install"],
-                cli_args_to_ansible_vars=["k3s_token"],
+                ansible_vars=["master_install=True", f"k3s_version={ToolingVersions.k3s_server_ver}"],
             ),
         ),
     ),
     "k3s-agent": Installable.Utility(
-        display_name="agent",
+        display_name="k3s-agent",
         binary_name="k3s",
         version=ToolingVersions.k3s_agent_ver,
-        active_source=ActiveInstallSource.Script,
+        active_source=ActiveInstallSource.Ansible,
         sources=InstallSource(
-            script=InstallSource.Script(install_cmd="curl -sfL https://get.k3s.io | sh - "),
+            ansible=InstallSource.Ansible(
+                playbook=AnsiblePlaybook(
+                    name="k3s_agent_install",
+                    content="""
+---
+- name: Install K3s agent and connect to remote master server
+  hosts: selected_hosts
+  gather_facts: no
+  {modifiers}
+
+  roles:
+    - role: {ansible_playbooks_path}/roles/k3s
+""",
+                ),
+                ansible_vars=["master_install=True", f"k3s_version={ToolingVersions.k3s_agent_ver}"],
+            ),
         ),
     ),
     "helm": Installable.Utility(

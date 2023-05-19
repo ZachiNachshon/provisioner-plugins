@@ -25,19 +25,19 @@ class InstallSource:
 
     class Ansible:
         playbook: AnsiblePlaybook
-        cli_args_to_ansible_vars: Optional[List[str]] = None
         ansible_tags: Optional[List[str]] = None
+        ansible_vars: Optional[List[str]] = None
 
         def __init__(
             self,
             playbook: AnsiblePlaybook,
-            ansible_tags: Optional[List[str]] = None,
-            cli_args_to_ansible_vars: Optional[List[str]] = None,
+            ansible_tags: Optional[List[str]] = [],
+            ansible_vars: Optional[List[str]] = [],
         ):
 
             self.playbook = playbook
             self.ansible_tags = ansible_tags
-            self.cli_args_to_ansible_vars = cli_args_to_ansible_vars
+            self.ansible_vars = ansible_vars
 
         def as_summary_object(self, verbose: Optional[bool] = False) -> "InstallSource.Ansible":
             return self if verbose else None

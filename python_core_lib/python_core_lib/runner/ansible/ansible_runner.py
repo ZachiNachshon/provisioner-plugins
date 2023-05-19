@@ -334,7 +334,7 @@ class AnsibleRunnerLocal:
         ansible_playbook_args = self._generate_ansible_playbook_args(playbook_file_path, ansible_vars, ansible_tags)
         ansible_playbook_args_reducted = self._clear_sensitive_data_from_args(ansible_playbook_args)
         logger.debug(f"About to run command:\nansible-playbook {' '.join(map(str, ansible_playbook_args_reducted))}")
-        logger.debug(f"About to run command:\nansible-playbook {' '.join(map(str, ansible_playbook_args))}")
+        # logger.debug(f"About to run command:\nansible-playbook {' '.join(map(str, ansible_playbook_args))}")
 
         if self._dry_run:
             return f"name: {playbook.get_name()}\ncontent:\n{playbook_content_escaped}\ncommand:\nansible-playbook {' '.join(map(str, ansible_playbook_args_reducted))}"

@@ -51,7 +51,7 @@ class UtilityInstallerCmdArgs:
             "InstallerCmdArgs: \n"
             + f"  utilities: {str(self.utilities)}\n"
             + f"  dynamic_args: {str(self.dynamic_args)}\n"
-            + f"  sub_command_name: {str(self.sub_command_name)}\n"
+            + f"  sub_command_name: {str(self.sub_command_name.value)}\n"
             + "  git_access_token: REDACTED\n"
         )
 
