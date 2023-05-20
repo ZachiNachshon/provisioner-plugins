@@ -325,7 +325,7 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
                         ansible_vars=env.args.dynamic_args.as_ansible_vars()
                         + utility.source.ansible.ansible_vars
                         + [f"git_access_token={env.args.git_access_token}"],
-                        ansible_tags=utility.source.ansible.ansible_tags + [env.ctx.os_arch.os],
+                        ansible_tags=utility.source.ansible.ansible_tags
                     ),
                     desc_run=f"Running Ansible playbook ({utility.source.ansible.playbook.get_name()})).",
                     desc_end=f"Ansible playbook finished ({utility.source.ansible.playbook.get_name()})).",

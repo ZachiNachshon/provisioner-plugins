@@ -14,6 +14,7 @@ from python_core_lib.errors.cli_errors import (
 from python_core_lib.infra.context import Context
 from python_core_lib.infra.remote_context import RemoteContext
 from python_core_lib.utils.io_utils import IOUtils
+from python_core_lib.utils.os import OsArch
 from python_core_lib.utils.paths import Paths
 
 ProvisionerAnsibleProjectPath = os.path.expanduser("~/.config/provisioner/ansible")
@@ -68,6 +69,9 @@ class AnsiblePlaybook:
     def get_name(self) -> str:
         return self.__name.replace(" ", "_").lower()
 
+    def is_remote_run_as_dry_run(self) -> bool:
+        return self.__remote_context.is_dry_run() == True
+    
     def get_content(self, paths: Paths, ansible_playbook_package: str, dry_run: bool) -> str:
         """
         Playbook content support the following string format values:
@@ -156,6 +160,7 @@ class AnsibleHost:
 
 class AnsibleRunnerLocal:
 
+    _os_arch: OsArch = None
     _dry_run: bool = None
     _verbose: bool = None
     _paths: Paths = None
@@ -165,14 +170,14 @@ class AnsibleRunnerLocal:
         self,
         io_utils: IOUtils,
         paths: Paths,
-        dry_run: bool,
-        verbose: bool,
+        ctx: Context,
     ) -> None:
 
         self._io_utils = io_utils
         self.paths = paths
-        self._dry_run = dry_run
-        self._verbose = verbose
+        self._dry_run = ctx.is_dry_run()
+        self._verbose = ctx.is_verbose()
+        self._os_arch = ctx.os_arch
 
     @staticmethod
     def create(
@@ -181,10 +186,8 @@ class AnsibleRunnerLocal:
         paths: Paths,
     ) -> "AnsibleRunnerLocal":
 
-        dry_run = ctx.is_dry_run()
-        verbose = ctx.is_verbose()
-        logger.debug(f"Creating Ansible runner (dry_run: {dry_run}, verbose: {verbose})...")
-        return AnsibleRunnerLocal(io_utils, paths, dry_run, verbose)
+        logger.debug(f"Creating Ansible runner (dry_run: {ctx.is_dry_run()}, verbose: {ctx.is_verbose()})...")
+        return AnsibleRunnerLocal(io_utils, paths, ctx)
 
     def _prepare_ansible_host_items(self, ansible_hosts: List[AnsibleHost]) -> List[str]:
         result = []
@@ -250,6 +253,7 @@ class AnsibleRunnerLocal:
         playbook_file_path: str,
         ansible_vars: Optional[List[str]] = None,
         ansible_tags: Optional[List[str]] = None,
+        is_dry_run: Optional[bool] = False
     ) -> List[str]:
 
         cmdline_args = [
@@ -258,16 +262,25 @@ class AnsibleRunnerLocal:
             playbook_file_path,
             "-e",
             f"local_bin_folder='{REMOTE_MACHINE_LOCAL_BIN_FOLDER}'",
+            "-e",
+            f"dry_run={is_dry_run}"
         ]
         if ansible_vars:
             cmdline_args += [f"-e {ansible_var}" for ansible_var in ansible_vars]
+
+        tags_str = ""
         if ansible_tags:
-            tags_str = ""
             tags_sep = ""
             for ansible_tag in ansible_tags:
                 tags_str += f"{tags_sep}{ansible_tag}"
                 tags_sep = ","
-            cmdline_args += ["--tags"] + [tags_str]
+        
+        if self._os_arch:
+            sep = "," if len(tags_str) > 0 else ""
+            tags_str += f"{sep}{self._os_arch.os}"
+
+        cmdline_args += ["--tags"] + [tags_str]
+
         if self._verbose:
             cmdline_args += ["-vvvv"]
         # for host in selected_hosts:
@@ -331,7 +344,7 @@ class AnsibleRunnerLocal:
 
         playbook_content_escaped = playbook.get_content(self.paths, ansible_playbook_package, self._dry_run)
         playbook_file_path = self._create_playbook_file(name=playbook.get_name(), content=playbook_content_escaped)
-        ansible_playbook_args = self._generate_ansible_playbook_args(playbook_file_path, ansible_vars, ansible_tags)
+        ansible_playbook_args = self._generate_ansible_playbook_args(playbook_file_path, ansible_vars, ansible_tags, playbook.is_remote_run_as_dry_run())
         ansible_playbook_args_reducted = self._clear_sensitive_data_from_args(ansible_playbook_args)
         logger.debug(f"About to run command:\nansible-playbook {' '.join(map(str, ansible_playbook_args_reducted))}")
         # logger.debug(f"About to run command:\nansible-playbook {' '.join(map(str, ansible_playbook_args))}")
