@@ -116,6 +116,10 @@ is_dev_mode() {
   [[ -n "${CLI_FLAG_DEV_MODE}" ]]
 }
 
+is_force_install_deps() {
+  [[ -n "${CLI_FLAG_FORCE_INSTALL_DEPS}" ]]
+}
+
 get_escaped_package_path() {
   echo "${POETRY_PACKAGE_NAME}" | xargs | tr '-' '_'
 }
