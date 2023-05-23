@@ -13,7 +13,7 @@
         "name": "ansible_playbooks",
         "url": "git@github.com:ZachiNachshon/ansible-playbooks.git",
         "branch": "master",
-        "revision": "01c2053e06cedd0fc7d5101da63a82992ac31745"
+        "revision": "88cc83811fb13de5bc526bf198631c9360b14ac9"
       }
     ]
   },

@@ -1,4 +1,10 @@
 ---
+- name: Copy shell scripts library to remote host
+  copy:
+    src: "{{ role_path }}/files/shell_lib.sh"
+    dest: "$HOME/.ansible/tmp/shell_lib.sh"
+  tags: ['configure_rpi_network']
+
 - name: Configure RPi network settings
   tags: ['configure_rpi_network']
   script: raspi_config_network.sh
@@ -6,7 +12,7 @@
   async: 0
   poll: 0
   ignore_errors: false
-  become: true
+  # become: true
   environment:
     HOST_NAME: "{{ host_name | mandatory }}"
     WIFI_COUNTRY: "{{ wifi_country | default('') }}"

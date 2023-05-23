@@ -13,4 +13,4 @@ install_method: "github-release"  # pip/github-release/local-dev
 github_owner: "ZachiNachshon"
 github_repository: "provisioner-oss"
 github_repo_branch: "master"
-git_access_token: "test-token"
+git_access_token: null            # Mandatory

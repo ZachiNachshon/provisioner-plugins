@@ -166,7 +166,7 @@ should_install_or_update() {
 }
 
 generate_anchor_github_url() {
-  echo "https://${ENV_GIT_ACCESS_TOKEN}:@github.com/${ENV_ANCHOR_GITHUB_ORGANIZATION}/${ENV_ANCHOR_GITHUB_REPOSITORY}.git"
+  echo "https://${ENV_GITHUB_TOKEN}:@github.com/${ENV_ANCHOR_GITHUB_ORGANIZATION}/${ENV_ANCHOR_GITHUB_REPOSITORY}.git"
 }
 
 add_anchor_context() {
@@ -410,7 +410,7 @@ verify_mandatory_run_arguments() {
       exit 1
   fi
 
-  if [[ -z "${ENV_GIT_ACCESS_TOKEN}" ]]; then
+  if [[ -z "${ENV_GITHUB_TOKEN}" ]]; then
       log_fatal "missing mandatory argument. name: git_access_token"
       exit 1
   fi

@@ -1,4 +1,10 @@
 ---
+- name: Copy shell scripts library to remote host
+  copy:
+    src: "{{ role_path }}/files/shell_lib.sh"
+    dest: "$HOME/.ansible/tmp/shell_lib.sh"
+  tags: ['provisioner_wrapper']
+
 - name: "Runing provisioner (version: {{ provisioner_version }})"
   tags: ['provisioner_wrapper']
   script: "provisioner_wrapper.sh"
@@ -19,7 +25,7 @@
     # --- GITHUB ---
     ENV_GITHUB_OWNER: "{{ github_owner }}"
     ENV_GITHUB_REPOSITORY: "{{ github_repository }}"
-    ENV_GIT_ACCESS_TOKEN: "{{ git_access_token }}"
+    ENV_GITHUB_TOKEN: "{{ git_access_token }}"
 
 - debug: msg={{ scriptOut.stdout }}
   tags: ['provisioner_wrapper']

@@ -14,7 +14,7 @@
     ENV_ANCHOR_GITHUB_REPOSITORY: "{{ anchor_github_repository | mandatory }}"
     ENV_ANCHOR_GITHUB_REPO_BRANCH: "{{ anchor_github_repo_branch | mandatory }}"
     ENV_ANCHOR_CONFIG_AUTO_UPDATE: "{{ anchor_config_auto_update }}"
-    ENV_GIT_ACCESS_TOKEN: "{{ git_access_token | mandatory }}"
+    ENV_GITHUB_TOKEN: "{{ git_access_token | mandatory }}"
 
 - debug: msg={{ scriptOut.stdout }}
   tags: ['anchor_run']
