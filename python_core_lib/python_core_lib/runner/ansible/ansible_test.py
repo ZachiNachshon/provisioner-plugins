@@ -14,6 +14,7 @@ from python_core_lib.runner.ansible.ansible_runner import (
 from python_core_lib.test_lib.assertions import Assertion
 from python_core_lib.utils.io_utils import IOUtils
 from python_core_lib.utils.io_utils_fakes import FakeIOUtils
+from python_core_lib.utils.os import OsArch
 from python_core_lib.utils.paths import Paths
 
 #
@@ -95,14 +96,14 @@ class AnsibleRunnerTestShould(unittest.TestCase):
         )
 
     def test_run_ansible(self):
-        ctx = Context.create(dry_run=True, verbose=True, auto_prompt=True)
+        ctx = Context.create(dry_run=True, verbose=True, auto_prompt=True, os_arch=OsArch(os="TEST_OS"))
         Assertion.expect_outputs(
             self,
             method_to_run=lambda: AnsibleRunnerLocal.create(
                 ctx=ctx, io_utils=IOUtils.create(ctx), paths=Paths.create(ctx)
             ).run_fn(
                 selected_hosts=ANSIBLE_HOSTS,
-                playbook=ANSIBLE_DUMMY_PLAYBOOK,
+                playbook=ANSIBLE_DUMMY_PLAYBOOK_WITH_REMOTE_CTX,
                 ansible_vars=ANSIBLE_VARIABLES,
                 ansible_tags=ANSIBLE_TAGS,
             ),
@@ -112,12 +113,12 @@ class AnsibleRunnerTestShould(unittest.TestCase):
                 "hosts: selected_hosts",
                 "role: DRY_RUN_RESPONSE/roles/hello_world",
                 "tags: ['hello']",
-                f"ansible-playbook -i {os.path.expanduser('~/.config/provisioner/ansible/hosts')} DRY_RUN_RESPONSE -e local_bin_folder='~/.local/bin' -e {ANSIBLE_VAR_1} -e {ANSIBLE_VAR_2} --tags {ANSIBLE_TAG_1},{ANSIBLE_TAG_2} -vvvv",
+                f"ansible-playbook -i {os.path.expanduser('~/.config/provisioner/ansible/hosts')} DRY_RUN_RESPONSE -e local_bin_folder='~/.local/bin' -e dry_run=True -e {ANSIBLE_VAR_1} -e {ANSIBLE_VAR_2} --tags {ANSIBLE_TAG_1},{ANSIBLE_TAG_2},TEST_OS -vvvv",
             ],
         )
 
     def test_run_ansible_with_remote_context_modifiers(self):
-        ctx = Context.create(dry_run=True, verbose=True, auto_prompt=True)
+        ctx = Context.create(dry_run=True, verbose=True, auto_prompt=True, os_arch=OsArch(os="TEST_OS"))
         Assertion.expect_outputs(
             self,
             method_to_run=lambda: AnsibleRunnerLocal.create(
@@ -138,19 +139,19 @@ class AnsibleRunnerTestShould(unittest.TestCase):
                 "VERBOSE: True",
                 "SILENT: True",
                 "tags: ['hello']",
-                f"ansible-playbook -i {os.path.expanduser('~/.config/provisioner/ansible/hosts')} DRY_RUN_RESPONSE -e local_bin_folder='~/.local/bin' -e {ANSIBLE_VAR_1} -e {ANSIBLE_VAR_2} --tags {ANSIBLE_TAG_1},{ANSIBLE_TAG_2} -vvvv",
+                f"ansible-playbook -i {os.path.expanduser('~/.config/provisioner/ansible/hosts')} DRY_RUN_RESPONSE -e local_bin_folder='~/.local/bin' -e dry_run=True -e {ANSIBLE_VAR_1} -e {ANSIBLE_VAR_2} --tags {ANSIBLE_TAG_1},{ANSIBLE_TAG_2},TEST_OS -vvvv",
             ],
         )
 
     def test_run_ansible_reducing_sensitive_data_from_command(self):
-        ctx = Context.create(dry_run=True, verbose=True, auto_prompt=True)
+        ctx = Context.create(dry_run=True, verbose=True, auto_prompt=True, os_arch=OsArch(os="TEST_OS"))
         Assertion.expect_outputs(
             self,
             method_to_run=lambda: AnsibleRunnerLocal.create(
                 ctx=ctx, io_utils=IOUtils.create(ctx), paths=Paths.create(ctx)
             ).run_fn(
                 selected_hosts=ANSIBLE_HOSTS,
-                playbook=ANSIBLE_DUMMY_PLAYBOOK,
+                playbook=ANSIBLE_DUMMY_PLAYBOOK_WITH_REMOTE_CTX,
                 ansible_vars=ANSIBLE_SENSITIVE_VARIABLES,
                 ansible_tags=ANSIBLE_TAGS,
             ),
@@ -160,6 +161,6 @@ class AnsibleRunnerTestShould(unittest.TestCase):
                 "hosts: selected_hosts",
                 "role: DRY_RUN_RESPONSE/roles/hello_world",
                 "tags: ['hello']",
-                f"ansible-playbook -i {os.path.expanduser('~/.config/provisioner/ansible/hosts')} DRY_RUN_RESPONSE -e local_bin_folder='~/.local/bin' -e {ANSIBLE_SENSITIVE_VAR_1_RESOLVED} -e {ANSIBLE_SENSITIVE_VAR_2_RESOLVED} --tags {ANSIBLE_TAG_1},{ANSIBLE_TAG_2} -vvvv",
+                f"ansible-playbook -i {os.path.expanduser('~/.config/provisioner/ansible/hosts')} DRY_RUN_RESPONSE -e local_bin_folder='~/.local/bin' -e dry_run=True -e {ANSIBLE_SENSITIVE_VAR_1_RESOLVED} -e {ANSIBLE_SENSITIVE_VAR_2_RESOLVED} --tags {ANSIBLE_TAG_1},{ANSIBLE_TAG_2},TEST_OS -vvvv",
             ],
         )

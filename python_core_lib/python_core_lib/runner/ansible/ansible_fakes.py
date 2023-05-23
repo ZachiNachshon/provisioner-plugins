@@ -65,20 +65,19 @@ class FakeAnsibleRunnerLocal(AnsibleRunnerLocal):
 
     registered_commands: List[FakeAnsibleCommandArgs] = []
 
-    def __init__(self, dry_run: bool, verbose: bool) -> None:
+    def __init__(self, ctx: Context) -> None:
 
         super().__init__(
             io_utils=None,
             paths=None,
-            dry_run=dry_run,
-            verbose=verbose,
+            ctx=ctx
         )
         ctx = Context.create()
         self.json_util = JsonUtil.create(ctx=ctx, io_utils=IOUtils.create(ctx))
 
     @staticmethod
-    def _create_fake(dry_run: bool, verbose: bool) -> "FakeAnsibleRunnerLocal":
-        ansible_runner = FakeAnsibleRunnerLocal(dry_run=dry_run, verbose=verbose)
+    def _create_fake(ctx: Context) -> "FakeAnsibleRunnerLocal":
+        ansible_runner = FakeAnsibleRunnerLocal(ctx)
         ansible_runner.run_fn = (
             lambda selected_hosts, playbook, ansible_vars=None, ansible_tags=None: ansible_runner._record_command(
                 selected_hosts=selected_hosts,
@@ -91,10 +90,7 @@ class FakeAnsibleRunnerLocal(AnsibleRunnerLocal):
 
     @staticmethod
     def create(ctx: Context) -> "FakeAnsibleRunnerLocal":
-        return FakeAnsibleRunnerLocal._create_fake(
-            dry_run=ctx.is_dry_run(),
-            verbose=ctx.is_verbose(),
-        )
+        return FakeAnsibleRunnerLocal._create_fake(ctx)
 
     def _record_command(
         self,
