@@ -18,6 +18,14 @@ exclude = [
     ".git-deps",
     ".pytest_cache"]
 
+packages = [
+    { include = "python_core_lib/runner/ansible/resources" },
+    { include = "python_core_lib/runner/ansible/resources/callback_plugins" }
+]
+
+include = [
+    { path = "python_core_lib/runner/ansible/resources/ansible.cfg" },
+]
 
 [tool.black]
 line-length = 120

@@ -18,18 +18,6 @@ exclude = [
     ".git-deps",
     ".pytest_cache"]
 
-# packages = [
-#     { include = "provisioner_installers_plugin" },
-# ]
-
-# A list of patterns that will be included in the final package that
-# could be references using Paths utility class
-# If no format is specified, it will default to include both sdist and wheel
-# i.e. { path = "tests", format = ["sdist", "wheel"] }
-# include = [
-#     { path = "provisioner_installers_plugin/some_file.txt" },
-# ]
-
 [tool.black]
 line-length = 120
 

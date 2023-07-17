@@ -28,7 +28,8 @@ packages = [
     { include = "provisioner" },
     { include = "resources" },
     { include = "external/ansible_playbooks" },
-    # Must be boundled since those packages aren't pip installed, rather bundled with the source code
+    # Used by poetry-multiproject-plugin, those package must be boundled within 
+    # the source code since they aren't pip installed
     { include = "python_core_lib", from="../python_core_lib" },
     { include = "provisioner_features_lib", from="../provisioner_features_lib" },
 ]
@@ -37,18 +38,11 @@ packages = [
 # If no format is specified, it will default to include both sdist and wheel
 # i.e. { path = "tests", format = ["sdist", "wheel"] }
 include = [
-    # This file must be packaged since it allow the Paths utility to find the 
-    # module root folder used for reading bundled files
-    # { path = "pyproject.toml" },
     { path = "provisioner/__init__.py" },
     { path = "provisioner/main.py" },
-    # { path = "resources/version.txt" },
     { path = "resources/version.txt" },
     { path = "provisioner/config/config.yaml" },
-    # Must be boundled since those packages aren't pip installed, rather bundled with the source code
-    { path = "python_core_lib" },
-    { path = "provisioner_features_lib" },
-    # Must be boundled for referensing Ansible playbooks
+    # Must be boundled for referencing Ansible playbooks
     { path = "external/ansible_playbooks" },
 ]
 
@@ -101,19 +95,11 @@ inquirer = "^2.10.0"
 python-hosts = "^1.0.3"
 ansible = "^7.3.0"
 ansible-runner = "^2.3.2"
-# poetry-multiproject-plugin = "^1.1.4"
 # GitPython = "^3.1.18" # - GitPython provides object model access to your git repository (https://github.com/gitpython-developers/GitPython)
 # #Jinja2 = "^3.0.3"      - Templating engine (https://github.com/pallets/jinja)
 # #sh = "^1.14.2"         - Subprocess replacement for Python (https://github.com/amoffat/sh)
 # #backoff = "^1.10.0"    - Function decoration for backoff and retry (https://github.com/litl/backoff)
 # #tenacity = "^8.0.1"    - General-purpose retrying library (https://github.com/jd/tenacity)
-
-
-# A list of all of the optional dependencies, some of which are included in the
-# below `extras`. They can be opted into by apps.
-provisioner_installers_plugin = { path = "../provisioner_installers_plugin", develop = true, optional = true }
-provisioner_examples_plugin = { path = "../provisioner_examples_plugin", develop = true, optional = true }
-provisioner_single_board_plugin = { path = "../provisioner_single_board_plugin", develop = true, optional = true }
 
 [tool.poetry.dev-dependencies]
 black = "^22.8.0"
@@ -123,14 +109,11 @@ coverage = "^6.4.4"
 diagrams = "^0.22.0"
 ruff = "^0.0.265"
 poetry-multiproject-plugin = "^1.1.4"
-provisioner_installers_plugin = { path = "../provisioner_installers_plugin", develop = true, optional = true }
-provisioner_examples_plugin = { path = "../provisioner_examples_plugin", develop = true, optional = true }
-provisioner_single_board_plugin = { path = "../provisioner_single_board_plugin", develop = true, optional = true }
-
-[tool.poetry.extras]
-provisioner_installers_plugin = ["provisioner_installers_plugin"] # poetry install --extras "provisioner_installers_plugin" / poetry install -E provisioner_installers_plugin
-provisioner_examples_plugin = ["provisioner_examples_plugin"] # poetry install --extras "provisioner_examples_plugin" / poetry install -E provisioner_examples_plugin
-provisioner_single_board_plugin = ["provisioner_single_board_plugin"] # poetry install --extras "provisioner_single_board_plugin" / poetry install -E provisioner_single_board_plugin
+python_core_lib = { path = "../python_core_lib", develop = true }
+provisioner_features_lib = { path = "../provisioner_features_lib", develop = true }
+provisioner_examples_plugin = { path = "../provisioner_examples_plugin", develop = true }
+provisioner_single_board_plugin = { path = "../provisioner_single_board_plugin", develop = true }
+provisioner_installers_plugin = { path = "../provisioner_installers_plugin", develop = true }
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

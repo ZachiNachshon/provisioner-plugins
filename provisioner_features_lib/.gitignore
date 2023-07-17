@@ -29,6 +29,7 @@ logs/
 coverage.xml
 .mypy_cache/
 .pytest_cache/
+.ruff_cache/
 
 # Poetry
 cache/

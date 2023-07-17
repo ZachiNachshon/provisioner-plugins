@@ -37,7 +37,9 @@ PackageLoader.create().load_modules_fn(
 )
 
 # ==============
-#  ENTRY POINT
+# ENTRY POINT
+# To run from source:
+#   - poetry run provisioner ...
 # ==============
 def main():
     app()

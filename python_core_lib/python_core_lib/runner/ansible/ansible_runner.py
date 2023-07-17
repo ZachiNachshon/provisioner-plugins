@@ -325,7 +325,7 @@ class AnsibleRunnerLocal:
 
         # Problem:
         # To use ansible-playground with host entry that uses ansible_password=secret
-        # we must sshpass installed locally
+        # we must have sshpass installed locally
         # ERROR:
         # to use the 'ssh' connection type with passwords or pkcs11_provider,
         # you must install the sshpass program
@@ -337,7 +337,7 @@ class AnsibleRunnerLocal:
         # This is supported by ansible and would be the preferred option
         # as it relies on less cross language dependancies that has to be separately managed;
         # Thus this essentially by-passes the need for another library installed
-        # on your host machine : sshpass.
+        # on the host machine : sshpass.
         self._create_ansible_config_file()
         self._create_ansible_callback_plugins_folder()
         self._create_inventory_hosts_file(selected_hosts)

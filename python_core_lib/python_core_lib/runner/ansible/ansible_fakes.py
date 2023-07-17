@@ -67,11 +67,7 @@ class FakeAnsibleRunnerLocal(AnsibleRunnerLocal):
 
     def __init__(self, ctx: Context) -> None:
 
-        super().__init__(
-            io_utils=None,
-            paths=None,
-            ctx=ctx
-        )
+        super().__init__(io_utils=None, paths=None, ctx=ctx)
         ctx = Context.create()
         self.json_util = JsonUtil.create(ctx=ctx, io_utils=IOUtils.create(ctx))
 

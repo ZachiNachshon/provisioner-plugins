@@ -7,8 +7,8 @@ import inquirer
 from inquirer.themes import GreenPassion
 from loguru import logger
 
-from ..colors import color
-from ..infra.context import Context
+from python_core_lib.colors import color
+from python_core_lib.infra.context import Context
 
 GO_UP_ONE_LINE = "\033[1A"
 DELETE_LINE_TO_BEGINNING = "\033[K"
