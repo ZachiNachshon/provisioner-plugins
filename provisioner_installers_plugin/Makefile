@@ -10,6 +10,7 @@ update-externals: ## Update external source dependents
 .PHONY: clear-virtual-env
 clear-virtual-env: ## Clear Poetry virtual environments
 	@rm -rf .venv
+	@echo Cleared.
 
 .PHONY: deps
 deps: ## Update and install pyproject.toml dependencies on the virtual environment
