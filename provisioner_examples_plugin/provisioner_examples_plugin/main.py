@@ -8,7 +8,14 @@ from provisioner_features_lib.remote.typer_remote_opts_callback import (
 
 def append_to_cli(app: typer.Typer):
     examples_cli = typer.Typer()
-    app.add_typer(examples_cli, name="examples", invoke_without_command=True, no_args_is_help=True)
+
+    app.add_typer(
+        examples_cli,
+        name="examples",
+        invoke_without_command=True,
+        no_args_is_help=True,
+        help="Playground for using the CLI framework with basic dummy commands",
+    )
 
     from provisioner_examples_plugin.anchor.cli import register_anchor_commands
 

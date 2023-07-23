@@ -3,6 +3,7 @@
 <p align="center">
   <a href="#requirements">Requirements</a> •
   <a href="#quickstart">QuickStart</a> •
+  <a href="#available-plugins">Plugins</a> •
   <a href="#overview">Overview</a> •
   <a href="#contribute">Contribute</a> •
   <a href="#support">Support</a> •
@@ -10,20 +11,15 @@
 </p>
 <br>
 
-**Provisioner** is a CLI utility and a Python based framework for creating and loading dynamic plugins extensions. 
+**Provisioner plugins** are the pluggable extensions for **Provisioner CLI**. 
 
-It is dynamic because it detects installed plugins as pip packages and dynamically load their declared commands into Provisioner's CLI main menu.
+Every plugin is installed as a pip package. During Provisioner CLI runtime, the commands of any pip installed plugin are dynamically loaded into Provisioner's CLI main menu.
 
-It comes with built-in CLI capabilities, such as:
-* Flag modifiers (verbose, dry-run, auto-prompt)
-* Self update 
-* Config management 
-* Auto completions
-* Version command
+Plugins are using the Provisioner CLI as the runtime and also as the development framework i.e. package dependency.
 
 | :heavy_exclamation_mark: WARNING |
 | :--------------------------------------- |
-| Provisioner is still in **alpha stage**, breaking changes might occur. |
+| Provisioner plugins are still in **alpha stage**, breaking changes might occur. |
 
 <br>
 
@@ -31,34 +27,34 @@ It comes with built-in CLI capabilities, such as:
 
 - A Unix-like operating system: macOS, Linux
 - Python `v3.10` and above
+- [Provisioner CLI](https://github.com/ZachiNachshon/provisioner) installed and ready to use
 
 <br>
 
 <h2 id="quickstart">⚡️ QuickStart</h2>
 
-The fastest way (for macOS and Linux) to install anchor is using Homebrew:
+Installing Provisioner plugins is as simple as installing a pip package:
 
 ```bash
-brew install ZachiNachshon/tap/provisioner
+pip install <plugin-name>
 ```
 
-Alternatively, tap into the formula to have brew search capabilities on that tap formulas:
+<br>
 
-```bash
-# Tap
-brew tap ZachiNachshon/tap
+<h2 id="available-plugins">🔌 Available Plugins</h2>
 
-# Install
-brew install provisioner
-```
-
-For additional installation methods read here.
+| Name        | Path |
+| :---        |:---  | 
+| [Installers](./provisioner_installers_plugin/)  | Install anything anywhere on any OS/Arch either on a local or remote machine | 
+| [Single Board](./provisioner_single_board_plugin)     | Single boards management as simple as it gets | 
+| [Examples](./provisioner_examples_plugin)     | Playground for using the CLI framework with basic dummy commands | 
 
 <br>
 
 <h2 id="overview">⚓️ Overview</h2>
 
-- [Why creating `Provisioner`?](#why-creating-provisioner)
+- [How to create a Provisioner plugin?](#how-create-plugin)
+- [Plugin environment](#plugin-environment)
 - [Documentation](#documentation)
 - [Playground](#playground)
 
@@ -68,26 +64,25 @@ For additional installation methods read here.
 
 <br>
 
-<h3 id="why-creating-provisioner">⛵ Why Creating <code>Provisioner</code>?</h3>
+<h3 id="how-create-plugin">🔨 How to create a <code>Provisioner</code> plugin?</h3>
 
-1. Allow a better experience for teams using multiple sources of managed scripts, make them approachable and safe to use by having a tested, documented and controlled process with minimum context switches, increasing engineers velocity
+1. Duplicate the `provisioner_examples_plugin` plugin folder with your plugin name
 
-1. Allowing to compose different actions from multiple channels (shell scripts, CLI utilities, repetitive commands etc..) into a coherent well documented plugin
+1. Search for `examples` keyword under your new plugin folder scope and replace where necessary
 
-1. Having the ability to run the same action from CI on a local machine and vice-versa. Execution is controlled with flavored flags or differnet configuration set per environment
+1. Update the plugin `<my-plugin>/Makefile` build command
 
-1. Remove the fear of running an arbitrary undocumeted script that relies on ENV vars to control its execution
+1. Append the newly added plugin commands to the `provisioner_examples_plugin` repository outer `Makefile`
 
-1. Use only the plugins that you care about, search the plugins marketplace and install (or pre-install) based on needs
+1. Define plugin configuration under `<my-plugin>/domain/config.py`
 
-1. Reduce the amount of CLI utilities created in a variety of languages in an organization
+1. Manage plugin version under `<my-plugin>/pyproject.toml` under `[tool.poetry]`
 
-<br>
+1. Create a Python plugin entrypoint at `<my-plugin>/main.py`
 
-<h3 id="documentation">📖 Documentation</h3>
-
-Please refer to the [documentation](http://to.be.continued.com) for detailed explanation on how to configure and use `provisioner`.
-
+| ❕ INFO |
+| :--------------------------------------- |
+| A `provisioner plugin genereate` command will get added soon to simplify a new plugin scaffolding. |
 
 <br>
 
@@ -95,7 +90,7 @@ Please refer to the [documentation](http://to.be.continued.com) for detailed exp
 
 Using `provisioner`, **every** command is a playground.
 
-Use the `--dry-run` (short: `-d`) to check command exeuction breakdown, you can also add the `--verbose` (short: `-v`) flag to read `DEBUG` information. 
+Use the `--dry-run` (short: `-d`) to check command execution breakdown, you can also add the `--verbose` (short: `-v`) flag to read `DEBUG` information. 
 
 *All dry-run actions are no-op, you can safely run them as they only print to stdout.*
 
@@ -125,24 +120,3 @@ Provisioner is an open source project that is currently self maintained in addit
 <h2 id="license">License</h2>
 
 MIT
-
-<br>
-
----
-Document for later (contribution):
-
-To build a Python sdist with relative paths - 
-
-Install a plugin that allow buidling sdist for a multiproject (monorepo)
-See:
-  - https://github.com/DavidVujic/poetry-multiproject-plugin
-  - https://github.com/python-poetry/poetry/issues/5621
-  - https://github.com/python-poetry/poetry-core/pull/273
-
-```bash
-poetry self add poetry-multiproject-plugin
-
-OR
-
-pip install poetry-multiproject-plugin
-```

@@ -9,7 +9,13 @@ from provisioner_features_lib.remote.typer_remote_opts_callback import (
 def append_to_cli(app: typer.Typer):
     single_board_cli_app = typer.Typer()
 
-    app.add_typer(single_board_cli_app, name="single-board", invoke_without_command=True, no_args_is_help=True)
+    app.add_typer(
+        single_board_cli_app,
+        name="single-board",
+        invoke_without_command=True,
+        no_args_is_help=True,
+        help="Single boards management as simple as it gets",
+    )
 
     from provisioner_single_board_plugin.raspberry_pi.cli import (
         register_raspberry_pi_commands,

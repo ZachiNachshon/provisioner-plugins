@@ -73,8 +73,8 @@ mypy = "^0.971"
 coverage = "^6.4.4"
 diagrams = "^0.22.0"
 ruff = "^0.0.265"
-python_core_lib = { path = "../python_core_lib", develop = true }
-provisioner_features_lib = { path = "../provisioner_features_lib", develop = true }
+python_core_lib = { path = "../../provisioner/python_core_lib", develop = true }
+provisioner_features_lib = { path = "../../provisioner/provisioner_features_lib", develop = true }
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
