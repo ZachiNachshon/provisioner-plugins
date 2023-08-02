@@ -1,113 +1,91 @@
 default: help
+PLUGINS=examples installers single_board
 
 .PHONY: update-externals-all
 update-externals-all: ## Update external source dependents
-	@echo "\n\n========= PROVISIONER PLUGIN: EXAMPLES ==============\n\n"
-	@cd provisioner_examples_plugin; make update-externals; cd ..
-	@echo "\n\n========= PROVISIONER PLUGIN: INSTALLERS ============\n\n"
-	@cd provisioner_installers_plugin; make update-externals; cd ..
-	@echo "\n\n========= PROVISIONER PLUGIN: SINGLE BOARD ==========\n\n"
-	@cd provisioner_single_board_plugin; make update-externals; cd ..
+	@for plugin in $(PLUGINS); do \
+		echo "\n========= PLUGIN: $$plugin ==============\n"; \
+		cd provisioner_$${plugin}_plugin; make update-externals; cd ..; \
+	done
 
 .PHONY: deps-all
 deps-all: ## Update and install pyproject.toml dependencies on all virtual environments
-	@echo "\n\n========= PROVISIONER PLUGIN: EXAMPLES ==============\n\n"
-	@cd provisioner_examples_plugin; make deps; cd ..
-	@echo "\n\n========= PROVISIONER PLUGIN: INSTALLERS ============\n\n"
-	@cd provisioner_installers_plugin; make deps; cd ..
-	@echo "\n\n========= PROVISIONER PLUGIN: SINGLE BOARD ==========\n\n"
-	@cd provisioner_single_board_plugin; make deps; cd ..
+	@for plugin in $(PLUGINS); do \
+		echo "\n========= PLUGIN: $$plugin ==============\n"; \
+		cd provisioner_$${plugin}_plugin; make deps; cd ..; \
+	done
 
 .PHONY: typecheck-all
 typecheck-all: ## Check for Python static type errors
-	@echo "\n\n========= PROVISIONER PLUGIN: EXAMPLES ==============\n\n"
-	@cd provisioner_examples_plugin; make typecheck; cd ..
-	@echo "\n\n========= PROVISIONER PLUGIN: INSTALLERS ============\n\n"
-	@cd provisioner_installers_plugin; make typecheck; cd ..
-	@echo "\n\n========= PROVISIONER PLUGIN: SINGLE BOARD ==========\n\n"
-	@cd provisioner_single_board_plugin; make typecheck; cd ..
+	@for plugin in $(PLUGINS); do \
+		echo "\n========= PLUGIN: $$plugin ==============\n"; \
+		cd provisioner_$${plugin}_plugin; make typecheck; cd ..; \
+	done
 
 .PHONY: fmtcheck-all
 fmtcheck-all: ## Validate Python code format and sort imports
-	@echo "\n\n========= PROVISIONER PLUGIN: EXAMPLES ==============\n\n"
-	@cd provisioner_examples_plugin; make fmtcheck; cd ..
-	@echo "\n\n========= PROVISIONER PLUGIN: INSTALLERS ============\n\n"
-	@cd provisioner_installers_plugin; make fmtcheck; cd ..
-	@echo "\n\n========= PROVISIONER PLUGIN: SINGLE BOARD ==========\n\n"
-	@cd provisioner_single_board_plugin; make fmtcheck; cd ..
+	@for plugin in $(PLUGINS); do \
+		echo "\n========= PLUGIN: $$plugin ==============\n"; \
+		cd provisioner_$${plugin}_plugin; make fmtcheck; cd ..; \
+	done
 
 .PHONY: fmt-all
 fmt-all: ## Format Python code using Black style and sort imports
-	@echo "\n\n========= PROVISIONER PLUGIN: EXAMPLES ==============\n\n"
-	@cd provisioner_examples_plugin; make fmt; cd ..
-	@echo "\n\n========= PROVISIONER PLUGIN: INSTALLERS ============\n\n"
-	@cd provisioner_installers_plugin; make fmt; cd ..
-	@echo "\n\n========= PROVISIONER PLUGIN: SINGLE BOARD ==========\n\n"
-	@cd provisioner_single_board_plugin; make fmt; cd ..
+	@for plugin in $(PLUGINS); do \
+		echo "\n========= PLUGIN: $$plugin ==============\n"; \
+		cd provisioner_$${plugin}_plugin; make fmt; cd ..; \
+	done
 
 .PHONY: test-all
 test-all: ## Run tests suite
-	@echo "\n\n========= PROVISIONER PLUGIN: EXAMPLES ==============\n\n"
-	@cd provisioner_examples_plugin; make test; cd ..
-	@echo "\n\n========= PROVISIONER PLUGIN: INSTALLERS ============\n\n"
-	@cd provisioner_installers_plugin; make test; cd ..
-	@echo "\n\n========= PROVISIONER PLUGIN: SINGLE BOARD ==========\n\n"
-	@cd provisioner_single_board_plugin; make test; cd ..
-	@echo "\n\n========= COMBINING COVERAGE DATABASES ==============\n\n"
+	@for plugin in $(PLUGINS); do \
+		echo "\n========= PLUGIN: $$plugin ==============\n"; \
+		cd provisioner_$${plugin}_plugin; make test; cd ..; \
+	done
+	@echo "\n========= COMBINING COVERAGE DATABASES ==============\n"
 	@coverage combine \
 		provisioner_examples_plugin/.coverage \
 		provisioner_installers_plugin/.coverage \
 		provisioner_single_board_plugin/.coverage
-	@echo "\n\n========= COVERAGE FULL REPORT ======================\n\n"		
+	@echo "\n========= COVERAGE FULL REPORT ======================\n"		
 	@coverage report
 	@coverage html
 	-@echo "\n====\n\nFull coverage report available on the following link:\n\n  • $(PWD)/htmlcov/index.html\n"
 
 .PHONY: test-coverage-xml-all
 test-coverage-xml-all: ## Run Unit/E2E/IT tests
-	@echo "\n\n========= PROVISIONER PLUGIN: EXAMPLES ==============\n\n"
-	@cd provisioner_examples_plugin; make test-coverage-xml; cd ..
-	@echo "\n\n========= PROVISIONER PLUGIN: INSTALLERS ============\n\n"
-	@cd provisioner_installers_plugin; make test-coverage-xml; cd ..
-	@echo "\n\n========= PROVISIONER PLUGIN: SINGLE BOARD ==========\n\n"
-	@cd provisioner_single_board_plugin; make test-coverage-xml; cd ..
+	@for plugin in $(PLUGINS); do \
+		echo "\n========= PLUGIN: $$plugin ==============\n"; \
+		cd provisioner_$${plugin}_plugin; make test-coverage-xml; cd ..; \
+	done
 
 .PHONY: pip-install-all
 pip-install-all: ## Install all source distributions to local pip
-	@echo "\n\n========= PROVISIONER PLUGIN: EXAMPLES ==============\n\n"
-	@cd provisioner_examples_plugin; make pip-install; cd ..
-	@echo "\n\n========= PROVISIONER PLUGIN: INSTALLERS ============\n\n"
-	@cd provisioner_installers_plugin; make pip-install; cd ..
-	@echo "\n\n========= PROVISIONER PLUGIN: SINGLE BOARD ==========\n\n"
-	@cd provisioner_single_board_plugin; make pip-install; cd ..
+	@for plugin in $(PLUGINS); do \
+		echo "\n========= PLUGIN: $$plugin ==============\n"; \
+		cd provisioner_$${plugin}_plugin; make pip-install; cd ..; \
+	done
 
 .PHONY: pip-uninstall-all
 pip-uninstall-all: ## Uninstall all source distributions from local pip
-	@echo "\n\n========= PROVISIONER PLUGIN: EXAMPLES ==============\n\n"
-	@cd provisioner_examples_plugin; make pip-uninstall; cd ..
-	@echo "\n\n========= PROVISIONER PLUGIN: INSTALLERS ============\n\n"
-	@cd provisioner_installers_plugin; make pip-uninstall; cd ..
-	@echo "\n\n========= PROVISIONER PLUGIN: SINGLE BOARD ==========\n\n"
-	@cd provisioner_single_board_plugin; make pip-uninstall; cd ..
+	@for plugin in $(PLUGINS); do \
+		echo "\n========= PLUGIN: $$plugin ==============\n"; \
+		cd provisioner_$${plugin}_plugin; make pip-uninstall; cd ..; \
+	done
 
 .PHONY: pip-publish-github
 pip-publish-github: ## Publish all pip packages tarballs as GitHub releases
-	@echo "\n\n========= PROVISIONER PLUGIN: EXAMPLES ==============\n\n"
-	@cd provisioner_examples_plugin; make pip-publish-github; cd ..
-	@echo "\n\n========= PROVISIONER PLUGIN: INSTALLERS ============\n\n"
-	@cd provisioner_installers_plugin; make pip-publish-github; cd ..
-	@echo "\n\n========= PROVISIONER PLUGIN: SINGLE BOARD ==========\n\n"
-	@cd provisioner_single_board_plugin; make pip-publish-github; cd ..
+	@for plugin in $(PLUGINS); do \
+		echo "\n========= PLUGIN: $$plugin ==============\n"; \
+		cd provisioner_$${plugin}_plugin; make pip-publish-github; cd ..; \
+	done
 
 .PHONY: clear-virtual-env-all
 clear-virtual-env-all: ## Clear all Poetry virtual environments
-	@echo "\n========= PROVISIONER PLUGIN: EXAMPLES ==============\n"
-	@cd provisioner_examples_plugin; make clear-virtual-env; cd ..
-	@echo "\n========= PROVISIONER PLUGIN: INSTALLERS ============\n"
-	@cd provisioner_installers_plugin; make clear-virtual-env; cd ..
-	@echo "\n========= PROVISIONER PLUGIN: SINGLE BOARD ==========\n"
-	@cd provisioner_single_board_plugin; make clear-virtual-env; cd ..
-
+	@for plugin in $(PLUGINS); do \
+		echo "\n========= PLUGIN: $$plugin ==============\n"; \
+		cd provisioner_$${plugin}_plugin; make clear-virtual-env; cd ..; \
+	done
 
 # .PHONY: diagrams
 # diagrams: ## Format Python code using Black style (https://black.readthedocs.io)
