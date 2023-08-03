@@ -17,12 +17,9 @@ PLUGINS=examples installers single_board
 #     - Click on “Add secret”.
 #  4. Copy the code snippet from .github/workflows/ci.yaml SSH loading step
 
-.PHONY: update-externals-all
-update-externals-all: ## Update external source dependents
-	@for plugin in $(PLUGINS); do \
-		echo "\n========= PLUGIN: $$plugin ==============\n"; \
-		cd provisioner_$${plugin}_plugin; make update-externals; cd ..; \
-	done
+.PHONY: update-externals
+update-externals: ## Update external source dependents
+	@git-deps-syncer sync shell_scripts_lib -y
 
 .PHONY: deps-all
 deps-all: ## Update and install pyproject.toml dependencies on all virtual environments
