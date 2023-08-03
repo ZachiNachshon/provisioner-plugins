@@ -42,6 +42,13 @@ jobs:
         with:
           version: ${{ env.POETRY_VERSION }}
 
+      - name: Set up SSH access to ZachiNachshon/provisioner
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.PROV_SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
+
       - name: Try Load Cache venv - provisioner_examples_plugin
         id: cached-venv-provisioner-examples-plugin
         uses: actions/cache@v3

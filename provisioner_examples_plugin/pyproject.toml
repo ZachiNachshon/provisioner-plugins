@@ -65,8 +65,8 @@ python-libnmap = "^0.7.3"
 PyYAML = "^6.0"
 inquirer = "^2.10.0"
 python-hosts = "^1.0.3"
-python_core_lib = { git = "git@github.com:ZachiNachshon/provisioner.git", subdirectory = "python_core_lib" }
-provisioner_features_lib = { git = "git@github.com:ZachiNachshon/provisioner.git", subdirectory = "provisioner_features_lib" }
+python_core_lib = { git = "git@github.com:ZachiNachshon/provisioner.git", branch = "master", rev = "3522a70", subdirectory = "python_core_lib" }
+provisioner_features_lib = { git = "git@github.com:ZachiNachshon/provisioner.git", branch = "master", rev = "3522a70", subdirectory = "provisioner_features_lib" }
 
 [tool.poetry.dev-dependencies]
 black = "^22.8.0"
@@ -75,8 +75,8 @@ mypy = "^0.971"
 coverage = "^6.4.4"
 diagrams = "^0.22.0"
 ruff = "^0.0.265"
-python_core_lib = { git = "git@github.com:ZachiNachshon/provisioner.git", subdirectory = "python_core_lib" }
-provisioner_features_lib = { git = "git@github.com:ZachiNachshon/provisioner.git", subdirectory = "provisioner_features_lib" }
+python_core_lib = { git = "git@github.com:ZachiNachshon/provisioner.git", branch = "master", rev = "3522a70", subdirectory = "python_core_lib" }
+provisioner_features_lib = { git = "git@github.com:ZachiNachshon/provisioner.git", branch = "master", rev = "3522a70", subdirectory = "provisioner_features_lib" }
 # python_core_lib = { path = "../../provisioner/python_core_lib", develop = true }
 # provisioner_features_lib = { path = "../../provisioner/provisioner_features_lib", develop = true }
 
