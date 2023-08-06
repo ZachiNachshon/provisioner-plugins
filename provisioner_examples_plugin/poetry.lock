@@ -817,8 +817,8 @@ typer = "^0.6.1"
 [package.source]
 type = "git"
 url = "git@github.com:ZachiNachshon/provisioner.git"
-reference = "3d1e470"
-resolved_reference = "3d1e4706d55b8cedfc4548b8a9198bfff29ae351"
+reference = "b42c27c"
+resolved_reference = "b42c27c26e424fac0d673f0ac43911d1c26476a2"
 subdirectory = "provisioner_features_lib"
 [[package]]
 name = "ptyprocess"
@@ -846,14 +846,14 @@ files = [
 
 [[package]]
 name = "pygments"
-version = "2.15.1"
+version = "2.16.1"
 description = "Pygments is a syntax highlighting package written in Python."
 category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "Pygments-2.15.1-py3-none-any.whl", hash = "sha256:db2db3deb4b4179f399a09054b023b6a586b76499d36965813c71aa8ed7b5fd1"},
-    {file = "Pygments-2.15.1.tar.gz", hash = "sha256:8ace4d3c1dd481894b2005f560ead0f9f19ee64fe983366be1a21e171d12775c"},
+    {file = "Pygments-2.16.1-py3-none-any.whl", hash = "sha256:13fc09fa63bc8d8671a6d247e1eb303c4b343eaee81d861f3404db2935653692"},
+    {file = "Pygments-2.16.1.tar.gz", hash = "sha256:1daff0494820c69bc8941e407aa20f577374ee88364ee10a98fdbe0aece96e29"},
 ]
 
 [package.extras]
@@ -908,8 +908,8 @@ typer = "^0.6.1"
 [package.source]
 type = "git"
 url = "git@github.com:ZachiNachshon/provisioner.git"
-reference = "3d1e470"
-resolved_reference = "3d1e4706d55b8cedfc4548b8a9198bfff29ae351"
+reference = "b42c27c"
+resolved_reference = "b42c27c26e424fac0d673f0ac43911d1c26476a2"
 subdirectory = "python_core_lib"
 [[package]]
 name = "python-daemon"
@@ -1354,4 +1354,4 @@ dev = ["black (>=19.3b0)", "pytest (>=4.6.2)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "d9fa1ad54c62c78b6a4f2bcbe406826f99d6a0aa6f93737e9bc4fd5dc756be10"
+content-hash = "e38d7dad2e3692b93fb4b8c216285cf3098d652cb2edb38838a488f947e6afb5"

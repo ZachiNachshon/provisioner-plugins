@@ -21,6 +21,8 @@ exclude = [
 [tool.poetry.scripts]
 # This module is not meant to be used as a standalone CLI, rather used as a plugin/library for a module with a main entry point i.e. provisioner
 test_runner = "provisioner_examples_plugin.main_fake:fake_app"
+# For debugigng proposes when running "poetry run provisioner" from within the plugins folder
+provisioner = "provisioner.main:main"
 
 [tool.black]
 line-length = 120
@@ -65,8 +67,8 @@ python-libnmap = "^0.7.3"
 PyYAML = "^6.0"
 inquirer = "^2.10.0"
 python-hosts = "^1.0.3"
-python_core_lib = { git = "git@github.com:ZachiNachshon/provisioner.git", branch = "master", rev = "3d1e470", subdirectory = "python_core_lib" }
-provisioner_features_lib = { git = "git@github.com:ZachiNachshon/provisioner.git", branch = "master", rev = "3d1e470", subdirectory = "provisioner_features_lib" }
+python_core_lib = { git = "git@github.com:ZachiNachshon/provisioner.git", branch = "master", rev = "b42c27c", subdirectory = "python_core_lib" }
+provisioner_features_lib = { git = "git@github.com:ZachiNachshon/provisioner.git", branch = "master", rev = "b42c27c", subdirectory = "provisioner_features_lib" }
 
 [tool.poetry.dev-dependencies]
 black = "^22.8.0"
@@ -75,10 +77,9 @@ mypy = "^0.971"
 coverage = "^6.4.4"
 diagrams = "^0.22.0"
 ruff = "^0.0.265"
-python_core_lib = { git = "git@github.com:ZachiNachshon/provisioner.git", branch = "master", rev = "3d1e470", subdirectory = "python_core_lib" }
-provisioner_features_lib = { git = "git@github.com:ZachiNachshon/provisioner.git", branch = "master", rev = "3d1e470", subdirectory = "provisioner_features_lib" }
-# python_core_lib = { path = "../../provisioner/python_core_lib", develop = true }
-# provisioner_features_lib = { path = "../../provisioner/provisioner_features_lib", develop = true }
+
+# For debugging purposes when running "poetry run provisioner" from within the plugins folder
+# provisioner = { path = "../../provisioner/provisioner", develop = true }
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
