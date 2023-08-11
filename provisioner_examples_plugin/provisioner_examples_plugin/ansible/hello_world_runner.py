@@ -97,11 +97,9 @@ class HelloWorldRunner:
 
     def _prerequisites(self, ctx: Context, checks: Checks) -> None:
         if ctx.os_arch.is_linux():
-            checks.check_tool_fn("docker")
-
+            return
         elif ctx.os_arch.is_darwin():
-            checks.check_tool_fn("docker")
-
+            return
         elif ctx.os_arch.is_windows():
             raise NotImplementedError("Windows is not supported")
         else:

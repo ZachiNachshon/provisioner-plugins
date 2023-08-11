@@ -794,6 +794,33 @@ dev = ["pre-commit", "tox"]
 testing = ["pytest", "pytest-benchmark"]
 
 [[package]]
+name = "provisioner"
+version = "0.1.0"
+description = "Provision Everything Anywhere"
+category = "dev"
+optional = false
+python-versions = "^3.10"
+files = []
+develop = true
+
+[package.dependencies]
+ansible = "^7.3.0"
+ansible-runner = "^2.3.2"
+inquirer = "^2.10.0"
+loguru = "^0.6.0"
+python-hosts = "^1.0.3"
+python-libnmap = "^0.7.3"
+python3-nmap = "^1.5.4"
+PyYAML = "^6.0"
+requests = "^2.28.1"
+rich = "^12.5.1"
+typer = "^0.6.1"
+
+[package.source]
+type = "directory"
+url = "../../provisioner/provisioner"
+
+[[package]]
 name = "provisioner-features-lib"
 version = "0.1.0"
 description = "Python Features Library"
@@ -1354,4 +1381,4 @@ dev = ["black (>=19.3b0)", "pytest (>=4.6.2)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "e38d7dad2e3692b93fb4b8c216285cf3098d652cb2edb38838a488f947e6afb5"
+content-hash = "8c293a4a783978bd898bbf62b3cf0fb40e9ab5297f729f87053f20ad94b65628"

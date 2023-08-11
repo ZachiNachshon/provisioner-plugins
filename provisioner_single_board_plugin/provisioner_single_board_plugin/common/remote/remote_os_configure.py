@@ -81,8 +81,11 @@ class RemoteMachineOsConfigureRunner:
                 ansible_vars=[f"host_name={ansible_host.host}"],
                 ansible_tags=[
                     "configure_remote_node",
-                    "reboot" if not args.remote_opts.get_remote_context().is_dry_run() else "",
-                ],
+                    "reboot"
+                ]
+                # ansible_tags=[
+                #     "configure_remote_node",
+                # ] + (["reboot"] if not args.remote_opts.get_remote_context().is_dry_run() else []),
             ),
             desc_run="Running Ansible playbook (Configure OS)",
             desc_end="Ansible playbook finished (Configure OS).",
@@ -118,11 +121,9 @@ class RemoteMachineOsConfigureRunner:
 
     def _prerequisites(self, ctx: Context, checks: Checks) -> None:
         if ctx.os_arch.is_linux():
-            checks.check_tool_fn("docker")
-
+            return
         elif ctx.os_arch.is_darwin():
-            checks.check_tool_fn("docker")
-
+            return
         elif ctx.os_arch.is_windows():
             raise NotImplementedError("Windows is not supported")
         else:
