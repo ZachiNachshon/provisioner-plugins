@@ -1,6 +1,9 @@
 default: help
 PLUGINS=examples installers single_board
 
+POETRY_DEV=external/shell_scripts_lib/python/poetry_dev.sh
+POETRY_PIP_RELEASER=external/shell_scripts_lib/python/poetry_pip_releaser.sh
+
 # Generate SSH key for GitHub action:
 #  1. On local machine: ssh-keygen -t ed25519 -C "GitHub Actions"
 #  2. Add the public key as a deploy key to the repository you want to access:
@@ -99,6 +102,14 @@ clear-virtual-env-all: ## Clear all Poetry virtual environments
 		echo "\n========= PLUGIN: $$plugin ==============\n"; \
 		cd provisioner_$${plugin}_plugin; make clear-virtual-env; cd ..; \
 	done
+
+.PHONY: pDev
+pDev: ## Interact with ./external/.../poetry_dev.sh            (Usage: make pDev 'fmt --check-only')
+	@${POETRY_DEV} $(filter-out $@,$(MAKECMDGOALS))
+
+.PHONY: pReleaser
+pReleaser: ## Interact with ./external/.../poetry_pip_releaser.sh   (Usage: make pReleaser 'install --build-type sdist --multi-project')
+	@${POETRY_PIP_RELEASER} $(filter-out $@,$(MAKECMDGOALS))
 
 # .PHONY: diagrams
 # diagrams: ## Format Python code using Black style (https://black.readthedocs.io)

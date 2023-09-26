@@ -64,8 +64,14 @@ python-libnmap = "^0.7.3"
 PyYAML = "^6.0"
 inquirer = "^2.10.0"
 python-hosts = "^1.0.3"
-python_core_lib = { git = "git@github.com:ZachiNachshon/provisioner.git", branch = "master", rev = "b42c27c", subdirectory = "python_core_lib" }
-provisioner_features_lib = { git = "git@github.com:ZachiNachshon/provisioner.git", branch = "master", rev = "b42c27c", subdirectory = "provisioner_features_lib" }
+# When using the dev-dependencies, the provisioner will be installed from the local folder
+# Those two lines should be commented out when running "poetry install" from within the plugins folder
+# To perform a clean build:
+#  - Remove poetry.lock file
+#  - Remove the .venv folder
+#  - Run "make deps" from within the plugins folder
+python_core_lib = { git = "git@github.com:ZachiNachshon/provisioner.git", branch = "master", rev = "573c195", subdirectory = "python_core_lib" }
+provisioner_features_lib = { git = "git@github.com:ZachiNachshon/provisioner.git", branch = "master", rev = "573c195", subdirectory = "provisioner_features_lib" }
 
 [tool.poetry.dev-dependencies]
 black = "^22.8.0"
@@ -76,7 +82,9 @@ diagrams = "^0.22.0"
 ruff = "^0.0.265"
 
 # For debugging purposes when running "poetry run provisioner" from within the plugins folder
-provisioner = { path = "../../provisioner/provisioner", develop = true }
+# Make sure to comment out the provisioner line under [tool.poetry.scripts]
+# When building for prodoction, remember to comment out this line
+# provisioner = { path = "../../provisioner/provisioner", develop = true }
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
