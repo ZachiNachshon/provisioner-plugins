@@ -5,8 +5,8 @@ from typing import Optional
 import typer
 from loguru import logger
 from provisioner_features_lib.config.config_resolver import ConfigResolver
-from python_core_lib.infra.context import CliContextManager
-from python_core_lib.infra.evaluator import Evaluator
+from provisioner.infra.context import CliContextManager
+from provisioner.infra.evaluator import Evaluator
 
 from provisioner_single_board_plugin.raspberry_pi.os.burn_image_cmd import (
     RPiOsBurnImageCmd,

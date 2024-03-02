@@ -3,14 +3,14 @@
 import unittest
 from unittest import mock
 
-from python_core_lib.cli.state import CliGlobalArgs
-from python_core_lib.errors.cli_errors import (
+from provisioner.cli.state import CliGlobalArgs
+from provisioner.errors.cli_errors import (
     CliApplicationException,
 )
-from python_core_lib.infra.context import Context
-from python_core_lib.test_lib.assertions import Assertion
-from python_core_lib.test_lib.test_cli_runner import TestCliRunner
-from python_core_lib.test_lib.test_env import TestEnv
+from provisioner.infra.context import Context
+from provisioner.test_lib.assertions import Assertion
+from provisioner.test_lib.test_cli_runner import TestCliRunner
+from provisioner.test_lib.test_env import TestEnv
 from typer.testing import CliRunner
 
 from provisioner_installers_plugin.cli.cli import anchor, helm

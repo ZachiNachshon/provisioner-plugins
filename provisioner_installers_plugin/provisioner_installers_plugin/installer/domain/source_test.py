@@ -2,8 +2,8 @@
 
 import unittest
 
-from python_core_lib.test_lib.test_env import TestEnv
-from python_core_lib.utils.os import MAC_OS, OsArch
+from provisioner.test_lib.test_env import TestEnv
+from provisioner.utils.os import MAC_OS, OsArch
 
 from provisioner_installers_plugin.installer.domain.source import InstallSource
 

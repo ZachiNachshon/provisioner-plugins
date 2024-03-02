@@ -1,0 +1,15 @@
+hello_world:
+  username: Config User
+
+remote:
+  hosts:
+    - name: localhost
+      address: ansible_connection=local
+      auth:
+        username: pi
+        password: raspberry
+
+  lan_scan:
+    ip_discovery_range: 192.168.1.1/24
+
+

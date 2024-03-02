@@ -4,13 +4,13 @@ import os
 import unittest
 from unittest import mock
 
-from python_core_lib.errors.cli_errors import (
+from provisioner.errors.cli_errors import (
     CliApplicationException,
     StepEvaluationFailure,
 )
-from python_core_lib.test_lib.assertions import Assertion
-from python_core_lib.test_lib.test_cli_runner import TestCliRunner
-from python_core_lib.test_lib.test_env import TestEnv
+from provisioner.test_lib.assertions import Assertion
+from provisioner.test_lib.test_cli_runner import TestCliRunner
+from provisioner.test_lib.test_env import TestEnv
 from typer.testing import CliRunner
 
 from provisioner_single_board_plugin.main_fake import get_fake_app

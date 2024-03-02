@@ -7,16 +7,16 @@ from provisioner_features_lib.remote.remote_connector_fakes import (
     TestDataRemoteConnector,
 )
 from provisioner_features_lib.remote.typer_remote_opts_fakes import TestDataRemoteOpts
-from python_core_lib.errors.cli_errors import MissingUtilityException
-from python_core_lib.infra.context import Context
-from python_core_lib.infra.remote_context import RemoteContext
-from python_core_lib.runner.ansible.ansible_runner import (
+from provisioner.errors.cli_errors import MissingUtilityException
+from provisioner.infra.context import Context
+from provisioner.infra.remote_context import RemoteContext
+from provisioner.runner.ansible.ansible_runner import (
     AnsiblePlaybook,
 )
-from python_core_lib.test_lib.assertions import Assertion
-from python_core_lib.test_lib.test_env import TestEnv
-from python_core_lib.utils.checks_fakes import FakeChecks
-from python_core_lib.utils.os import LINUX, MAC_OS, WINDOWS, OsArch
+from provisioner.test_lib.assertions import Assertion
+from provisioner.test_lib.test_env import TestEnv
+from provisioner.utils.checks_fakes import FakeChecks
+from provisioner.utils.os import LINUX, MAC_OS, WINDOWS, OsArch
 
 from provisioner_single_board_plugin.common.remote.remote_os_configure import (
     ANSIBLE_PLAYBOOK_RPI_CONFIGURE_NODE,

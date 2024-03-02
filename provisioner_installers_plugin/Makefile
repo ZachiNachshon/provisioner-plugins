@@ -1,7 +1,7 @@
 default: help
 
-POETRY_DEV=../external/shell_scripts_lib/python/poetry_dev.sh
-POETRY_PIP_RELEASER=../external/shell_scripts_lib/python/poetry_pip_releaser.sh
+POETRY_DEV=../../external/shell_scripts_lib/python/poetry_dev.sh
+POETRY_PIP_RELEASER=../../external/shell_scripts_lib/python/poetry_pip_releaser.sh
 
 .PHONY: deps
 deps: ## Update and install pyproject.toml dependencies on the virtual environment

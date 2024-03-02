@@ -7,8 +7,8 @@ from provisioner_features_lib.sd_card.image_burner import (
     ImageBurnerArgs,
     ImageBurnerCmdRunner,
 )
-from python_core_lib.infra.context import Context
-from python_core_lib.shared.collaborators import CoreCollaborators
+from provisioner.infra.context import Context
+from provisioner.shared.collaborators import CoreCollaborators
 
 
 class RPiOsBurnImageCmdArgs:

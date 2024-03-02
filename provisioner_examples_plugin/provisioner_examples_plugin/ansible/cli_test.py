@@ -3,7 +3,7 @@
 import unittest
 from unittest import mock
 
-from python_core_lib.test_lib.assertions import Assertion
+from provisioner.test_lib.assertions import Assertion
 from typer.testing import CliRunner
 
 from provisioner_examples_plugin.main_fake import get_fake_app

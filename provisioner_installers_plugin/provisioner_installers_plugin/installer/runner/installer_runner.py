@@ -11,16 +11,16 @@ from provisioner_features_lib.remote.remote_connector import (
     SSHConnectionInfo,
 )
 from provisioner_features_lib.remote.typer_remote_opts import CliRemoteOpts
-from python_core_lib.errors.cli_errors import (
+from provisioner.errors.cli_errors import (
     InstallerSourceError,
     InstallerUtilityNotSupported,
     OsArchNotSupported,
     VersionResolverError,
 )
-from python_core_lib.func.pyfn import Environment, PyFn, PyFnEnvBase, PyFnEvaluator
-from python_core_lib.infra.context import Context
-from python_core_lib.runner.ansible.ansible_runner import AnsibleHost, AnsiblePlaybook
-from python_core_lib.shared.collaborators import CoreCollaborators
+from provisioner.func.pyfn import Environment, PyFn, PyFnEnvBase, PyFnEvaluator
+from provisioner.infra.context import Context
+from provisioner.runner.ansible.ansible_runner import AnsibleHost, AnsiblePlaybook
+from provisioner.shared.collaborators import CoreCollaborators
 
 from provisioner_installers_plugin.installer.domain.command import InstallerSubCommandName
 from provisioner_installers_plugin.installer.domain.dynamic_args import DynamicArgs

@@ -5,12 +5,12 @@ from typing import Callable
 from loguru import logger
 from provisioner_features_lib.remote.remote_connector import SSHConnectionInfo
 from provisioner_features_lib.remote.typer_remote_opts import CliRemoteOpts
-from python_core_lib.infra.context import Context
-from python_core_lib.runner.ansible.ansible_runner import AnsibleHost, AnsiblePlaybook
-from python_core_lib.shared.collaborators import CoreCollaborators
-from python_core_lib.utils.checks import Checks
-from python_core_lib.utils.printer import Printer
-from python_core_lib.utils.prompter import Prompter
+from provisioner.infra.context import Context
+from provisioner.runner.ansible.ansible_runner import AnsibleHost, AnsiblePlaybook
+from provisioner.shared.collaborators import CoreCollaborators
+from provisioner.utils.checks import Checks
+from provisioner.utils.printer import Printer
+from provisioner.utils.prompter import Prompter
 
 ANSIBLE_PLAYBOOK_HELLO_WORLD = """
 ---

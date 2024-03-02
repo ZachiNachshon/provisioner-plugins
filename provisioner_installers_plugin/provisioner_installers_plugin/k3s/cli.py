@@ -5,8 +5,8 @@ from typing import Optional
 
 import typer
 from provisioner_features_lib.remote.typer_remote_opts import CliRemoteOpts
-from python_core_lib.infra.context import CliContextManager
-from python_core_lib.infra.evaluator import Evaluator
+from provisioner.infra.context import CliContextManager
+from provisioner.infra.evaluator import Evaluator
 
 from provisioner_installers_plugin.installer.cmd.installer_cmd import (
     UtilityInstallerCmd,

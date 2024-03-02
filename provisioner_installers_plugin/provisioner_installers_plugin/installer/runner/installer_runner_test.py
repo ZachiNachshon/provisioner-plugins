@@ -10,19 +10,19 @@ from provisioner_features_lib.remote.remote_connector_fakes import (
     TestDataRemoteConnector,
 )
 from provisioner_features_lib.remote.typer_remote_opts_fakes import TestDataRemoteOpts
-from python_core_lib.errors.cli_errors import (
+from provisioner.errors.cli_errors import (
     InstallerSourceError,
     InstallerUtilityNotSupported,
     OsArchNotSupported,
     VersionResolverError,
 )
-from python_core_lib.func.pyfn import Environment, PyFn, PyFnEvaluator
-from python_core_lib.infra.context import Context
-from python_core_lib.infra.remote_context import RemoteContext
-from python_core_lib.runner.ansible.ansible_runner import AnsiblePlaybook
-from python_core_lib.test_lib.assertions import Assertion
-from python_core_lib.test_lib.test_env import TestEnv
-from python_core_lib.utils.os import OsArch
+from provisioner.func.pyfn import Environment, PyFn, PyFnEvaluator
+from provisioner.infra.context import Context
+from provisioner.infra.remote_context import RemoteContext
+from provisioner.runner.ansible.ansible_runner import AnsiblePlaybook
+from provisioner.test_lib.assertions import Assertion
+from provisioner.test_lib.test_env import TestEnv
+from provisioner.utils.os import OsArch
 
 from provisioner_installers_plugin.installer.domain.command import InstallerSubCommandName
 from provisioner_installers_plugin.installer.domain.installable import Installable

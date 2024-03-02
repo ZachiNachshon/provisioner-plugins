@@ -6,8 +6,8 @@ from provisioner_features_lib.config.config_resolver import ConfigResolver
 from provisioner_features_lib.remote.domain.config import RemoteConfig
 from provisioner_features_lib.remote.typer_remote_opts import TyperRemoteOpts
 from provisioner_features_lib.remote.typer_remote_opts_fakes import *
-from python_core_lib.cli.entrypoint import EntryPoint
-from python_core_lib.domain.serialize import SerializationBase
+from provisioner.cli.entrypoint import EntryPoint
+from provisioner.domain.serialize import SerializationBase
 
 from provisioner_installers_plugin.installer.domain.config import InstallerConfig
 from provisioner_installers_plugin.installer.domain.config_fakes import (
@@ -15,6 +15,7 @@ from provisioner_installers_plugin.installer.domain.config_fakes import (
 )
 
 FAKE_APP_TITLE = "Fake Utility Installer Test App"
+FAKE_CONFIG_USER_PATH = "~/my/config.yaml"
 
 fake_app = EntryPoint.create_typer(
     title=FAKE_APP_TITLE,

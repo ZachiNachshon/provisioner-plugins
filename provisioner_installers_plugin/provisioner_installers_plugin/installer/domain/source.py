@@ -3,8 +3,8 @@
 from enum import Enum
 from typing import Callable, List, Optional
 
-from python_core_lib.runner.ansible.ansible_runner import AnsiblePlaybook
-from python_core_lib.utils.os import OsArch
+from provisioner.runner.ansible.ansible_runner import AnsiblePlaybook
+from provisioner.utils.os import OsArch
 
 
 class ActiveInstallSource(str, Enum):

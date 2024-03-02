@@ -1,21 +1,22 @@
 #!/usr/bin/env python3
 
 import traceback
+from provisioner.config.manager.config_manager import ConfigManager
 
 from provisioner_features_lib.anchor.domain.config import AnchorConfig
 from provisioner_features_lib.anchor.typer_anchor_opts import TyperAnchorOpts
 from provisioner_features_lib.anchor.typer_anchor_opts_fakes import TestDataAnchorOpts
-from provisioner_features_lib.config.config_resolver import ConfigResolver
 from provisioner_features_lib.remote.domain.config import RemoteConfig
 from provisioner_features_lib.remote.typer_remote_opts import TyperRemoteOpts
 from provisioner_features_lib.remote.typer_remote_opts_fakes import *
-from python_core_lib.cli.entrypoint import EntryPoint
-from python_core_lib.domain.serialize import SerializationBase
+from provisioner.cli.entrypoint import EntryPoint
+from provisioner.domain.serialize import SerializationBase
 
-from provisioner_examples_plugin.domain.config import DummyConfig
-from provisioner_examples_plugin.domain.config_fakes import TestDataExamplesConfig
+from provisioner_examples_plugin.config.domain.config import ExamplesConfig
+from provisioner_examples_plugin.config.domain.config_fakes import TestDataExamplesConfig
 
 FAKE_APP_TITLE = "Fake Examples Plugin Test App"
+FAKE_CONFIG_USER_PATH = "~/my/config.yaml"
 
 fake_app = EntryPoint.create_typer(
     title=FAKE_APP_TITLE,
@@ -26,9 +27,9 @@ class FakeTestAppConfig(SerializationBase):
 
     remote: RemoteConfig = None
     anchor: AnchorConfig = None
-    dummy: DummyConfig = None
+    dummy: ExamplesConfig = None
 
-    def __init__(self, remote: RemoteConfig, anchor: AnchorConfig, dummy: DummyConfig) -> None:
+    def __init__(self, remote: RemoteConfig, anchor: AnchorConfig, dummy: ExamplesConfig) -> None:
         super().__init__({})
         self.remote = remote
         self.anchor = anchor
@@ -48,7 +49,7 @@ def generate_fake_config():
     fake_remote_config = TestDataRemoteOpts.create_fake_remote_opts().remote_config
     TyperRemoteOpts.load(fake_remote_config)
 
-    ConfigResolver.config = FakeTestAppConfig(
+    ConfigManager.config = FakeTestAppConfig(
         remote=fake_remote_config, anchor=fake_anchor_config, dummy=TestDataExamplesConfig.create_fake_dummy_config()
     )
 

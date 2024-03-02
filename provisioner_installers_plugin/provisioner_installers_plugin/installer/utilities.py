@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from python_core_lib.runner.ansible.ansible_runner import AnsiblePlaybook
+from provisioner.runner.ansible.ansible_runner import AnsiblePlaybook
 
 from provisioner_installers_plugin.installer.domain.installable import Installable
 from provisioner_installers_plugin.installer.domain.source import (

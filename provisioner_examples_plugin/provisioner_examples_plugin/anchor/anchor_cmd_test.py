@@ -3,8 +3,8 @@
 import unittest
 from unittest import mock
 
-from python_core_lib.test_lib.assertions import Assertion
-from python_core_lib.test_lib.test_env import TestEnv
+from provisioner.test_lib.assertions import Assertion
+from provisioner.test_lib.test_env import TestEnv
 
 from provisioner_examples_plugin.anchor.anchor_cmd import AnchorCmd, AnchorCmdArgs
 

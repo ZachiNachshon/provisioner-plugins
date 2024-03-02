@@ -4,8 +4,8 @@ import unittest
 from unittest import mock
 
 from provisioner_features_lib.remote.typer_remote_opts_fakes import TestDataRemoteOpts
-from python_core_lib.test_lib.assertions import Assertion
-from python_core_lib.test_lib.test_env import TestEnv
+from provisioner.test_lib.assertions import Assertion
+from provisioner.test_lib.test_env import TestEnv
 
 from provisioner_single_board_plugin.raspberry_pi.node.configure_cmd import (
     RPiOsConfigureCmd,

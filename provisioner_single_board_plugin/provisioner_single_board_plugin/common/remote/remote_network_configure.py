@@ -9,12 +9,12 @@ from provisioner_features_lib.remote.remote_connector import (
     SSHConnectionInfo,
 )
 from provisioner_features_lib.remote.typer_remote_opts import CliRemoteOpts
-from python_core_lib.colors import color
-from python_core_lib.infra.context import Context
-from python_core_lib.infra.evaluator import Evaluator
-from python_core_lib.runner.ansible.ansible_runner import AnsiblePlaybook
-from python_core_lib.shared.collaborators import CoreCollaborators
-from python_core_lib.utils.checks import Checks
+from provisioner.colors import color
+from provisioner.infra.context import Context
+from provisioner.infra.evaluator import Evaluator
+from provisioner.runner.ansible.ansible_runner import AnsiblePlaybook
+from provisioner.shared.collaborators import CoreCollaborators
+from provisioner.utils.checks import Checks
 
 ANSIBLE_PLAYBOOK_RPI_CONFIGURE_NETWORK = """
 ---

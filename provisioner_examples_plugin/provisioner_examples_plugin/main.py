@@ -1,14 +1,25 @@
 #!/usr/bin/env python3
 
+import pathlib
+from provisioner.config.manager.config_manager import ConfigManager
 import typer
 from provisioner_features_lib.remote.typer_remote_opts_callback import (
     remote_args_callback,
 )
 
+from plugins.provisioner_examples_plugin.provisioner_examples_plugin.config.domain.config import PLUGIN_NAME, ExamplesConfig
+
+CONFIG_INTERNAL_PATH = f"{pathlib.Path(__file__).parent}/config/config.yaml"
 
 def append_to_cli(app: typer.Typer):
+    # Load the plugin configuration
+    ConfigManager.instance().load_plugin_config(PLUGIN_NAME, CONFIG_INTERNAL_PATH, cls=ExamplesConfig)
+    examples_cfg = ConfigManager.instance().get_plugin_config(PLUGIN_NAME)
+    if examples_cfg.remote == None:
+        raise Exception("Remote configuration not found in plugin configuration")
+    
+    # Create the CLI structure
     examples_cli = typer.Typer()
-
     app.add_typer(
         examples_cli,
         name="examples",

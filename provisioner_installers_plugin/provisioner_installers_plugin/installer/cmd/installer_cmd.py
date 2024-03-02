@@ -5,8 +5,8 @@ from typing import Any, List, Optional
 
 from loguru import logger
 from provisioner_features_lib.remote.typer_remote_opts import CliRemoteOpts
-from python_core_lib.infra.context import Context
-from python_core_lib.shared.collaborators import CoreCollaborators
+from provisioner.infra.context import Context
+from provisioner.shared.collaborators import CoreCollaborators
 
 from provisioner_installers_plugin.installer.domain.command import InstallerSubCommandName
 from provisioner_installers_plugin.installer.domain.dynamic_args import DynamicArgs

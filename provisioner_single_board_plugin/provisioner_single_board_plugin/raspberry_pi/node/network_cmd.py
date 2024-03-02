@@ -4,8 +4,8 @@ from typing import Optional
 
 from loguru import logger
 from provisioner_features_lib.remote.typer_remote_opts import CliRemoteOpts
-from python_core_lib.infra.context import Context
-from python_core_lib.shared.collaborators import CoreCollaborators
+from provisioner.infra.context import Context
+from provisioner.shared.collaborators import CoreCollaborators
 
 from provisioner_single_board_plugin.common.remote.remote_network_configure import (
     RemoteMachineNetworkConfigureArgs,

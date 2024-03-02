@@ -1,7 +1,7 @@
 default: help
 
-POETRY_DEV=../external/shell_scripts_lib/python/poetry_dev.sh
-POETRY_PIP_RELEASER=../external/shell_scripts_lib/python/poetry_pip_releaser.sh
+POETRY_DEV=../../external/shell_scripts_lib/python/poetry_dev.sh
+POETRY_PIP_RELEASER=../../external/shell_scripts_lib/python/poetry_pip_releaser.sh
 
 .PHONY: deps
 deps: ## Update and install pyproject.toml dependencies on the virtual environment
@@ -69,6 +69,10 @@ pDev: ## Interact with ../external/.../poetry_dev.sh            (Usage: make pDe
 .PHONY: pReleaser
 pReleaser: ## Interact with ../external/.../poetry_pip_releaser.sh   (Usage: make pReleaser 'install --build-type sdist --multi-project')
 	@${POETRY_PIP_RELEASER} $(filter-out $@,$(MAKECMDGOALS))
+
+.PHONY: run
+run: ## Compile and run Provisioner CLI                        (Usage: make run '<command> <sub-command>')
+	@poetry run example_plugin $(filter-out $@,$(MAKECMDGOALS))
 
 .PHONY: help
 help:

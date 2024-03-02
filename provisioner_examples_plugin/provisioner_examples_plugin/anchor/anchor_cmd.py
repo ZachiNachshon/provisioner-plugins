@@ -6,8 +6,8 @@ from provisioner_features_lib.anchor.anchor_runner import (
     AnchorRunnerCmdArgs,
 )
 from provisioner_features_lib.remote.typer_remote_opts import CliRemoteOpts
-from python_core_lib.infra.context import Context
-from python_core_lib.shared.collaborators import CoreCollaborators
+from provisioner.infra.context import Context
+from provisioner.shared.collaborators import CoreCollaborators
 
 
 class AnchorCmdArgs:

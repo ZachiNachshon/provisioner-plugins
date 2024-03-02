@@ -18,11 +18,19 @@ exclude = [
     ".git-deps",
     ".pycache"]
 
+# A list of patterns that will be included in the final package.
+# If no format is specified, it will default to include both sdist and wheel
+# i.e. { path = "tests", format = ["sdist", "wheel"] }
+# include = [
+#     { path = "../../provisioner_features_lib" },
+# ]
+
 [tool.poetry.scripts]
 # This module is not meant to be used as a standalone CLI, rather used as a plugin/library for a module with a main entry point i.e. provisioner
 test_runner = "provisioner_examples_plugin.main_fake:fake_app"
-# For debugigng proposes when running "poetry run provisioner" from within the plugins folder
-provisioner = "provisioner.main:main"
+# For debugging proposes when running "poetry run provisioner" from within the plugins folder
+# provisioner = "provisioner.main:main"
+example_plugin = "provisioner_examples_plugin.main_dev:main"
 
 [tool.black]
 line-length = 120
@@ -73,21 +81,25 @@ python-hosts = "^1.0.3"
 #  - Remove poetry.lock file
 #  - Remove the .venv folder
 #  - Run "make deps" from within the plugins folder
-python_core_lib = { git = "git@github.com:ZachiNachshon/provisioner.git", branch = "master", rev = "573c195", subdirectory = "python_core_lib" }
-provisioner_features_lib = { git = "git@github.com:ZachiNachshon/provisioner.git", branch = "master", rev = "573c195", subdirectory = "provisioner_features_lib" }
+# provisioner_features_lib = { git = "git@github.com:ZachiNachshon/provisioner.git", branch = "master", rev = "573c195", subdirectory = "provisioner_features_lib" }
+provisioner = { path = "../../provisioner", develop = false }
+provisioner_features_lib = { path = "../../provisioner_features_lib", develop = false }
 
 [tool.poetry.dev-dependencies]
 black = "^22.8.0"
 pytest = "^7.1.3"
-mypy = "^0.971"
+mypy = "^0.991"
 coverage = "^6.4.4"
 diagrams = "^0.22.0"
 ruff = "^0.0.265"
+poetry-multiproject-plugin = "^1.3.3"
 
 # For debugging purposes when running "poetry run provisioner" from within the plugins folder
 # Make sure to comment out the provisioner line under [tool.poetry.scripts]
-# When building for prodoction, remember to comment out this line
-# provisioner = { path = "../../provisioner/provisioner", develop = true }
+# When building for production, remember to comment out this line
+provisioner = { path = "../../provisioner", develop = true }
+provisioner_features_lib = { path = "../../provisioner_features_lib", develop = true }
+
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
