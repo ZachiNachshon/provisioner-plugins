@@ -6,15 +6,13 @@ from provisioner_features_lib.anchor.domain.config import AnchorConfig
 from provisioner_features_lib.remote.domain.config import RemoteConfig
 
 PLUGIN_NAME = "example-plugin"
-PLUGIN_EXAMPLES_CONFIG_MODULE_NAME = "provisioner_examples_plugin.domain.config"
 
 class ExamplesConfig(SerializationBase):
     """
     Configuration structure -
 
-    dummy:
-      hello_world:
-        username: Config User    
+    hello_world:
+        username: Config User
 
     remote: {}
     anchor: {}
@@ -23,13 +21,12 @@ class ExamplesConfig(SerializationBase):
         super().__init__(dict_obj)
 
     def _try_parse_config(self, dict_obj: dict):
-        examples_data = dict_obj["examples"]
-        # if "remote" in examples_data:
-        #     self._parse_remote_block(examples_data["remote"])
-        # if "anchor" in examples_data:
-        #     self._parse_anchor_block(examples_data["anchor"])
-        if "hello_world" in examples_data:
-            self._parse_dummy_block(examples_data["dummy"])
+        if "remote" in dict_obj:
+            self.remote = RemoteConfig(dict_obj)
+        if "anchor" in dict_obj:
+            self.anchor = AnchorConfig(dict_obj)
+        if "hello_world" in dict_obj:
+            self._parse_hello_world_block(dict_obj["hello_world"])
 
     def merge(self, other: ProvisionerConfig) -> SerializationBase:
         if other.dummmy.hello_world.username:
@@ -37,7 +34,7 @@ class ExamplesConfig(SerializationBase):
 
         return self
         
-    def _parse_dummy_block(self, dummy_block: dict):
+    def _parse_hello_world_block(self, dummy_block: dict):
         if "hello_world" in dummy_block:
             hello_world_block = dummy_block["hello_world"]
             if "username" in hello_world_block:

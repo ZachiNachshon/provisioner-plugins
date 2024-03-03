@@ -1,16 +1,19 @@
 #!/usr/bin/env python3
 
+import importlib
 import os
-import pathlib
+from loguru import logger
 
 from provisioner.config.manager.config_manager import ConfigManager
 from provisioner.cli.entrypoint import EntryPoint
 from provisioner.utils.package_loader import PackageLoader
 
 from provisioner.config.domain.config import ProvisionerConfig
+from provisioner_examples_plugin import main
+
+PLUGIN_IMPORT_PATH="provisioner_examples_plugin.main"
 
 CONFIG_USER_PATH = os.path.expanduser("~/.config/provisioner/config.yaml")
-CONFIG_INTERNAL_PATH = f"{pathlib.Path(__file__).parent}/config/config.yaml"
 
 """
 The --dry-run and --verbose flags aren't available on the pre-init phase
@@ -21,23 +24,22 @@ such as config-loader, package-loader etc..
 ENV_VAR_ENABLE_PRE_INIT_DEBUG = "PROVISIONER_PRE_INIT_DEBUG"
 ENV_VAR_LOCAL_DEV_MODE = "PROVISIONER_LOCAL_DEV"
 debug_pre_init = os.getenv(key=ENV_VAR_ENABLE_PRE_INIT_DEBUG, default=False)
-is_local_dev = os.getenv(key=ENV_VAR_LOCAL_DEV_MODE, default=False)
 
 app = EntryPoint.create_typer(
     title="Provision Everything Anywhere (install plugins from https://zachinachshon.com/provisioner)",
     config_resolver_fn=lambda: ConfigManager.instance().load(
-        CONFIG_INTERNAL_PATH, CONFIG_USER_PATH, ProvisionerConfig, debug=debug_pre_init
+        main.CONFIG_INTERNAL_PATH, CONFIG_USER_PATH, ProvisionerConfig, debug=debug_pre_init
     ),
 )
 
-PackageLoader.create().load_modules_fn(
-    filter_keyword="provisioner",
-    import_path="main",
-    exclusions=["provisioner", "provisioner-features-lib"],
-    callback=lambda module: module.append_to_cli(app),
-    debug=debug_pre_init,
-    is_local_dev=is_local_dev,
-)
+try:
+    logger.debug(f"Importing module {PLUGIN_IMPORT_PATH}")
+    plugin_main_module = importlib.import_module(PLUGIN_IMPORT_PATH)
+    logger.debug(f"Running module callback on {PLUGIN_IMPORT_PATH}")
+    main.append_to_cli(app)
+except Exception as ex:
+    logger.error(f"Failed to import module. import_path: {PLUGIN_IMPORT_PATH}, ex: {ex}")
+
 
 # ==============
 # ENTRY POINT
