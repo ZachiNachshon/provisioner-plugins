@@ -1,52 +1,37 @@
 #!/usr/bin/env python3
 
 from loguru import logger
-from provisioner_features_lib.anchor.anchor_runner import (
+from provisioner.infra.context import Context
+from provisioner.shared.collaborators import CoreCollaborators
+from provisioner_features_lib.remote.typer_remote_opts import CliRemoteOpts
+from provisioner_features_lib.vcs.anchor_runner import (
     AnchorCmdRunner,
     AnchorRunnerCmdArgs,
 )
-from provisioner_features_lib.remote.typer_remote_opts import CliRemoteOpts
-from provisioner.infra.context import Context
-from provisioner.shared.collaborators import CoreCollaborators
+from provisioner_features_lib.vcs.typer_vcs_opts import CliVersionControlOpts
 
 
 class AnchorCmdArgs:
 
     anchor_run_command: str
-    github_organization: str
-    repository_name: str
-    branch_name: str
-    git_access_token: str
+    vcs_opts = CliVersionControlOpts
     remote_opts: CliRemoteOpts
 
     def __init__(
         self,
         anchor_run_command: str,
-        github_organization: str,
-        repository_name: str,
-        branch_name: str,
-        git_access_token: str,
+        vcs_opts=CliVersionControlOpts,
         remote_opts: CliRemoteOpts = None,
     ) -> None:
 
         self.anchor_run_command = anchor_run_command
-        self.github_organization = github_organization
-        self.repository_name = repository_name
-        self.branch_name = branch_name
-        self.git_access_token = git_access_token
+        self.vcs_opts = vcs_opts
         self.remote_opts = remote_opts
 
     def print(self) -> None:
         if self.remote_opts:
             self.remote_opts.print()
-        logger.debug(
-            "AnchorCmdArgs: \n"
-            + f"  anchor_run_command: {self.anchor_run_command}\n"
-            + f"  github_organization: {self.github_organization}\n"
-            + f"  repository_name: {self.repository_name}\n"
-            + f"  branch_name: {self.branch_name}\n"
-            + "  git_access_token: REDACTED\n"
-        )
+        logger.debug("AnchorCmdArgs: \n" + f"  anchor_run_command: {self.anchor_run_command}\n")
 
 
 class AnchorCmd:

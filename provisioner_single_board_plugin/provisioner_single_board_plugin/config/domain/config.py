@@ -3,7 +3,7 @@
 
 from provisioner.config.domain.config import ProvisionerConfig
 from provisioner.domain.serialize import SerializationBase
-from provisioner_features_lib.anchor.domain.config import AnchorConfig
+from provisioner_features_lib.vcs.domain.config import VersionControlConfig
 from provisioner_features_lib.remote.domain.config import RemoteConfig
 
 
@@ -122,4 +122,4 @@ class SingleBoardConfig(SerializationBase):
     os: SingleBoardOsConfig = None
     network: SingleBoardNetworkConfig = None
     remote: RemoteConfig = None
-    anchor: AnchorConfig = None
+    anchor: VersionControlConfig = None

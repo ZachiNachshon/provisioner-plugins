@@ -40,7 +40,7 @@ class FakeTestAppConfig(SerializationBase):
 
 
 def generate_fake_config():
-    fake_remote_config = TestDataRemoteOpts.create_fake_remote_opts().remote_config
+    fake_remote_config = TestDataRemoteOpts.create_fake_remote_opts()._remote_config
     TyperRemoteOpts.load(fake_remote_config)
 
     ConfigResolver.config = FakeTestAppConfig(

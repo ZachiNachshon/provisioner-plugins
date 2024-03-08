@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 
 import traceback
-from provisioner.config.manager.config_manager import ConfigManager
 
-from provisioner_features_lib.anchor.domain.config import AnchorConfig
-from provisioner_features_lib.anchor.typer_anchor_opts import TyperAnchorOpts
+from provisioner.cli.entrypoint import EntryPoint
+from provisioner.config.manager.config_manager import ConfigManager
+from provisioner.domain.serialize import SerializationBase
+from provisioner_features_lib.anchor.domain.config import VersionControlConfig
+from provisioner_features_lib.anchor.typer_anchor_opts import TyperVersionControlOpts
 from provisioner_features_lib.anchor.typer_anchor_opts_fakes import TestDataAnchorOpts
 from provisioner_features_lib.remote.domain.config import RemoteConfig
 from provisioner_features_lib.remote.typer_remote_opts import TyperRemoteOpts
 from provisioner_features_lib.remote.typer_remote_opts_fakes import *
-from provisioner.cli.entrypoint import EntryPoint
-from provisioner.domain.serialize import SerializationBase
 
 from provisioner_examples_plugin.config.domain.config import ExamplesConfig
 from provisioner_examples_plugin.config.domain.config_fakes import TestDataExamplesConfig
@@ -26,10 +26,10 @@ fake_app = EntryPoint.create_typer(
 class FakeTestAppConfig(SerializationBase):
 
     remote: RemoteConfig = None
-    anchor: AnchorConfig = None
+    anchor: VersionControlConfig = None
     dummy: ExamplesConfig = None
 
-    def __init__(self, remote: RemoteConfig, anchor: AnchorConfig, dummy: ExamplesConfig) -> None:
+    def __init__(self, remote: RemoteConfig, anchor: VersionControlConfig, dummy: ExamplesConfig) -> None:
         super().__init__({})
         self.remote = remote
         self.anchor = anchor
@@ -43,10 +43,10 @@ class FakeTestAppConfig(SerializationBase):
 
 
 def generate_fake_config():
-    fake_anchor_config = TestDataAnchorOpts.create_fake_anchor_opts().anchor_config
-    TyperAnchorOpts.load(fake_anchor_config)
+    fake_anchor_config = TestDataAnchorOpts.create_fake_anchor_opts()._vcs_config
+    TyperVersionControlOpts.load(fake_anchor_config)
 
-    fake_remote_config = TestDataRemoteOpts.create_fake_remote_opts().remote_config
+    fake_remote_config = TestDataRemoteOpts.create_fake_remote_opts()._remote_config
     TyperRemoteOpts.load(fake_remote_config)
 
     ConfigManager.config = FakeTestAppConfig(

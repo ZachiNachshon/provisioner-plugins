@@ -3,23 +3,30 @@
 
 import typer
 from loguru import logger
-from provisioner_features_lib.config.config_resolver import ConfigResolver
-from provisioner_features_lib.remote.typer_remote_opts import CliRemoteOpts
 from provisioner.infra.context import CliContextManager
 from provisioner.infra.evaluator import Evaluator
+from provisioner_features_lib.remote.typer_remote_opts import TyperRemoteOpts
+from provisioner_features_lib.vcs.typer_vcs_opts import TyperVersionControlOpts
 
 from provisioner_examples_plugin.anchor.anchor_cmd import AnchorCmd, AnchorCmdArgs
 
 example_anchor_cli_app = typer.Typer()
 
+typer_remote_opts: TyperRemoteOpts = None
+typer_vcs_opts: TyperVersionControlOpts = None
 
-def register_anchor_commands(app: typer.Typer, callback_remote_args):
+
+def register_anchor_commands(app: typer.Typer, remote_opts: TyperRemoteOpts, vcs_opts: TyperVersionControlOpts):
+    global typer_remote_opts
+    typer_remote_opts = remote_opts
+    global typer_vcs_opts
+    typer_vcs_opts = vcs_opts
     app.add_typer(
         example_anchor_cli_app,
         name="anchor",
         invoke_without_command=True,
         no_args_is_help=True,
-        callback=callback_remote_args,
+        callback=typer_vcs_opts.as_typer_callback(),
     )
 
 
@@ -32,16 +39,6 @@ def run_anchor_command(
         help="Anchor run command (without 'anchor' command)",
         envvar="ANCHOR_RUN_COMMAND",
     ),
-    github_organization: str = typer.Option(
-        None, show_default=False, help="GitHub repository organization", envvar="GITHUB_REPO_ORGANIZATION"
-    ),
-    repository_name: str = typer.Option(None, show_default=False, help="Repository name", envvar="ANCHOR_REPO_NAME"),
-    branch_name: str = typer.Option("master", help="Repository branch name", envvar="ANCHOR_REPO_BRANCH_NAME"),
-    git_access_token: str = typer.Option(
-        ConfigResolver.get_config().anchor.github.git_access_token,
-        help="GitHub access token (only for private repos)",
-        envvar="GITHUB_ACCESS_TOKEN",
-    ),
 ) -> None:
     """
     Run a dummy anchor run scenario locally or on remote machine via Ansible playbook
@@ -52,11 +49,8 @@ def run_anchor_command(
             ctx=CliContextManager.create(),
             args=AnchorCmdArgs(
                 anchor_run_command=anchor_run_command,
-                github_organization=github_organization,
-                repository_name=repository_name,
-                branch_name=branch_name,
-                git_access_token=git_access_token,
-                remote_opts=CliRemoteOpts.maybe_get(),
+                vcs_opts=typer_vcs_opts.to_cli_opts(),
+                remote_opts=typer_remote_opts.to_cli_opts(),
             ),
         ),
         error_message="Failed to run anchor command",

@@ -2,16 +2,15 @@
 
 import importlib
 import os
+
 from loguru import logger
-
-from provisioner.config.manager.config_manager import ConfigManager
 from provisioner.cli.entrypoint import EntryPoint
-from provisioner.utils.package_loader import PackageLoader
-
 from provisioner.config.domain.config import ProvisionerConfig
+from provisioner.config.manager.config_manager import ConfigManager
+
 from provisioner_examples_plugin import main
 
-PLUGIN_IMPORT_PATH="provisioner_examples_plugin.main"
+PLUGIN_IMPORT_PATH = "provisioner_examples_plugin.main"
 
 CONFIG_USER_PATH = os.path.expanduser("~/.config/provisioner/config.yaml")
 

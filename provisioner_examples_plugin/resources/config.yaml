@@ -12,4 +12,9 @@ remote:
   lan_scan:
     ip_discovery_range: 192.168.1.1/24
 
-
+vcs:
+  github:
+    organization: ZachiNachshon
+    repository: provisioner
+    branch: master
+    git_access_token: SECRET

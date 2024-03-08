@@ -2,8 +2,8 @@
 
 import traceback
 
-from provisioner_features_lib.anchor.domain.config import AnchorConfig
-from provisioner_features_lib.anchor.typer_anchor_opts import TyperAnchorOpts
+from provisioner_features_lib.anchor.domain.config import VersionControlConfig
+from provisioner_features_lib.anchor.typer_anchor_opts import TyperVersionControlOpts
 from provisioner_features_lib.anchor.typer_anchor_opts_fakes import TestDataAnchorOpts
 from provisioner_features_lib.config.config_resolver import ConfigResolver
 from provisioner_features_lib.remote.domain.config import RemoteConfig
@@ -28,10 +28,10 @@ fake_app = EntryPoint.create_typer(
 class FakeTestAppConfig(SerializationBase):
 
     remote: RemoteConfig = None
-    anchor: AnchorConfig = None
+    anchor: VersionControlConfig = None
     single_board: SingleBoardConfig = None
 
-    def __init__(self, remote: RemoteConfig, anchor: AnchorConfig, single_board: SingleBoardConfig) -> None:
+    def __init__(self, remote: RemoteConfig, anchor: VersionControlConfig, single_board: SingleBoardConfig) -> None:
         super().__init__({})
         self.remote = remote
         self.anchor = anchor
@@ -45,10 +45,10 @@ class FakeTestAppConfig(SerializationBase):
 
 
 def generate_fake_config():
-    fake_anchor_config = TestDataAnchorOpts.create_fake_anchor_opts().anchor_config
-    TyperAnchorOpts.load(fake_anchor_config)
+    fake_anchor_config = TestDataAnchorOpts.create_fake_anchor_opts()._vcs_config
+    TyperVersionControlOpts.load(fake_anchor_config)
 
-    fake_remote_config = TestDataRemoteOpts.create_fake_remote_opts().remote_config
+    fake_remote_config = TestDataRemoteOpts.create_fake_remote_opts()._remote_config
     TyperRemoteOpts.load(fake_remote_config)
 
     ConfigResolver.config = FakeTestAppConfig(
