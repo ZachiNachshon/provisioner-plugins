@@ -5,13 +5,12 @@ import traceback
 from provisioner.cli.entrypoint import EntryPoint
 from provisioner.config.manager.config_manager import ConfigManager
 from provisioner.domain.serialize import SerializationBase
-from provisioner_features_lib.anchor.domain.config import VersionControlConfig
-from provisioner_features_lib.anchor.typer_anchor_opts import TyperVersionControlOpts
-from provisioner_features_lib.anchor.typer_anchor_opts_fakes import TestDataAnchorOpts
 from provisioner_features_lib.remote.domain.config import RemoteConfig
-from provisioner_features_lib.remote.typer_remote_opts import TyperRemoteOpts
 from provisioner_features_lib.remote.typer_remote_opts_fakes import *
+from provisioner_features_lib.vcs.domain.config import VersionControlConfig
+from provisioner_features_lib.vcs.typer_vcs_opts_fakes import TestDataVersionControlOpts
 
+from provisioner_examples_plugin.main import append_to_cli
 from provisioner_examples_plugin.config.domain.config import ExamplesConfig
 from provisioner_examples_plugin.config.domain.config_fakes import TestDataExamplesConfig
 
@@ -26,14 +25,11 @@ fake_app = EntryPoint.create_typer(
 class FakeTestAppConfig(SerializationBase):
 
     remote: RemoteConfig = None
-    anchor: VersionControlConfig = None
-    dummy: ExamplesConfig = None
+    vcs: VersionControlConfig = None
+    hello_world: ExamplesConfig.HelloWorldConfig = None
 
-    def __init__(self, remote: RemoteConfig, anchor: VersionControlConfig, dummy: ExamplesConfig) -> None:
-        super().__init__({})
-        self.remote = remote
-        self.anchor = anchor
-        self.dummy = dummy
+    def __init__(self, dict_obj: dict) -> None:
+        super().__init__(dict_obj)
 
     def _try_parse_config(self, dict_obj: dict):
         pass
@@ -43,41 +39,21 @@ class FakeTestAppConfig(SerializationBase):
 
 
 def generate_fake_config():
-    fake_anchor_config = TestDataAnchorOpts.create_fake_anchor_opts()._vcs_config
-    TyperVersionControlOpts.load(fake_anchor_config)
+    return TestDataExamplesConfig.create_fake_example_config()
 
-    fake_remote_config = TestDataRemoteOpts.create_fake_remote_opts()._remote_config
-    TyperRemoteOpts.load(fake_remote_config)
-
-    ConfigManager.config = FakeTestAppConfig(
-        remote=fake_remote_config, anchor=fake_anchor_config, dummy=TestDataExamplesConfig.create_fake_dummy_config()
-    )
-
-
-def register_remote_cli_args():
-    from provisioner_features_lib.remote.typer_remote_opts_callback import (
-        remote_args_callback,
-    )
-
-    remote_args_callback(
-        environment=TEST_DATA_ENVIRONMENT,
-        node_username=TEST_DATA_REMOTE_NODE_USERNAME_1,
-        node_password=TEST_DATA_REMOTE_NODE_PASSWORD_1,
-        ssh_private_key_file_path=TEST_DATA_REMOTE_SSH_PRIVATE_KEY_FILE_PATH_1,
-        ip_discovery_range=TEST_DATA_REMOTE_IP_DISCOVERY_RANGE,
-    )
-
+def register_fake_config(fake_cfg: FakeTestAppConfig):
+    ConfigManager.instance().config = fake_cfg
+    ConfigManager.instance().config.dict_obj = fake_cfg.__dict__
+    ConfigManager.instance().config.dict_obj["plugins"] = {}
+    ConfigManager.instance().config.dict_obj["plugins"]["example-plugin"] = fake_cfg
 
 def register_module_cli_args():
-    from provisioner_examples_plugin.main import append_to_cli
-
     append_to_cli(fake_app)
-
 
 def get_fake_app():
     try:
-        generate_fake_config()
-        register_remote_cli_args()
+        fake_cfg = generate_fake_config()
+        register_fake_config(fake_cfg)
         register_module_cli_args()
     except Exception as ex:
         print(f"Fake provisioner example CLI commands failed to load. ex: {ex}, trace:\n{traceback.format_exc()}")

@@ -4,7 +4,7 @@ from loguru import logger
 from provisioner.infra.context import Context
 from provisioner.shared.collaborators import CoreCollaborators
 from provisioner_features_lib.remote.typer_remote_opts import CliRemoteOpts
-from provisioner_features_lib.vcs.anchor_runner import (
+from provisioner_features_lib.anchor.anchor_runner import (
     AnchorCmdRunner,
     AnchorRunnerCmdArgs,
 )
@@ -30,6 +30,7 @@ class AnchorCmdArgs:
 
     def print(self) -> None:
         if self.remote_opts:
+            print(self.remote_opts)
             self.remote_opts.print()
         logger.debug("AnchorCmdArgs: \n" + f"  anchor_run_command: {self.anchor_run_command}\n")
 
@@ -43,10 +44,7 @@ class AnchorCmd:
             ctx=ctx,
             args=AnchorRunnerCmdArgs(
                 anchor_run_command=args.anchor_run_command,
-                github_organization=args.github_organization,
-                repository_name=args.repository_name,
-                branch_name=args.branch_name,
-                git_access_token=args.git_access_token,
+                vcs_opts=args.vcs_opts,
                 remote_opts=args.remote_opts,
             ),
             collaborators=CoreCollaborators(ctx),

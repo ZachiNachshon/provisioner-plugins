@@ -8,7 +8,7 @@ from provisioner.cli.entrypoint import EntryPoint
 from provisioner.config.domain.config import ProvisionerConfig
 from provisioner.config.manager.config_manager import ConfigManager
 
-from provisioner_examples_plugin import main
+from provisioner_examples_plugin import main as example_plugin_main
 
 PLUGIN_IMPORT_PATH = "provisioner_examples_plugin.main"
 
@@ -27,7 +27,7 @@ debug_pre_init = os.getenv(key=ENV_VAR_ENABLE_PRE_INIT_DEBUG, default=False)
 app = EntryPoint.create_typer(
     title="Provision Everything Anywhere (install plugins from https://zachinachshon.com/provisioner)",
     config_resolver_fn=lambda: ConfigManager.instance().load(
-        main.CONFIG_INTERNAL_PATH, CONFIG_USER_PATH, ProvisionerConfig, debug=debug_pre_init
+        example_plugin_main.CONFIG_INTERNAL_PATH, CONFIG_USER_PATH, ProvisionerConfig, debug=debug_pre_init
     ),
 )
 
@@ -35,7 +35,8 @@ try:
     logger.debug(f"Importing module {PLUGIN_IMPORT_PATH}")
     plugin_main_module = importlib.import_module(PLUGIN_IMPORT_PATH)
     logger.debug(f"Running module callback on {PLUGIN_IMPORT_PATH}")
-    main.append_to_cli(app)
+    example_plugin_main.load_config()
+    example_plugin_main.append_to_cli(app)
 except Exception as ex:
     logger.error(f"Failed to import module. import_path: {PLUGIN_IMPORT_PATH}, ex: {ex}")
 

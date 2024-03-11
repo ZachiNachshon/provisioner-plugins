@@ -2,8 +2,8 @@
 
 from provisioner.config.domain.config import ProvisionerConfig
 from provisioner.domain.serialize import SerializationBase
-from provisioner_features_lib.vcs.domain.config import VersionControlConfig
 from provisioner_features_lib.remote.domain.config import RemoteConfig
+from provisioner_features_lib.vcs.domain.config import VersionControlConfig
 
 PLUGIN_NAME = "example-plugin"
 

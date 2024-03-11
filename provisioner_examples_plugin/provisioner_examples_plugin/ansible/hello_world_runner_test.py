@@ -5,12 +5,12 @@ from unittest import mock
 
 from provisioner.test_lib.assertions import Assertion
 from provisioner.test_lib.test_env import TestEnv
-from provisioner_features_lib.remote.typer_remote_opts import CliRemoteOpts
 
 from provisioner_examples_plugin.ansible.hello_world_runner import (
     HelloWorldRunner,
     HelloWorldRunnerArgs,
 )
+from provisioner_features_lib.remote.typer_remote_opts_fakes import TestDataRemoteOpts
 
 ANSIBLE_HELLO_WORLD_RUNNER_PATH = "provisioner_examples_plugin.ansible.hello_world_runner.HelloWorldRunner"
 
@@ -18,14 +18,14 @@ EXPECTED_USERNAME = "test-user"
 
 #
 # To run these directly from the terminal use:
-#  poetry run coverage run -m pytest provisioner_examples_plugin/anchor/anchor_cmd_test.py
+#  poetry run coverage run -m pytest provisioner_examples_plugin/ansible/hello_world_runner_test.py
 #
 class HelloWorldRunnerTestShould(unittest.TestCase):
     @mock.patch(f"{ANSIBLE_HELLO_WORLD_RUNNER_PATH}.run")
     def test_ansible_hello_runner_run_with_expected_arguments(self, run_call: mock.MagicMock) -> None:
         env = TestEnv.create()
         ctx = env.get_context()
-        expected_remote_opts = CliRemoteOpts.maybe_get()
+        expected_remote_opts = TestDataRemoteOpts.create_fake_cli_remote_opts()
 
         def assertion_callback(args):
             self.assertEqual(expected_remote_opts, args.remote_opts)

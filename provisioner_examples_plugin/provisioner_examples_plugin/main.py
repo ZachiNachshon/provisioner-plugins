@@ -13,10 +13,11 @@ CONFIG_INTERNAL_PATH = f"{pathlib.Path(__file__).parent.parent}/resources/config
 
 typer_remote_opts: TyperRemoteOpts = None
 
-
-def append_to_cli(app: typer.Typer):
+def load_config():
     # Load plugin configuration
     ConfigManager.instance().load_plugin_config(PLUGIN_NAME, CONFIG_INTERNAL_PATH, cls=ExamplesConfig)
+
+def append_to_cli(app: typer.Typer):
     examples_cfg = ConfigManager.instance().get_plugin_config(PLUGIN_NAME)
     if examples_cfg.remote is None:
         raise Exception("Remote configuration is mandatory and not found in plugin configuration")

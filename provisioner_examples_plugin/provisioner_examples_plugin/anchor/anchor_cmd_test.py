@@ -7,6 +7,8 @@ from provisioner.test_lib.assertions import Assertion
 from provisioner.test_lib.test_env import TestEnv
 
 from provisioner_examples_plugin.anchor.anchor_cmd import AnchorCmd, AnchorCmdArgs
+from provisioner_features_lib.remote.typer_remote_opts_fakes import TestDataRemoteOpts
+from provisioner_features_lib.vcs.typer_vcs_opts_fakes import TestDataVersionControlOpts
 
 ANCHOR_RUN_COMMAND_RUNNER_PATH = "provisioner_features_lib.anchor.anchor_runner.AnchorCmdRunner"
 
@@ -25,22 +27,20 @@ class AnchorCmdTestShould(unittest.TestCase):
     def test_anchor_cmd_run_with_expected_arguments(self, run_call: mock.MagicMock) -> None:
         env = TestEnv.create()
         ctx = env.get_context()
+        fake_vcs_cfg = TestDataVersionControlOpts().create_fake_cli_vcs_opts()
+        fake_remote_cfg = TestDataRemoteOpts().create_fake_cli_remote_opts()
 
         def assertion_callback(args):
             self.assertEqual(EXPECTED_ANCHOR_RUN_COMMAND, args.anchor_run_command)
-            self.assertEqual(EXPECTED_GITHUB_ORGANIZATION, args.github_organization)
-            self.assertEqual(EXPECTED_REPOSITORY_NAME, args.repository_name)
-            self.assertEqual(EXPECTED_BRANCH_NAME, args.branch_name)
-            self.assertEqual(EXPECTED_GIT_ACCESS_TOKEN, args.git_access_token)
+            self.assertEqual(fake_vcs_cfg, args.vcs_opts)
+            self.assertEqual(fake_remote_cfg, args.remote_opts)
 
         AnchorCmd().run(
             ctx=ctx,
             args=AnchorCmdArgs(
                 anchor_run_command=EXPECTED_ANCHOR_RUN_COMMAND,
-                github_organization=EXPECTED_GITHUB_ORGANIZATION,
-                repository_name=EXPECTED_REPOSITORY_NAME,
-                branch_name=EXPECTED_BRANCH_NAME,
-                git_access_token=EXPECTED_GIT_ACCESS_TOKEN,
+                vcs_opts=fake_vcs_cfg,
+                remote_opts=fake_remote_cfg,
             ),
         )
         Assertion.expect_call_argument(self, run_call, arg_name="ctx", expected_value=env.get_context())

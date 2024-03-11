@@ -31,20 +31,20 @@ class AnchorCliTestShould(unittest.TestCase):
                 "--verbose",
                 "examples",
                 "anchor",
+                f"--org={EXPECTED_GITHUB_ORGANIZATION}",
+                f"--repo={EXPECTED_REPOSITORY_NAME}",
+                f"--branch={EXPECTED_BRANCH_NAME}",
+                f"--git-access-token={EXPECTED_GIT_ACCESS_TOKEN}",
                 "run-command",
                 f"--anchor-run-command={EXPECTED_ANCHOR_RUN_COMMAND}",
-                f"--github-organization={EXPECTED_GITHUB_ORGANIZATION}",
-                f"--repository-name={EXPECTED_REPOSITORY_NAME}",
-                f"--branch-name={EXPECTED_BRANCH_NAME}",
-                f"--git-access-token={EXPECTED_GIT_ACCESS_TOKEN}",
             ],
         )
 
         def assertion_callback(args):
             self.assertEqual(EXPECTED_ANCHOR_RUN_COMMAND, args.anchor_run_command)
-            self.assertEqual(EXPECTED_GITHUB_ORGANIZATION, args.github_organization)
-            self.assertEqual(EXPECTED_REPOSITORY_NAME, args.repository_name)
-            self.assertEqual(EXPECTED_BRANCH_NAME, args.branch_name)
-            self.assertEqual(EXPECTED_GIT_ACCESS_TOKEN, args.git_access_token)
+            self.assertEqual(EXPECTED_GITHUB_ORGANIZATION, args.vcs_opts.github_organization)
+            self.assertEqual(EXPECTED_REPOSITORY_NAME, args.vcs_opts.repository_name)
+            self.assertEqual(EXPECTED_BRANCH_NAME, args.vcs_opts.branch_name)
+            self.assertEqual(EXPECTED_GIT_ACCESS_TOKEN, args.vcs_opts.git_access_token)
 
         Assertion.expect_call_arguments(self, run_call, arg_name="args", assertion_callable=assertion_callback)
