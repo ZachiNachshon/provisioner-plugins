@@ -6,17 +6,17 @@ from loguru import logger
 from provisioner.infra.context import CliContextManager
 from provisioner.infra.evaluator import Evaluator
 from provisioner_features_lib.remote.typer_remote_opts import TyperRemoteOpts
-from provisioner_features_lib.vcs.typer_vcs_opts import TyperVersionControlOpts
+from provisioner_features_lib.vcs.typer_vcs_opts import TyperVersionControl
 
 from provisioner_examples_plugin.anchor.anchor_cmd import AnchorCmd, AnchorCmdArgs
 
 example_anchor_cli_app = typer.Typer()
 
 typer_remote_opts: TyperRemoteOpts = None
-typer_vcs_opts: TyperVersionControlOpts = None
+typer_vcs_opts: TyperVersionControl = None
 
 
-def register_anchor_commands(app: typer.Typer, remote_opts: TyperRemoteOpts, vcs_opts: TyperVersionControlOpts):
+def register_anchor_commands(app: typer.Typer, remote_opts: TyperRemoteOpts, vcs_opts: TyperVersionControl):
     global typer_remote_opts
     typer_remote_opts = remote_opts
     global typer_vcs_opts

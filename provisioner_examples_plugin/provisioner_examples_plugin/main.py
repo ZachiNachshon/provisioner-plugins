@@ -5,7 +5,7 @@ import pathlib
 import typer
 from provisioner.config.manager.config_manager import ConfigManager
 from provisioner_features_lib.remote.typer_remote_opts import TyperRemoteOpts
-from provisioner_features_lib.vcs.typer_vcs_opts import TyperVersionControlOpts
+from provisioner_features_lib.vcs.typer_vcs_opts import TyperVersionControl
 
 from provisioner_examples_plugin.config.domain.config import PLUGIN_NAME, ExamplesConfig
 
@@ -42,5 +42,5 @@ def append_to_cli(app: typer.Typer):
     from provisioner_examples_plugin.anchor.cli import register_anchor_commands
 
     register_anchor_commands(
-        app=examples_cli, remote_opts=typer_remote_opts, vcs_opts=TyperVersionControlOpts(examples_cfg.vcs)
+        app=examples_cli, remote_opts=typer_remote_opts, vcs_opts=TyperVersionControl(examples_cfg.vcs)
     )
