@@ -25,7 +25,6 @@ def register_ansible_commands(app: typer.Typer, remote_opts: TyperRemoteOpts):
         name="ansible",
         invoke_without_command=True,
         no_args_is_help=True,
-        callback=typer_remote_opts.as_typer_callback(),
     )
 
 

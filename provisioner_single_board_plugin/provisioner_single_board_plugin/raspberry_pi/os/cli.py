@@ -4,10 +4,11 @@ from typing import Optional
 
 import typer
 from loguru import logger
-from provisioner_features_lib.config.config_resolver import ConfigResolver
+from provisioner.config.manager.config_manager import ConfigManager
 from provisioner.infra.context import CliContextManager
 from provisioner.infra.evaluator import Evaluator
 
+from provisioner_single_board_plugin.config.domain.config import SINGLE_BOARD_PLUGIN_NAME
 from provisioner_single_board_plugin.raspberry_pi.os.burn_image_cmd import (
     RPiOsBurnImageCmd,
     RPiOsBurnImageCmdArgs,
@@ -20,7 +21,7 @@ rpi_os_cli_app = typer.Typer()
 @logger.catch(reraise=True)
 def burn_image(
     image_download_url: Optional[str] = typer.Option(
-        ConfigResolver.get_config().single_board.get_os_raspbian_download_url(),
+        ConfigManager.instance().get_plugin_config(SINGLE_BOARD_PLUGIN_NAME).get_os_raspbian_download_url(),
         help="OS image file download URL",
         envvar="IMAGE_DOWNLOAD_URL",
     )
@@ -34,7 +35,9 @@ def burn_image(
             ctx=CliContextManager.create(),
             args=RPiOsBurnImageCmdArgs(
                 image_download_url=image_download_url,
-                image_download_path=ConfigResolver.get_config().single_board.os.download_path,
+                image_download_path=ConfigManager.instance()
+                .get_plugin_config(SINGLE_BOARD_PLUGIN_NAME)
+                .maybe_get("os.download_path"),
             ),
         ),
         error_message="Failed to burn Raspbian OS",

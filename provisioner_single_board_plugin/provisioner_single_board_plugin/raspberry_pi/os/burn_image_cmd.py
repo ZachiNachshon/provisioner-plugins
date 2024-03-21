@@ -3,12 +3,12 @@
 from typing import Optional
 
 from loguru import logger
+from provisioner.infra.context import Context
+from provisioner.shared.collaborators import CoreCollaborators
 from provisioner_features_lib.sd_card.image_burner import (
     ImageBurnerArgs,
     ImageBurnerCmdRunner,
 )
-from provisioner.infra.context import Context
-from provisioner.shared.collaborators import CoreCollaborators
 
 
 class RPiOsBurnImageCmdArgs:

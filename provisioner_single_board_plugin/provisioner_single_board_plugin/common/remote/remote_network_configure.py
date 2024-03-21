@@ -3,18 +3,18 @@
 from typing import Callable, Optional
 
 from loguru import logger
-from provisioner_features_lib.remote.remote_connector import (
-    DHCPCDConfigurationInfo,
-    RemoteMachineConnector,
-    SSHConnectionInfo,
-)
-from provisioner_features_lib.remote.typer_remote_opts import CliRemoteOpts
 from provisioner.colors import color
 from provisioner.infra.context import Context
 from provisioner.infra.evaluator import Evaluator
 from provisioner.runner.ansible.ansible_runner import AnsiblePlaybook
 from provisioner.shared.collaborators import CoreCollaborators
 from provisioner.utils.checks import Checks
+from provisioner_features_lib.remote.remote_connector import (
+    DHCPCDConfigurationInfo,
+    RemoteMachineConnector,
+    SSHConnectionInfo,
+)
+from provisioner_features_lib.remote.typer_remote_opts import CliRemoteOpts
 
 ANSIBLE_PLAYBOOK_RPI_CONFIGURE_NETWORK = """
 ---
@@ -137,7 +137,7 @@ class RemoteMachineNetworkConfigureRunner:
 
         collaborators.summary().show_summary_and_prompt_for_enter("Configure Network")
 
-        output = collaborators.printer().progress_indicator.status.long_running_process_fn(
+        output = collaborators.progress_indicator().get_status().long_running_process_fn(
             call=lambda: collaborators.ansible_runner().run_fn(
                 selected_hosts=ssh_conn_info.ansible_hosts,
                 playbook=AnsiblePlaybook(
@@ -154,12 +154,14 @@ class RemoteMachineNetworkConfigureRunner:
                 ansible_tags=[
                     "configure_rpi_network",
                     "define_static_ip",
-                ] + (["reboot"] if not args.remote_opts.get_remote_context().is_dry_run() else []),
+                ]
+                + (["reboot"] if not args.remote_opts.get_remote_context().is_dry_run() else []),
             ),
             desc_run="Running Ansible playbook (Configure Network)",
             desc_end="Ansible playbook finished (Configure Network).",
         )
-        collaborators.printer().new_line_fn().print_fn(output)
+        collaborators.printer().new_line_fn()
+        collaborators.printer().print_fn(output)
 
         return tuple_info
 
@@ -229,9 +231,9 @@ class RemoteMachineNetworkConfigureRunner:
 
     def _prerequisites(self, ctx: Context, checks: Checks) -> None:
         if ctx.os_arch.is_linux():
-            return 
+            return
         elif ctx.os_arch.is_darwin():
-            return 
+            return
         elif ctx.os_arch.is_windows():
             raise NotImplementedError("Windows is not supported")
         else:

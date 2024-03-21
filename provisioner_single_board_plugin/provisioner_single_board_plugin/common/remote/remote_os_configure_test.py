@@ -3,10 +3,6 @@
 import unittest
 from unittest import mock
 
-from provisioner_features_lib.remote.remote_connector_fakes import (
-    TestDataRemoteConnector,
-)
-from provisioner_features_lib.remote.typer_remote_opts_fakes import TestDataRemoteOpts
 from provisioner.errors.cli_errors import MissingUtilityException
 from provisioner.infra.context import Context
 from provisioner.infra.remote_context import RemoteContext
@@ -17,6 +13,10 @@ from provisioner.test_lib.assertions import Assertion
 from provisioner.test_lib.test_env import TestEnv
 from provisioner.utils.checks_fakes import FakeChecks
 from provisioner.utils.os import LINUX, MAC_OS, WINDOWS, OsArch
+from provisioner_features_lib.remote.remote_connector_fakes import (
+    TestDataRemoteConnector,
+)
+from provisioner_features_lib.remote.typer_remote_opts_fakes import TestDataRemoteOpts
 
 from provisioner_single_board_plugin.common.remote.remote_os_configure import (
     ANSIBLE_PLAYBOOK_RPI_CONFIGURE_NODE,

@@ -4,11 +4,12 @@ from typing import Optional
 
 import typer
 from loguru import logger
-from provisioner_features_lib.config.config_resolver import ConfigResolver
-from provisioner_features_lib.remote.typer_remote_opts import CliRemoteOpts
+from provisioner.config.manager.config_manager import ConfigManager
 from provisioner.infra.context import CliContextManager
 from provisioner.infra.evaluator import Evaluator
+from provisioner_features_lib.remote.typer_remote_opts import TyperRemoteOpts
 
+from provisioner_single_board_plugin.config.domain.config import SINGLE_BOARD_PLUGIN_NAME
 from provisioner_single_board_plugin.raspberry_pi.node.configure_cmd import (
     RPiOsConfigureCmd,
     RPiOsConfigureCmdArgs,
@@ -19,6 +20,12 @@ from provisioner_single_board_plugin.raspberry_pi.node.network_cmd import (
 )
 
 rpi_node_cli_app = typer.Typer()
+typer_remote_opts: TyperRemoteOpts = None
+
+
+def register_node_commands(remote_opts: TyperRemoteOpts):
+    global typer_remote_opts
+    typer_remote_opts = remote_opts
 
 
 @rpi_node_cli_app.command(name="configure")
@@ -31,7 +38,7 @@ def configure() -> None:
     Evaluator.eval_cli_entrypoint_step(
         name="Raspbian OS Configure",
         call=lambda: RPiOsConfigureCmd().run(
-            ctx=CliContextManager.create(), args=RPiOsConfigureCmdArgs(remote_opts=CliRemoteOpts.maybe_get())
+            ctx=CliContextManager.create(), args=RPiOsConfigureCmdArgs(remote_opts=typer_remote_opts.to_cli_opts())
         ),
         error_message="Failed to configure Raspbian OS",
     )
@@ -44,12 +51,12 @@ def network(
         None, show_default=False, help="Static IP address to set as the remote host IP address", envvar="RPI_STATIC_IP"
     ),
     gw_ip_address: Optional[str] = typer.Option(
-        ConfigResolver.get_config().single_board.network.gw_ip_address,
+        ConfigManager.instance().get_plugin_config(SINGLE_BOARD_PLUGIN_NAME).maybe_get("network.gw_ip_address"),
         help="Internet gateway address / home router address",
         envvar="GATEWAY_ADDRESS",
     ),
     dns_ip_address: Optional[str] = typer.Option(
-        ConfigResolver.get_config().single_board.network.dns_ip_address,
+        ConfigManager.instance().get_plugin_config(SINGLE_BOARD_PLUGIN_NAME).maybe_get("network.dns_ip_address"),
         help="Domain name server address / home router address",
         envvar="DNS_ADDRESS",
     ),
@@ -65,7 +72,7 @@ def network(
                 gw_ip_address=gw_ip_address,
                 dns_ip_address=dns_ip_address,
                 static_ip_address=static_ip_address,
-                remote_opts=CliRemoteOpts.maybe_get(),
+                remote_opts=typer_remote_opts.to_cli_opts(),
             ),
         ),
         error_message="Failed to configure RPi network",

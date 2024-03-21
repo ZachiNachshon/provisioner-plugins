@@ -18,22 +18,17 @@ exclude = [
     ".git-deps",
     ".pycache"]
 
-include = [
-    { path = "resources" },
-]
-
 # A list of patterns that will be included in the final package.
 # If no format is specified, it will default to include both sdist and wheel
 # i.e. { path = "tests", format = ["sdist", "wheel"] }
-# include = [
-#     { path = "../../provisioner_features_lib" },
-# ]
+include = [
+    { path = "resources" },
+    #     { path = "../../provisioner_features_lib" },
+]
 
 [tool.poetry.scripts]
 # This module is not meant to be used as a standalone CLI, rather used as a plugin/library for a module with a main entry point i.e. provisioner
 test_runner = "provisioner_examples_plugin.main_fake:fake_app"
-# For debugging proposes when running "poetry run provisioner" from within the plugins folder
-# provisioner = "provisioner.main:main"
 example_plugin = "provisioner_examples_plugin.main_dev:main"
 
 [tool.black]
@@ -79,16 +74,12 @@ python-libnmap = "^0.7.3"
 PyYAML = "^6.0"
 inquirer = "^2.10.0"
 python-hosts = "^1.0.3"
-# When using the dev-dependencies, the provisioner will be installed from the local folder
-# Those two lines should be commented out when running "poetry install" from within the plugins folder
 # To perform a clean build:
 #  - Remove poetry.lock file
 #  - Remove the .venv folder
 #  - Run "make deps" from within the plugins folder
 # provisioner_features_lib = { git = "git@github.com:ZachiNachshon/provisioner.git", branch = "master", rev = "573c195", subdirectory = "provisioner_features_lib" }
 
-# For debugging purposes when running "poetry run provisioner" from within the plugins folder
-# Make sure to comment out the provisioner line under [tool.poetry.scripts]
 # When building for production, remember to comment out this line
 provisioner = { path = "../../provisioner", develop = true }
 provisioner_features_lib = { path = "../../provisioner_features_lib", develop = true }

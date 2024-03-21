@@ -3,11 +3,6 @@
 from typing import Callable, Optional
 
 from loguru import logger
-from provisioner_features_lib.remote.remote_connector import (
-    RemoteMachineConnector,
-    SSHConnectionInfo,
-)
-from provisioner_features_lib.remote.typer_remote_opts import CliRemoteOpts
 from provisioner.infra.context import Context
 from provisioner.infra.evaluator import Evaluator
 from provisioner.runner.ansible.ansible_runner import (
@@ -16,6 +11,11 @@ from provisioner.runner.ansible.ansible_runner import (
 )
 from provisioner.shared.collaborators import CoreCollaborators
 from provisioner.utils.checks import Checks
+from provisioner_features_lib.remote.remote_connector import (
+    RemoteMachineConnector,
+    SSHConnectionInfo,
+)
+from provisioner_features_lib.remote.typer_remote_opts import CliRemoteOpts
 
 ANSIBLE_PLAYBOOK_RPI_CONFIGURE_NODE = """
 ---
@@ -79,10 +79,7 @@ class RemoteMachineOsConfigureRunner:
                     remote_context=args.remote_opts.get_remote_context(),
                 ),
                 ansible_vars=[f"host_name={ansible_host.host}"],
-                ansible_tags=[
-                    "configure_remote_node",
-                    "reboot"
-                ]
+                ansible_tags=["configure_remote_node", "reboot"]
                 # ansible_tags=[
                 #     "configure_remote_node",
                 # ] + (["reboot"] if not args.remote_opts.get_remote_context().is_dry_run() else []),

@@ -2,9 +2,9 @@
 
 
 from loguru import logger
-from provisioner_features_lib.remote.typer_remote_opts import CliRemoteOpts
 from provisioner.infra.context import Context
 from provisioner.shared.collaborators import CoreCollaborators
+from provisioner_features_lib.remote.typer_remote_opts import CliRemoteOpts
 
 from provisioner_single_board_plugin.common.remote.remote_os_configure import (
     RemoteMachineOsConfigureArgs,

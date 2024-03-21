@@ -5,10 +5,10 @@ from unittest import mock
 
 from provisioner.test_lib.assertions import Assertion
 from provisioner.test_lib.test_env import TestEnv
-
-from provisioner_examples_plugin.anchor.anchor_cmd import AnchorCmd, AnchorCmdArgs
 from provisioner_features_lib.remote.typer_remote_opts_fakes import TestDataRemoteOpts
 from provisioner_features_lib.vcs.typer_vcs_opts_fakes import TestDataVersionControlOpts
+
+from provisioner_examples_plugin.anchor.anchor_cmd import AnchorCmd, AnchorCmdArgs
 
 ANCHOR_RUN_COMMAND_RUNNER_PATH = "provisioner_features_lib.anchor.anchor_runner.AnchorCmdRunner"
 

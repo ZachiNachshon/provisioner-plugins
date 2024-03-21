@@ -13,21 +13,23 @@ CONFIG_INTERNAL_PATH = f"{pathlib.Path(__file__).parent.parent}/resources/config
 
 typer_remote_opts: TyperRemoteOpts = None
 
+
 def load_config():
     # Load plugin configuration
     ConfigManager.instance().load_plugin_config(PLUGIN_NAME, CONFIG_INTERNAL_PATH, cls=ExamplesConfig)
 
+
 def append_to_cli(app: typer.Typer):
     examples_cfg = ConfigManager.instance().get_plugin_config(PLUGIN_NAME)
     if examples_cfg.remote is None:
-        raise Exception("Remote configuration is mandatory and not found in plugin configuration")
+        raise Exception("Remote configuration is mandatory and missing from plugin configuration")
 
     typer_remote_opts = TyperRemoteOpts(examples_cfg.remote)
 
     # Create the CLI structure
-    examples_cli = typer.Typer()
+    examples_cli_app = typer.Typer()
     app.add_typer(
-        examples_cli,
+        examples_cli_app,
         name="examples",
         invoke_without_command=True,
         no_args_is_help=True,
@@ -37,10 +39,10 @@ def append_to_cli(app: typer.Typer):
 
     from provisioner_examples_plugin.ansible.cli import register_ansible_commands
 
-    register_ansible_commands(app=examples_cli, remote_opts=typer_remote_opts)
+    register_ansible_commands(app=examples_cli_app, remote_opts=typer_remote_opts)
 
     from provisioner_examples_plugin.anchor.cli import register_anchor_commands
 
     register_anchor_commands(
-        app=examples_cli, remote_opts=typer_remote_opts, vcs_opts=TyperVersionControl(examples_cfg.vcs)
+        app=examples_cli_app, remote_opts=typer_remote_opts, vcs_opts=TyperVersionControl(examples_cfg.vcs)
     )

@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-from provisioner.config.domain.config import ProvisionerConfig
 from provisioner.domain.serialize import SerializationBase
 from provisioner_features_lib.remote.domain.config import RemoteConfig
 from provisioner_features_lib.vcs.domain.config import VersionControlConfig
@@ -30,7 +29,7 @@ class ExamplesConfig(SerializationBase):
         if "hello_world" in dict_obj:
             self._parse_hello_world_block(dict_obj["hello_world"])
 
-    def merge(self, other: ProvisionerConfig) -> SerializationBase:
+    def merge(self, other: "ExamplesConfig") -> SerializationBase:
         if other.hello_world.username:
             self.hello_world.username = other.hello_world.username
 
@@ -40,7 +39,7 @@ class ExamplesConfig(SerializationBase):
         if "hello_world" in dummy_block:
             hello_world_block = dummy_block["hello_world"]
             if "username" in hello_world_block:
-                self.dummmy.hello_world.username = hello_world_block["username"]
+                self.hello_world.username = hello_world_block["username"]
 
     class HelloWorldConfig:
 
