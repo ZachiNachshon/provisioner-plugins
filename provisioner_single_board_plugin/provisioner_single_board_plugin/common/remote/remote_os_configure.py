@@ -5,9 +5,11 @@ from typing import Callable, Optional
 from loguru import logger
 from provisioner.infra.context import Context
 from provisioner.infra.evaluator import Evaluator
+from provisioner.infra.remote_context import RemoteContext
 from provisioner.runner.ansible.ansible_runner import (
     AnsibleHost,
     AnsiblePlaybook,
+    AnsibleRunnerLocal,
 )
 from provisioner.shared.collaborators import CoreCollaborators
 from provisioner.utils.checks import Checks
@@ -70,25 +72,45 @@ class RemoteMachineOsConfigureRunner:
 
         collaborators.summary().show_summary_and_prompt_for_enter("Configure OS")
 
-        output = collaborators.printer().progress_indicator.status.long_running_process_fn(
-            call=lambda: collaborators.ansible_runner().run_fn(
-                selected_hosts=ssh_conn_info.ansible_hosts,
-                playbook=AnsiblePlaybook(
-                    name="rpi_configure_node",
-                    content=ANSIBLE_PLAYBOOK_RPI_CONFIGURE_NODE,
-                    remote_context=args.remote_opts.get_remote_context(),
+        output = (
+            collaborators.progress_indicator()
+            .get_status()
+            .long_running_process_fn(
+                call=lambda: self._run_ansible(
+                    collaborators.ansible_runner(),
+                    args.remote_opts.get_remote_context(),
+                    ansible_host.host,
+                    ssh_conn_info,
                 ),
-                ansible_vars=[f"host_name={ansible_host.host}"],
-                ansible_tags=["configure_remote_node", "reboot"]
-                # ansible_tags=[
-                #     "configure_remote_node",
-                # ] + (["reboot"] if not args.remote_opts.get_remote_context().is_dry_run() else []),
-            ),
-            desc_run="Running Ansible playbook (Configure OS)",
-            desc_end="Ansible playbook finished (Configure OS).",
+                desc_run="Running Ansible playbook (Configure OS)",
+                desc_end="Ansible playbook finished (Configure OS).",
+            )
         )
-        collaborators.printer().new_line_fn().print_fn(output)
+        collaborators.printer().new_line_fn()
+        collaborators.printer().print_fn(output)
         return ansible_host
+
+    def _run_ansible(
+        self,
+        runner: AnsibleRunnerLocal,
+        remote_ctx: RemoteContext,
+        ssh_hostname: str,
+        ssh_conn_info: SSHConnectionInfo,
+    ) -> str:
+
+        return runner.run_fn(
+            selected_hosts=ssh_conn_info.ansible_hosts,
+            playbook=AnsiblePlaybook(
+                name="rpi_configure_node",
+                content=ANSIBLE_PLAYBOOK_RPI_CONFIGURE_NODE,
+                remote_context=remote_ctx,
+            ),
+            ansible_vars=[f"host_name={ssh_hostname}"],
+            ansible_tags=["configure_remote_node", "reboot"],
+            # ansible_tags=[
+            #     "configure_remote_node",
+            # ] + (["reboot"] if not args.remote_opts.get_remote_context().is_dry_run() else []),
+        )
 
     def _get_ssh_conn_info(
         self, ctx: Context, collaborators: CoreCollaborators, remote_opts: Optional[CliRemoteOpts] = None
