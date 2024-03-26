@@ -4,9 +4,9 @@
 from typing import Optional
 
 import typer
-from provisioner_features_lib.remote.typer_remote_opts import CliRemoteOpts
 from provisioner.infra.context import CliContextManager
 from provisioner.infra.evaluator import Evaluator
+from provisioner_features_lib.remote.typer_remote_opts import TyperRemoteOpts
 
 from provisioner_installers_plugin.installer.cmd.installer_cmd import (
     UtilityInstallerCmd,
@@ -16,8 +16,13 @@ from provisioner_installers_plugin.installer.domain.command import InstallerSubC
 
 # from provisioner_installers_plugin.cli.k3s.cli import register_command
 
+typer_remote_opts: TyperRemoteOpts = None
 
-def register_k3s_commands(app: typer.Typer, callback_remote_args):
+
+def register_k3s_commands(app: typer.Typer, remote_opts: TyperRemoteOpts):
+    global typer_remote_opts
+    typer_remote_opts = remote_opts
+
     k8s_apps = typer.Typer()
 
     k8s_apps.command("server")(k3s_server)
@@ -30,7 +35,6 @@ def register_k3s_commands(app: typer.Typer, callback_remote_args):
         invoke_without_command=True,
         no_args_is_help=True,
         help="Fully compliant lightweight Kubernetes distribution (https://k3s.io)",
-        callback=callback_remote_args,
     )
 
 
@@ -65,7 +69,7 @@ def k3s_server(
                     "k3s_additional_cli_args": additional_cli_args,
                     "k3s_install_as_binary": install_as_binary,
                 },
-                remote_opts=CliRemoteOpts.maybe_get(),
+                remote_opts=typer_remote_opts.to_cli_opts(),
             ),
         ),
     )
@@ -104,7 +108,7 @@ def k3s_agent(
                     "k3s_additional_cli_args": additional_cli_args,
                     "k3s_install_as_binary": install_as_binary,
                 },
-                remote_opts=CliRemoteOpts.maybe_get(),
+                remote_opts=typer_remote_opts.to_cli_opts(),
             ),
         ),
     )

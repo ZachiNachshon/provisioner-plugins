@@ -5,12 +5,6 @@ import pathlib
 from typing import List, NamedTuple, Optional
 
 from loguru import logger
-from provisioner_features_lib.remote.domain.config import RunEnvironment
-from provisioner_features_lib.remote.remote_connector import (
-    RemoteMachineConnector,
-    SSHConnectionInfo,
-)
-from provisioner_features_lib.remote.typer_remote_opts import CliRemoteOpts
 from provisioner.errors.cli_errors import (
     InstallerSourceError,
     InstallerUtilityNotSupported,
@@ -21,6 +15,12 @@ from provisioner.func.pyfn import Environment, PyFn, PyFnEnvBase, PyFnEvaluator
 from provisioner.infra.context import Context
 from provisioner.runner.ansible.ansible_runner import AnsibleHost, AnsiblePlaybook
 from provisioner.shared.collaborators import CoreCollaborators
+from provisioner_features_lib.remote.domain.config import RunEnvironment
+from provisioner_features_lib.remote.remote_connector import (
+    RemoteMachineConnector,
+    SSHConnectionInfo,
+)
+from provisioner_features_lib.remote.typer_remote_opts import CliRemoteOpts
 
 from provisioner_installers_plugin.installer.domain.command import InstallerSubCommandName
 from provisioner_installers_plugin.installer.domain.dynamic_args import DynamicArgs
@@ -497,7 +497,7 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
     def run(env: InstallerEnv) -> bool:
         logger.debug("Inside UtilityInstallerCmdRunner run()")
         eval = PyFnEvaluator[UtilityInstallerCmdRunner, Exception].new(UtilityInstallerCmdRunner(ctx=env.ctx))
-        chain = eval << Environment[UtilityInstallerCmdRunner]()
+        chain: UtilityInstallerCmdRunner = eval << Environment[UtilityInstallerCmdRunner]()
         run_env_utils_tuple = eval << (
             chain._verify_selected_utilities(env)
             .flat_map(lambda _: chain._map_to_utilities_list(env))

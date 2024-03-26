@@ -4,12 +4,6 @@ import unittest
 from typing import List
 from unittest import mock
 
-from provisioner_features_lib.remote.domain.config import RunEnvironment
-from provisioner_features_lib.remote.remote_connector import RemoteMachineConnector
-from provisioner_features_lib.remote.remote_connector_fakes import (
-    TestDataRemoteConnector,
-)
-from provisioner_features_lib.remote.typer_remote_opts_fakes import TestDataRemoteOpts
 from provisioner.errors.cli_errors import (
     InstallerSourceError,
     InstallerUtilityNotSupported,
@@ -23,6 +17,12 @@ from provisioner.runner.ansible.ansible_runner import AnsiblePlaybook
 from provisioner.test_lib.assertions import Assertion
 from provisioner.test_lib.test_env import TestEnv
 from provisioner.utils.os import OsArch
+from provisioner_features_lib.remote.domain.config import RunEnvironment
+from provisioner_features_lib.remote.remote_connector import RemoteMachineConnector
+from provisioner_features_lib.remote.remote_connector_fakes import (
+    TestDataRemoteConnector,
+)
+from provisioner_features_lib.remote.typer_remote_opts_fakes import TestDataRemoteOpts
 
 from provisioner_installers_plugin.installer.domain.command import InstallerSubCommandName
 from provisioner_installers_plugin.installer.domain.installable import Installable

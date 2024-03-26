@@ -3,6 +3,7 @@
 import unittest
 from unittest import mock
 
+import typer
 from provisioner.cli.state import CliGlobalArgs
 from provisioner.errors.cli_errors import (
     CliApplicationException,
@@ -11,10 +12,12 @@ from provisioner.infra.context import Context
 from provisioner.test_lib.assertions import Assertion
 from provisioner.test_lib.test_cli_runner import TestCliRunner
 from provisioner.test_lib.test_env import TestEnv
+from provisioner_features_lib.remote.domain.config import RemoteConfig
+from provisioner_features_lib.remote.typer_remote_opts import TyperRemoteOpts
 from typer.testing import CliRunner
 
-from provisioner_installers_plugin.cli.cli import anchor, helm
-from provisioner_installers_plugin.k3s.cli import k3s_agent, k3s_server
+from provisioner_installers_plugin.cli.cli import anchor, helm, register_cli_commands
+from provisioner_installers_plugin.k3s.cli import k3s_agent, k3s_server, register_k3s_commands
 from provisioner_installers_plugin.main_fake import get_fake_app
 
 INSTALLER_CMD_MODULE_PATH = "provisioner_installers_plugin.installer.cmd.installer_cmd"
@@ -35,8 +38,8 @@ class UtilityInstallerCliTestShould(unittest.TestCase):
                 "--verbose",
                 "--auto-prompt",
                 "install",
-                "cli",
                 "--environment=Local",
+                "cli",
                 "anchor",
             ],
         )
@@ -50,15 +53,16 @@ class UtilityInstallerCliTestShould(unittest.TestCase):
                 "--verbose",
                 "--auto-prompt",
                 "install",
-                "cli",
                 "--environment=Remote",
+                "cli",
                 "anchor",
             ],
         )
 
     @mock.patch(f"{INSTALLER_CMD_MODULE_PATH}.UtilityInstallerCmd.run")
     def test_e2e_run_all_cli_commands_success(self, run_call: mock.MagicMock) -> None:
-        CliGlobalArgs.create(verbose=True, dry_run=True, auto_prompt=True, os_arch="DARWIN_ARM64")
+        CliGlobalArgs.create(verbose=True, dry_run=True, auto_prompt=True, non_interactive=True, os_arch="DARWIN_ARM64")
+        register_cli_commands(typer.Typer(), TyperRemoteOpts(remote_config=RemoteConfig({})))
 
         anchor()
         Assertion.expect_exists(self, run_call, arg_name="ctx")
@@ -74,7 +78,8 @@ class UtilityInstallerCliTestShould(unittest.TestCase):
 
     @mock.patch(f"{INSTALLER_CMD_MODULE_PATH}.UtilityInstallerCmd.run")
     def test_e2e_run_all_k3s_commands_success(self, run_call: mock.MagicMock) -> None:
-        CliGlobalArgs.create(verbose=True, dry_run=True, auto_prompt=True, os_arch="DARWIN_ARM64")
+        CliGlobalArgs.create(verbose=True, dry_run=True, auto_prompt=True, non_interactive=True, os_arch="DARWIN_ARM64")
+        register_k3s_commands(typer.Typer(), TyperRemoteOpts(remote_config=RemoteConfig({})))
 
         k3s_server()
         Assertion.expect_exists(self, run_call, arg_name="ctx")

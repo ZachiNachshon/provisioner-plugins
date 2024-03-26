@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
 import typer
-from provisioner_features_lib.remote.typer_remote_opts import CliRemoteOpts
 from provisioner.infra.context import CliContextManager
 from provisioner.infra.evaluator import Evaluator
+from provisioner_features_lib.remote.typer_remote_opts import TyperRemoteOpts
 
 from provisioner_installers_plugin.installer.cmd.installer_cmd import (
     UtilityInstallerCmd,
@@ -13,8 +13,12 @@ from provisioner_installers_plugin.installer.domain.command import InstallerSubC
 
 cli_apps = typer.Typer()
 
+typer_remote_opts: TyperRemoteOpts = None
 
-def register_cli_commands(app: typer.Typer, callback_remote_args):
+
+def register_cli_commands(app: typer.Typer, remote_opts: TyperRemoteOpts):
+    global typer_remote_opts
+    typer_remote_opts = remote_opts
 
     cli_apps.command("anchor")(anchor)
     cli_apps.command("helm")(helm)
@@ -27,7 +31,6 @@ def register_cli_commands(app: typer.Typer, callback_remote_args):
         invoke_without_command=True,
         no_args_is_help=True,
         help="Select a CLI utility to install on any OS/Architecture",
-        callback=callback_remote_args,
     )
 
 
@@ -42,7 +45,7 @@ def anchor() -> None:
             args=UtilityInstallerCmdArgs(
                 utilities=["anchor"],
                 sub_command_name=InstallerSubCommandName.CLI,
-                remote_opts=CliRemoteOpts.maybe_get(),
+                remote_opts=typer_remote_opts.to_cli_opts(),
             ),
         ),
     )
@@ -57,7 +60,9 @@ def helm() -> None:
         call=lambda: UtilityInstallerCmd().run(
             ctx=CliContextManager.create(),
             args=UtilityInstallerCmdArgs(
-                utilities=["helm"], sub_command_name=InstallerSubCommandName.CLI, remote_opts=CliRemoteOpts.maybe_get()
+                utilities=["helm"],
+                sub_command_name=InstallerSubCommandName.CLI,
+                remote_opts=typer_remote_opts.to_cli_opts(),
             ),
         ),
     )

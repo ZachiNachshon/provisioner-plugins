@@ -43,7 +43,7 @@ REMOTE_NETWORK_CONFIGURE_RUNNER_PATH = (
     "provisioner_single_board_plugin.common.remote.remote_network_configure.RemoteMachineNetworkConfigureRunner"
 )
 
-REMOTE_CONTEXT = RemoteContext.create(verbose=True, dry_run=False, silent=False)
+REMOTE_CONTEXT = RemoteContext.create(verbose=True, dry_run=False, silent=False, non_interactive=False)
 
 
 class RemoteMachineNetworkConfigureTestShould(unittest.TestCase):
