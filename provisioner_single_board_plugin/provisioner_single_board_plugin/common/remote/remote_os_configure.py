@@ -86,8 +86,7 @@ class RemoteMachineOsConfigureRunner:
                 desc_end="Ansible playbook finished (Configure OS).",
             )
         )
-        collaborators.printer().new_line_fn()
-        collaborators.printer().print_fn(output)
+        collaborators.printer().new_line_fn().print_fn(output)
         return ansible_host
 
     def _run_ansible(

@@ -153,8 +153,7 @@ class RemoteMachineNetworkConfigureRunner:
                 desc_end="Ansible playbook finished (Configure Network).",
             )
         )
-        collaborators.printer().new_line_fn()
-        collaborators.printer().print_fn(output)
+        collaborators.printer().new_line_fn().print_fn(output)
         return tuple_info
 
     def _run_ansible(

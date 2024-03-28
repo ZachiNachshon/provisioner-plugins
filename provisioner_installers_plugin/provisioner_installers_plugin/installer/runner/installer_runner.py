@@ -13,7 +13,8 @@ from provisioner.errors.cli_errors import (
 )
 from provisioner.func.pyfn import Environment, PyFn, PyFnEnvBase, PyFnEvaluator
 from provisioner.infra.context import Context
-from provisioner.runner.ansible.ansible_runner import AnsibleHost, AnsiblePlaybook
+from provisioner.infra.remote_context import RemoteContext
+from provisioner.runner.ansible.ansible_runner import AnsibleHost, AnsiblePlaybook, AnsibleRunnerLocal
 from provisioner.shared.collaborators import CoreCollaborators
 from provisioner_features_lib.remote.domain.config import RunEnvironment
 from provisioner_features_lib.remote.remote_connector import (
@@ -530,24 +531,45 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
         self, env: InstallerEnv, sshconninfo_utility_info: SSHConnInfo_Utility_Tuple
     ) -> PyFn["UtilityInstallerCmdRunner", Exception, str]:
         return PyFn.effect(
-            lambda: env.collaborators.printer().progress_indicator.status.long_running_process_fn(
-                call=lambda: env.collaborators.ansible_runner().run_fn(
-                    selected_hosts=sshconninfo_utility_info.ssh_conn_info.ansible_hosts,
-                    playbook=AnsiblePlaybook(
-                        name="provisioner_wrapper",
-                        content=ANSIBLE_PLAYBOOK_REMOTE_PROVISIONER_WRAPPER,
-                        remote_context=env.args.remote_opts.get_remote_context(),
-                    ),
-                    ansible_vars=[
-                        f"provisioner_command='provisioner -y {'-v ' if env.args.remote_opts.get_remote_context().is_verbose() else ''}install {env.args.sub_command_name} --environment=Local {sshconninfo_utility_info.utility.display_name}'",
-                        "required_plugins=['provisioner_installers_plugin:0.1.0']",
-                        f"git_access_token={env.args.git_access_token}",
-                    ],
-                    ansible_tags=["provisioner_wrapper"],
+            lambda: env.collaborators.progress_indicator()
+            .get_status()
+            .long_running_process_fn(
+                call=lambda: self._run_ansible(
+                    env.collaborators.ansible_runner(),
+                    env.args.remote_opts.get_remote_context(),
+                    sshconninfo_utility_info.ssh_conn_info,
+                    env.args.sub_command_name,
+                    sshconninfo_utility_info.utility.display_name,
+                    env.args.git_access_token,
                 ),
                 desc_run="Running Ansible playbook (Provisioner Wrapper)",
                 desc_end="Ansible playbook finished (Provisioner Wrapper).",
-            )
+            ),
+        )
+
+    def _run_ansible(
+        self,
+        runner: AnsibleRunnerLocal,
+        remote_ctx: RemoteContext,
+        ssh_conn_info: SSHConnectionInfo,
+        sub_command_name: str,
+        utility_display_name: str,
+        git_access_token: str,
+    ) -> str:
+
+        return runner.run_fn(
+            selected_hosts=ssh_conn_info.ansible_hosts,
+            playbook=AnsiblePlaybook(
+                name="provisioner_wrapper",
+                content=ANSIBLE_PLAYBOOK_REMOTE_PROVISIONER_WRAPPER,
+                remote_context=remote_ctx,
+            ),
+            ansible_vars=[
+                f"provisioner_command='provisioner -y {'-v ' if remote_ctx.is_verbose() else ''}install {sub_command_name} --environment=Local {utility_display_name}'",
+                "required_plugins=['provisioner_installers_plugin:0.1.0']",
+                f"git_access_token={git_access_token}",
+            ],
+            ansible_tags=["provisioner_wrapper"],
         )
 
     def is_hosts_found(self, ssh_conn_info: SSHConnectionInfo) -> bool:

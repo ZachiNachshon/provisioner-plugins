@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import unittest
-from typing import List
+from typing import Callable, List
 from unittest import mock
 
 from provisioner.errors.cli_errors import (
@@ -13,10 +13,12 @@ from provisioner.errors.cli_errors import (
 from provisioner.func.pyfn import Environment, PyFn, PyFnEvaluator
 from provisioner.infra.context import Context
 from provisioner.infra.remote_context import RemoteContext
+from provisioner.runner.ansible.ansible_fakes import FakeAnsibleRunnerLocal
 from provisioner.runner.ansible.ansible_runner import AnsiblePlaybook
 from provisioner.test_lib.assertions import Assertion
 from provisioner.test_lib.test_env import TestEnv
 from provisioner.utils.os import OsArch
+from provisioner.utils.summary import Summary
 from provisioner_features_lib.remote.domain.config import RunEnvironment
 from provisioner_features_lib.remote.remote_connector import RemoteMachineConnector
 from provisioner_features_lib.remote.remote_connector_fakes import (
@@ -51,6 +53,8 @@ from provisioner_installers_plugin.installer.runner.installer_runner import (
 #  poetry run coverage run -m pytest provisioner_installers_plugin/installer/runner/installer_runner_test.py
 #
 TEST_GITHUB_ACCESS_TOKEN = "top-secret"
+TEST_UTILITY_1_NAME_GITHUB = "test_util_github"
+TEST_UTILITY_2_NAME_SCRIPT = "test_util_script"
 
 UTILITY_INSTALLER_CMD_RUNNER_PATH = (
     "provisioner_installers_plugin.installer.runner.installer_runner.UtilityInstallerCmdRunner"
@@ -58,9 +62,9 @@ UTILITY_INSTALLER_CMD_RUNNER_PATH = (
 REMOTE_MACHINE_CONNECTOR_PATH = "provisioner_features_lib.remote.remote_connector.RemoteMachineConnector"
 
 TestSupportedToolings = {
-    "test_util_github": Installable.Utility(
-        display_name="test_util_github",
-        binary_name="test_util_github",
+    TEST_UTILITY_1_NAME_GITHUB: Installable.Utility(
+        display_name=TEST_UTILITY_1_NAME_GITHUB,
+        binary_name=TEST_UTILITY_1_NAME_GITHUB,
         version="test_util_github-ver_1",
         active_source=ActiveInstallSource.GitHub,
         sources=InstallSource(
@@ -79,9 +83,9 @@ TestSupportedToolings = {
             ),
         ),
     ),
-    "test_util_script": Installable.Utility(
-        display_name="test_util_script",
-        binary_name="test_util_script",
+    TEST_UTILITY_2_NAME_SCRIPT: Installable.Utility(
+        display_name=TEST_UTILITY_2_NAME_SCRIPT,
+        binary_name=TEST_UTILITY_2_NAME_SCRIPT,
         version="test_util_script-ver_2",
         active_source=ActiveInstallSource.Script,
         sources=InstallSource(
@@ -133,7 +137,7 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
     def create_fake_installer_env(
         self,
         test_env: TestEnv,
-        utilities: List[str] = ["test_util_github", "test_util_script"],
+        utilities: List[str] = [TEST_UTILITY_1_NAME_GITHUB, TEST_UTILITY_2_NAME_SCRIPT],
         environment: RunEnvironment = RunEnvironment.Local,
         remote_context: RemoteContext = RemoteContext.no_op(),
     ) -> InstallerEnv:
@@ -178,40 +182,49 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
         self.assertEqual(2, len(result))
 
     def test_create_utils_summary_success(self) -> None:
-        utilities = [TestSupportedToolings["test_util_github"], TestSupportedToolings["test_util_script"]]
+        utilities = [
+            TestSupportedToolings[TEST_UTILITY_1_NAME_GITHUB],
+            TestSupportedToolings[TEST_UTILITY_2_NAME_SCRIPT],
+        ]
         test_env = TestEnv.create(verbose=True)
+        test_env.get_collaborators().summary().on(
+            "append", str, Installable.Utility
+        ).side_effect = lambda attribute_name, value: (
+            self.assertIn(attribute_name, utilities[0].display_name),
+        )
+        test_env.get_collaborators().summary().on(
+            "append", str, Installable.Utility
+        ).side_effect = lambda attribute_name, value: (
+            self.assertIn(attribute_name, utilities[1].display_name),
+        )
         fake_installer_env = self.create_fake_installer_env(test_env)
         eval = self.create_evaluator(fake_installer_env)
         result = eval << self.get_runner(eval)._create_utils_summary(fake_installer_env, utilities)
         self.assertEqual(2, len(result))
-        # TODO: Need to fix the comparison of two equal object but hash differ on different
-        #       objects in memory
-        # test_env.get_collaborators().summary().assert_value(
-        #     attribute_name=utilities[0].display_name,
-        #     value=utilities[0].as_summary_object(verbose=True),
-        # )
-        # test_env.get_collaborators().summary().assert_value(
-        #     attribute_name=utilities[1].display_name,
-        #     value=utilities[1].as_summary_object(verbose=True),
-        # )
 
     def test_print_installer_welcome_success(self) -> None:
-        utilities = [TestSupportedToolings["test_util_github"], TestSupportedToolings["test_util_script"]]
+        utilities = [
+            TestSupportedToolings[TEST_UTILITY_1_NAME_GITHUB],
+            TestSupportedToolings[TEST_UTILITY_2_NAME_SCRIPT],
+        ]
         test_env = TestEnv.create()
+        test_env.get_collaborators().printer().on(
+            "print_with_rich_table_fn", str, str
+        ).side_effect = lambda message, border_color: (
+            self.assertIn(f"- {utilities[0].display_name}", message),
+            self.assertIn(f"- {utilities[1].display_name}", message),
+            self.assertIn("Running on [yellow]Local[/yellow] environment.", message),
+        )
         fake_installer_env = self.create_fake_installer_env(test_env)
         eval = self.create_evaluator(fake_installer_env)
         result = eval << self.get_runner(eval)._print_installer_welcome(fake_installer_env, utilities)
         self.assertEqual(len(utilities), len(result))
-        test_env.get_collaborators().printer().assert_outputs(
-            [
-                f"- {utilities[0].display_name}",
-                f"- {utilities[1].display_name}",
-                "Running on [yellow]Local[/yellow] environment.",
-            ]
-        )
 
     def test_resolve_run_environment_with_run_env(self) -> None:
-        utilities = [TestSupportedToolings["test_util_github"], TestSupportedToolings["test_util_script"]]
+        utilities = [
+            TestSupportedToolings[TEST_UTILITY_1_NAME_GITHUB],
+            TestSupportedToolings[TEST_UTILITY_2_NAME_SCRIPT],
+        ]
         fake_installer_env = self.create_fake_installer_env(self.env, environment=RunEnvironment.Local)
         eval = self.create_evaluator(fake_installer_env)
         Assertion.expect_equal_objects(
@@ -220,9 +233,26 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
             obj2=RunEnv_Utilities_Tuple(RunEnvironment.Local, utilities),
         )
 
-    def test_resolve_run_environment_without_run_env(self) -> None:
-        utilities = [TestSupportedToolings["test_util_github"], TestSupportedToolings["test_util_script"]]
+    def test_resolve_run_environment_using_user_prompt(self) -> None:
+        utilities = [
+            TestSupportedToolings[TEST_UTILITY_1_NAME_GITHUB],
+            TestSupportedToolings[TEST_UTILITY_2_NAME_SCRIPT],
+        ]
         test_env = TestEnv.create()
+        test_env.get_collaborators().override_summary(
+            # User the real summary object to capture the value
+            Summary(test_env.get_context().is_dry_run(), test_env.get_context().is_verbose(), False, None, None, None)
+        )
+
+        def on_show_summary_and_prompt_for_enter(message: str, options: List[str]) -> None:
+            self.assertEqual("Please choose an environment", message)
+            self.assertEqual(["Local", "Remote"], options)
+            return RunEnvironment.Local
+
+        test_env.get_collaborators().prompter().on(
+            "prompt_user_single_selection_fn", str, List
+        ).side_effect = on_show_summary_and_prompt_for_enter
+
         fake_installer_env = self.create_fake_installer_env(test_env, environment=None)
         eval = self.create_evaluator(fake_installer_env)
         Assertion.expect_equal_objects(
@@ -230,12 +260,13 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
             obj1=eval << self.get_runner(eval)._resolve_run_environment(fake_installer_env, utilities),
             obj2=RunEnv_Utilities_Tuple(RunEnvironment.Local, utilities),
         )
-        test_env.get_collaborators().prompter().assert_user_single_selection_prompt("Please choose an environment")
-        test_env.get_collaborators().summary().assert_value("run_env", RunEnvironment.Local)
 
     @mock.patch(f"{UTILITY_INSTALLER_CMD_RUNNER_PATH}._run_local_utilities_installation")
     def test_run_installation_on_local_env(self, run_call: mock.MagicMock) -> None:
-        utilities = [TestSupportedToolings["test_util_github"], TestSupportedToolings["test_util_script"]]
+        utilities = [
+            TestSupportedToolings[TEST_UTILITY_1_NAME_GITHUB],
+            TestSupportedToolings[TEST_UTILITY_2_NAME_SCRIPT],
+        ]
         fake_installer_env = self.create_fake_installer_env(self.env)
         eval = self.create_evaluator(fake_installer_env)
         eval << self.get_runner(eval)._run_installation(
@@ -246,7 +277,10 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
 
     @mock.patch(f"{UTILITY_INSTALLER_CMD_RUNNER_PATH}._run_remote_installation")
     def test_run_installation_on_remote_env(self, run_call: mock.MagicMock) -> None:
-        utilities = [TestSupportedToolings["test_util_github"], TestSupportedToolings["test_util_script"]]
+        utilities = [
+            TestSupportedToolings[TEST_UTILITY_1_NAME_GITHUB],
+            TestSupportedToolings[TEST_UTILITY_2_NAME_SCRIPT],
+        ]
         fake_installer_env = self.create_fake_installer_env(self.env)
         eval = self.create_evaluator(fake_installer_env)
         eval << self.get_runner(eval)._run_installation(
@@ -262,39 +296,60 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
         self.assertIsNone(result)
 
     def test_print_pre_install_summary_success(self) -> None:
-        utility = TestSupportedToolings["test_util_github"]
+        utility = TestSupportedToolings[TEST_UTILITY_1_NAME_GITHUB]
         test_env = TestEnv.create()
+        test_env.get_collaborators().summary().on(
+            "show_summary_and_prompt_for_enter", str
+        ).side_effect = lambda title: self.assertIn(title, f"Installing Utility: {utility.display_name}")
         fake_installer_env = self.create_fake_installer_env(test_env)
         eval = self.create_evaluator(fake_installer_env)
         eval << self.get_runner(eval)._print_pre_install_summary(fake_installer_env, maybe_utility=utility)
-        test_env.get_collaborators().summary().assert_show_summay_title(f"Installing Utility: {utility.display_name}")
 
+    @mock.patch(
+        f"{UTILITY_INSTALLER_CMD_RUNNER_PATH}._print_post_install_summary",
+        side_effect=[
+            PyFn.of(TestSupportedToolings[TEST_UTILITY_1_NAME_GITHUB]),
+            PyFn.of(TestSupportedToolings[TEST_UTILITY_2_NAME_SCRIPT]),
+        ],
+    )
+    @mock.patch(
+        f"{UTILITY_INSTALLER_CMD_RUNNER_PATH}._install_utility_locally",
+        side_effect=[
+            PyFn.of(TestSupportedToolings[TEST_UTILITY_1_NAME_GITHUB]),
+            PyFn.of(TestSupportedToolings[TEST_UTILITY_2_NAME_SCRIPT]),
+        ],
+    )
     @mock.patch(
         f"{UTILITY_INSTALLER_CMD_RUNNER_PATH}._print_pre_install_summary",
         side_effect=[
-            PyFn.of(TestSupportedToolings["test_util_github"]),
-            PyFn.of(TestSupportedToolings["test_util_script"]),
+            PyFn.of(TestSupportedToolings[TEST_UTILITY_1_NAME_GITHUB]),
+            PyFn.of(TestSupportedToolings[TEST_UTILITY_2_NAME_SCRIPT]),
         ],
     )
     @mock.patch(
         f"{UTILITY_INSTALLER_CMD_RUNNER_PATH}._notify_if_utility_already_installed",
         side_effect=[
-            PyFn.of(TestSupportedToolings["test_util_github"]),
-            PyFn.of(TestSupportedToolings["test_util_script"]),
+            PyFn.of(TestSupportedToolings[TEST_UTILITY_1_NAME_GITHUB]),
+            PyFn.of(TestSupportedToolings[TEST_UTILITY_2_NAME_SCRIPT]),
         ],
     )
     @mock.patch(
         f"{UTILITY_INSTALLER_CMD_RUNNER_PATH}._check_if_utility_already_installed",
         side_effect=[
-            PyFn.of(Utility_InstallStatus_Tuple(TestSupportedToolings["test_util_github"], True)),
-            PyFn.of(Utility_InstallStatus_Tuple(TestSupportedToolings["test_util_script"], False)),
+            PyFn.of(Utility_InstallStatus_Tuple(TestSupportedToolings[TEST_UTILITY_1_NAME_GITHUB], True)),
+            PyFn.of(Utility_InstallStatus_Tuple(TestSupportedToolings[TEST_UTILITY_2_NAME_SCRIPT], False)),
         ],
     )
-    def test_run_local_utilities_installation_chain_success(
-        self, check_call: mock.MagicMock, notify_call: mock.MagicMock, install_call: mock.MagicMock
+    def test_run_local_utilities_installation_call_chain_success(
+        self,
+        check_call: mock.MagicMock,
+        notify_call: mock.MagicMock,
+        pre_print_call: mock.MagicMock,
+        install_call: mock.MagicMock,
+        post_print_call: mock.MagicMock,
     ) -> None:
-        utility_github = TestSupportedToolings["test_util_github"]
-        utility_script = TestSupportedToolings["test_util_script"]
+        utility_github = TestSupportedToolings[TEST_UTILITY_1_NAME_GITHUB]
+        utility_script = TestSupportedToolings[TEST_UTILITY_2_NAME_SCRIPT]
         fake_installer_env = self.create_fake_installer_env(self.env)
         eval = self.create_evaluator(fake_installer_env)
         eval << self.get_runner(eval)._run_local_utilities_installation(
@@ -316,6 +371,14 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
                 mock.call(fake_installer_env, utility_script, False),
             ],
         )
+        self.assertEqual(2, pre_print_call.call_count)
+        pre_print_call.assert_has_calls(
+            any_order=False,
+            calls=[
+                mock.call(fake_installer_env, utility_github),
+                mock.call(fake_installer_env, utility_script),
+            ],
+        )
         self.assertEqual(2, install_call.call_count)
         install_call.assert_has_calls(
             any_order=False,
@@ -324,32 +387,39 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
                 mock.call(fake_installer_env, utility_script),
             ],
         )
+        self.assertEqual(2, post_print_call.call_count)
+        post_print_call.assert_has_calls(
+            any_order=False,
+            calls=[
+                mock.call(fake_installer_env, utility_github),
+                mock.call(fake_installer_env, utility_script),
+            ],
+        )
 
     def test_check_if_utility_already_installed(self) -> None:
-        utility = TestSupportedToolings["test_util_github"]
+        utility = TestSupportedToolings[TEST_UTILITY_1_NAME_GITHUB]
         test_env = TestEnv.create()
-        test_env.get_collaborators().checks().mock_utility(utility.binary_name, exist=True)
+        test_env.get_collaborators().checks().on("is_tool_exist_fn", str).return_value = True
         fake_installer_env = self.create_fake_installer_env(test_env)
         eval = self.create_evaluator(fake_installer_env)
         result = eval << self.get_runner(eval)._check_if_utility_already_installed(fake_installer_env, utility)
         Assertion.expect_equal_objects(self, result, Utility_InstallStatus_Tuple(utility=utility, installed=True))
-        test_env.get_collaborators().checks().assert_is_tool_exist(name=utility.binary_name, exist=True)
 
     def test_notify_if_utility_already_installed(self) -> None:
-        utility = TestSupportedToolings["test_util_github"]
+        utility = TestSupportedToolings[TEST_UTILITY_1_NAME_GITHUB]
         test_env = TestEnv.create()
+        test_env.get_collaborators().printer().on("print_fn", str).side_effect = lambda message: self.assertIn(
+            message, f"Utility already installed locally. name: {utility.binary_name}"
+        )
         fake_installer_env = self.create_fake_installer_env(test_env)
         eval = self.create_evaluator(fake_installer_env)
         result = eval << self.get_runner(eval)._notify_if_utility_already_installed(
             fake_installer_env, utility, exists=True
         )
         self.assertIsNone(result)
-        test_env.get_collaborators().printer().assert_output(
-            message=f"Utility already installed locally. name: {utility.binary_name}"
-        )
 
     def test_do_not_notify_if_utility_not_installed(self) -> None:
-        utility = TestSupportedToolings["test_util_github"]
+        utility = TestSupportedToolings[TEST_UTILITY_1_NAME_GITHUB]
         fake_installer_env = self.create_fake_installer_env(self.env)
         eval = self.create_evaluator(fake_installer_env)
         result = eval << self.get_runner(eval)._notify_if_utility_already_installed(
@@ -362,7 +432,7 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
     def test_install_utility_locally_from_source_script(
         self, script_source_call: mock.MagicMock, github_source_call: mock.MagicMock
     ) -> None:
-        utility = TestSupportedToolings["test_util_script"]
+        utility = TestSupportedToolings[TEST_UTILITY_2_NAME_SCRIPT]
         fake_installer_env = self.create_fake_installer_env(self.env)
         eval = self.create_evaluator(fake_installer_env)
         eval << self.get_runner(eval)._install_utility_locally(fake_installer_env, utility)
@@ -375,7 +445,7 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
     def test_install_utility_locally_from_source_github(
         self, script_source_call: mock.MagicMock, github_source_call: mock.MagicMock
     ) -> None:
-        utility = TestSupportedToolings["test_util_github"]
+        utility = TestSupportedToolings[TEST_UTILITY_1_NAME_GITHUB]
         fake_installer_env = self.create_fake_installer_env(self.env)
         eval = self.create_evaluator(fake_installer_env)
         eval << self.get_runner(eval)._install_utility_locally(fake_installer_env, utility)
@@ -410,7 +480,7 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
         )
 
     def test_install_from_script_success(self) -> None:
-        utility = TestSupportedToolings["test_util_script"]
+        utility = TestSupportedToolings[TEST_UTILITY_2_NAME_SCRIPT]
         test_env = TestEnv.create()
         fake_installer_env = self.create_fake_installer_env(test_env)
         eval = self.create_evaluator(fake_installer_env)
@@ -419,7 +489,7 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
         Assertion.expect_equal_objects(self, result, utility)
 
     def test_resolve_utility_version_when_version_is_defined(self) -> None:
-        utility = TestSupportedToolings["test_util_script"]
+        utility = TestSupportedToolings[TEST_UTILITY_2_NAME_SCRIPT]
         fake_installer_env = self.create_fake_installer_env(self.env)
         eval = self.create_evaluator(fake_installer_env)
         result = eval << self.get_runner(eval)._try_resolve_utility_version(fake_installer_env, utility)
@@ -447,7 +517,7 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
         Assertion.expect_call_argument(self, run_call, "utility", utility)
 
     def test_try_resolve_version_from_github_success(self) -> None:
-        utility = TestSupportedToolings["test_util_github"]
+        utility = TestSupportedToolings[TEST_UTILITY_1_NAME_GITHUB]
         test_env = TestEnv.create()
         test_env.get_collaborators().github().mock_get_latest_version(
             owner=utility.source.github.owner, repo=utility.source.github.repo, version=utility.version
@@ -461,7 +531,7 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
         Assertion.expect_equal_objects(self, result, Utility_Version_Tuple(utility, utility.version))
 
     def test_try_resolve_version_from_github_fail(self) -> None:
-        utility = TestSupportedToolings["test_util_github"]
+        utility = TestSupportedToolings[TEST_UTILITY_1_NAME_GITHUB]
         test_env = TestEnv.create()
         test_env.get_collaborators().github().mock_get_latest_version(
             owner=utility.source.github.owner, repo=utility.source.github.repo, version=None
@@ -493,7 +563,7 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
 
     def test_try_get_github_release_name_by_os_arch_fail(self) -> None:
         test_env = TestEnv.create(ctx=Context.create(os_arch=OsArch(os="NOT_SUPPORTED")))
-        utility = TestSupportedToolings["test_util_github"]
+        utility = TestSupportedToolings[TEST_UTILITY_1_NAME_GITHUB]
         fake_installer_env = self.create_fake_installer_env(test_env)
         eval = self.create_evaluator(fake_installer_env)
         Assertion.expect_raised_failure(
@@ -508,13 +578,13 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
     @mock.patch(
         f"{UTILITY_INSTALLER_CMD_RUNNER_PATH}._print_github_binary_info",
         return_value=Utility_Version_ReleaseFileName_Tuple(
-            TestSupportedToolings["test_util_github"],
-            TestSupportedToolings["test_util_github"].version,
+            TestSupportedToolings[TEST_UTILITY_1_NAME_GITHUB],
+            TestSupportedToolings[TEST_UTILITY_1_NAME_GITHUB].version,
             "http://download-url.com",
         ),
     )
     def test_print_before_downloading(self, run_call: mock.MagicMock) -> None:
-        utility = TestSupportedToolings["test_util_github"]
+        utility = TestSupportedToolings[TEST_UTILITY_1_NAME_GITHUB]
         fake_installer_env = self.create_fake_installer_env(self.env)
         eval = self.create_evaluator(fake_installer_env)
         expected_tuple = Utility_Version_ReleaseFileName_Tuple(utility, utility.version, "http://download-url.com")
@@ -524,22 +594,21 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
 
     def test_print_github_binary_info(self) -> None:
         test_env = TestEnv.create()
-        utility = TestSupportedToolings["test_util_github"]
+        utility = TestSupportedToolings[TEST_UTILITY_1_NAME_GITHUB]
+        test_env.get_collaborators().printer().on("new_line_fn", int).side_effect = None
+        test_env.get_collaborators().printer().on("print_fn", str).side_effect = lambda message: (
+            self.assertIn(message, utility.source.github.owner),
+            self.assertIn(message, utility.source.github.repo),
+            self.assertIn(message, utility.version),
+            self.assertIn(message, "http://download-url.com"),
+        )
         fake_installer_env = self.create_fake_installer_env(test_env)
         expected_tuple = Utility_Version_ReleaseFileName_Tuple(utility, utility.version, "http://download-url.com")
         UtilityInstallerCmdRunner(test_env.get_context())._print_github_binary_info(fake_installer_env, expected_tuple)
-        test_env.get_collaborators().printer().assert_outputs(
-            messages=[
-                utility.source.github.owner,
-                utility.source.github.repo,
-                utility.version,
-                "http://download-url.com",
-            ]
-        )
 
     def test_download_binary_by_version(self) -> None:
         test_env = TestEnv.create()
-        utility = TestSupportedToolings["test_util_github"]
+        utility = TestSupportedToolings[TEST_UTILITY_1_NAME_GITHUB]
         release_filename = utility.source.github.release_name_resolver(utility.version, "test-os", "test-arch")
         dl_folderpath = f"{ProvisionerInstallableBinariesPath}/{utility.binary_name}/{utility.version}"
         dl_filepath = f"{dl_folderpath}/{release_filename}"
@@ -554,7 +623,7 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
         )
 
     def test_maybe_extract_downloaded_binary_success_with_archive(self) -> None:
-        utility = TestSupportedToolings["test_util_github"]
+        utility = TestSupportedToolings[TEST_UTILITY_1_NAME_GITHUB]
         test_env = TestEnv.create()
         release_filename = utility.source.github.release_name_resolver(
             utility.version, test_env.get_context().os_arch.os, test_env.get_context().os_arch.arch
@@ -575,7 +644,7 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
         test_env.get_collaborators().io_utils().assert_unpack_archive(release_download_filepath)
 
     def test_maybe_extract_downloaded_binary_success_with_regular_file(self) -> None:
-        utility = TestSupportedToolings["test_util_github"]
+        utility = TestSupportedToolings[TEST_UTILITY_1_NAME_GITHUB]
         test_env = TestEnv.create()
         release_filename = utility.source.github.release_name_resolver(
             utility.version, test_env.get_context().os_arch.os, test_env.get_context().os_arch.arch
@@ -595,7 +664,7 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
         test_env.get_collaborators().io_utils().assert_is_archive(release_download_filepath, is_archive=False)
 
     def test_elevate_permission_and_symlink(self) -> None:
-        utility = TestSupportedToolings["test_util_github"]
+        utility = TestSupportedToolings[TEST_UTILITY_1_NAME_GITHUB]
         test_env = TestEnv.create()
         unpacked_release_folderpath = f"/home/user/provisioner/binaries/{utility.binary_name}/{utility.version}"
         unpacked_release_binary_filepath = f"{unpacked_release_folderpath}/{utility.binary_name}"
@@ -627,7 +696,7 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
         extract_binary_archive_call: mock.MagicMock,
         elevate_binary_permissions_call: mock.MagicMock,
     ) -> None:
-        utility = TestSupportedToolings["test_util_github"]
+        utility = TestSupportedToolings[TEST_UTILITY_1_NAME_GITHUB]
         fake_installer_env = self.create_fake_installer_env(self.env)
         eval = self.create_evaluator(fake_installer_env)
         eval << self.get_runner(eval)._install_from_github(fake_installer_env, utility)
@@ -681,6 +750,12 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
     )
     def test_collect_ssh_connection_info(self, run_call: mock.MagicMock) -> None:
         test_env = TestEnv.create()
+        test_env.get_collaborators().summary().on(
+            "append_result", str, Callable[[], str]
+        ).side_effect = lambda attribute_name, call: (
+            self.assertEqual(attribute_name, "ssh_conn_info"),
+            call(),
+        )
         fake_installer_env = self.create_fake_installer_env(test_env)
         eval = self.create_evaluator(fake_installer_env)
         eval << self.get_runner(eval)._collect_ssh_connection_info(
@@ -692,65 +767,117 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
                 mock.call(fake_installer_env.ctx, fake_installer_env.args.remote_opts, force_single_conn_info=True),
             ],
         )
-        # test_env.get_collaborators().summary().assert_value(
-        #     attribute_name="ssh_conn_info",
-        #     value=TestDataRemoteConnector.create_fake_ssh_conn_info_fn()(),
-        # )
 
-    def test_install_on_remote_machine_with_verbose_flag_enabled(self) -> None:
-        utility = TestSupportedToolings["test_util_github"]
+    def test_user_output_when_install_on_remote_machine(self) -> None:
         test_env = TestEnv.create()
-        ssh_conn_info = TestDataRemoteConnector.create_fake_ssh_conn_info_fn()()
+        test_env.get_collaborators().progress_indicator().get_status().on(
+            "long_running_process_fn", Callable, str, str
+        ).side_effect = lambda call, desc_run, desc_end: (
+            self.assertEqual(desc_run, "Running Ansible playbook (Provisioner Wrapper)"),
+            self.assertEqual(desc_end, "Ansible playbook finished (Provisioner Wrapper)."),
+        )
         fake_installer_env = self.create_fake_installer_env(test_env, remote_context=RemoteContext.create(verbose=True))
         eval = self.create_evaluator(fake_installer_env)
         eval << self.get_runner(eval)._install_on_remote_machine(
-            fake_installer_env, SSHConnInfo_Utility_Tuple(ssh_conn_info, utility)
+            fake_installer_env,
+            SSHConnInfo_Utility_Tuple(
+                TestDataRemoteConnector.create_fake_ssh_conn_info_fn()(),
+                TestSupportedToolings[TEST_UTILITY_1_NAME_GITHUB],
+            ),
         )
-        test_env.get_collaborators().ansible_runner().assert_command(
-            selected_hosts=TestDataRemoteConnector.TEST_DATA_SSH_ANSIBLE_HOSTS,
-            playbook=AnsiblePlaybook(name="provisioner_wrapper", content=ANSIBLE_PLAYBOOK_REMOTE_PROVISIONER_WRAPPER),
-            ansible_vars=[
-                f"provisioner_command='provisioner -y -v install cli --environment=Local {utility.binary_name}'",
-                "required_plugins=['provisioner_installers_plugin:0.1.0']",
-                "git_access_token=top-secret",
-            ],
-            ansible_tags=["provisioner_wrapper"],
+
+    def test_run_ansible(self) -> None:
+        utility = TestSupportedToolings[TEST_UTILITY_1_NAME_GITHUB]
+        env = TestEnv.create()
+        remote_ctx = RemoteContext.no_op()
+        fake_runner = FakeAnsibleRunnerLocal(env.get_context())
+        fake_runner.on(
+            "run_fn", List, AnsiblePlaybook, List, List, str
+        ).side_effect = lambda selected_hosts, playbook, ansible_vars, ansible_tags, ansible_playbook_package: (
+            self.assertEqual(selected_hosts, TestDataRemoteConnector.TEST_DATA_SSH_ANSIBLE_HOSTS),
+            Assertion.expect_equal_objects(
+                self,
+                playbook,
+                AnsiblePlaybook(
+                    name="provisioner_wrapper",
+                    content=ANSIBLE_PLAYBOOK_REMOTE_PROVISIONER_WRAPPER,
+                    remote_context=remote_ctx,
+                ),
+            ),
+            Assertion.expect_equal_objects(
+                self,
+                ansible_vars,
+                [
+                    f"provisioner_command='provisioner -y {'-v ' if remote_ctx.is_verbose() else ''}install {InstallerSubCommandName.CLI} --environment=Local {utility.display_name}'",
+                    "required_plugins=['provisioner_installers_plugin:0.1.0']",
+                    f"git_access_token={TEST_GITHUB_ACCESS_TOKEN}",
+                ],
+            ),
+            self.assertEqual(ansible_tags, ["provisioner_wrapper"]),
+        )
+
+        UtilityInstallerCmdRunner(env.get_context())._run_ansible(
+            runner=fake_runner,
+            remote_ctx=remote_ctx,
+            ssh_conn_info=TestDataRemoteConnector.create_fake_ssh_conn_info_fn()(),
+            sub_command_name=InstallerSubCommandName.CLI,
+            utility_display_name=utility.display_name,
+            git_access_token=TEST_GITHUB_ACCESS_TOKEN,
         )
 
     @mock.patch(
         f"{UTILITY_INSTALLER_CMD_RUNNER_PATH}._install_on_remote_machine",
         side_effect=[
-            PyFn.of(f"Installed {TestSupportedToolings['test_util_github'].binary_name}"),
-            PyFn.of(f"Installed {TestSupportedToolings['test_util_script'].binary_name}"),
+            PyFn.of(f"Installed {TestSupportedToolings[TEST_UTILITY_1_NAME_GITHUB].binary_name}"),
+            PyFn.of(f"Installed {TestSupportedToolings[TEST_UTILITY_2_NAME_SCRIPT].binary_name}"),
+        ],
+    )
+    @mock.patch(
+        f"{UTILITY_INSTALLER_CMD_RUNNER_PATH}._print_pre_install_summary",
+        side_effect=[
+            PyFn.of(TestSupportedToolings[TEST_UTILITY_1_NAME_GITHUB]),
+            PyFn.of(TestSupportedToolings[TEST_UTILITY_2_NAME_SCRIPT]),
         ],
     )
     @mock.patch(
         f"{UTILITY_INSTALLER_CMD_RUNNER_PATH}._collect_ssh_connection_info",
         return_value=PyFn.of(TestDataRemoteConnector.create_fake_ssh_conn_info_fn()()),
     )
-    def test_run_remote_installation_success(self, collect_call: mock.MagicMock, install_call: mock.MagicMock) -> None:
-        utility_github = TestSupportedToolings["test_util_github"]
-        utility_script = TestSupportedToolings["test_util_script"]
+    def test_run_remote_installation_success(
+        self, collect_call: mock.MagicMock, pre_print_call: mock.MagicMock, install_call: mock.MagicMock
+    ) -> None:
+
+        utility_github = TestSupportedToolings[TEST_UTILITY_1_NAME_GITHUB]
+        utility_script = TestSupportedToolings[TEST_UTILITY_2_NAME_SCRIPT]
         test_env = TestEnv.create()
+        test_env.get_collaborators().printer().on("new_line_fn", int).side_effect = None
+        test_env.get_collaborators().printer().on("print_fn", str).side_effect = lambda message: (
+            self.assertIn(message, f"Installed {TestSupportedToolings[TEST_UTILITY_1_NAME_GITHUB].binary_name}"),
+        )
+        test_env.get_collaborators().printer().on("new_line_fn", int).side_effect = None
+        test_env.get_collaborators().printer().on("print_fn", str).side_effect = lambda message: (
+            self.assertIn(message, f"Installed {TestSupportedToolings[TEST_UTILITY_2_NAME_SCRIPT].binary_name}"),
+        )
         fake_installer_env = self.create_fake_installer_env(test_env)
         eval = self.create_evaluator(fake_installer_env)
         eval << self.get_runner(eval)._run_remote_installation(fake_installer_env, [utility_github, utility_script])
         self.assertEqual(1, collect_call.call_count)
+        self.assertEqual(2, pre_print_call.call_count)
         self.assertEqual(2, install_call.call_count)
-        test_env.get_collaborators().printer().assert_outputs(
-            [
-                f"Installed {TestSupportedToolings['test_util_github'].binary_name}",
-                f"Installed {TestSupportedToolings['test_util_script'].binary_name}",
-            ]
-        )
 
     def test_generate_installer_welcome_with_environment(self) -> None:
-        utilities = [TestSupportedToolings["test_util_github"], TestSupportedToolings["test_util_script"]]
+        utilities = [
+            TestSupportedToolings[TEST_UTILITY_1_NAME_GITHUB],
+            TestSupportedToolings[TEST_UTILITY_2_NAME_SCRIPT],
+        ]
         output = generate_installer_welcome(utilities_to_install=utilities, environment=None)
         self.assertIn("Environment was not set, you will be prompted to select a local/remote environment.", output)
 
     def test_generate_installer_welcome_without_environment(self) -> None:
-        utilities = [TestSupportedToolings["test_util_github"], TestSupportedToolings["test_util_script"]]
+        utilities = [
+            TestSupportedToolings[TEST_UTILITY_1_NAME_GITHUB],
+            TestSupportedToolings[TEST_UTILITY_2_NAME_SCRIPT],
+        ]
         env_in_test = RunEnvironment.Local
         output = generate_installer_welcome(utilities_to_install=utilities, environment=env_in_test)
         self.assertIn(f"Running on [yellow]{env_in_test}[/yellow] environment.", output)
