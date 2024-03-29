@@ -95,8 +95,10 @@ jobs:
 
       - name: Install Required pip packages
         run: |
+          cd provisioner
+          make pip-install
           pip install coverage
-
+          
       - name: Run tests
         run: make test-coverage-xml-all
       
