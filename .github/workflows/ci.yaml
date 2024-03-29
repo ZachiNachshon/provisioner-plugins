@@ -123,13 +123,7 @@ jobs:
 
       - name: Install Required pip packages
         run: |
-          cd provisioner
-          # make pip-install
-          poetry build -f sdist
-          python3 -m pip install --user ./dist/provisioner-0.1.0.tar.gz --no-python-version-warning --disable-pip-version-check
-          echo "PATH=$(python -m site --user-base)/bin:$PATH" >> $GITHUB_ENV
           pip install coverage
-          cd ..
           
       - name: Run tests
         run: |
