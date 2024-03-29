@@ -91,7 +91,7 @@ jobs:
         if: steps.cached-venv-provisioner-examples-plugin.outputs.cache-hit != 'true'
         run: |
           cd plugins/provisioner_examples_plugin
-	        sed -i '/# provisioner = { path = "..\/..\/provisioner", develop = true }/s/^# //' pyproject.toml
+          sed -i '/# provisioner = { path = "..\/..\/provisioner", develop = true }/s/^# //' pyproject.toml
           poetry install
           cd ..
 
