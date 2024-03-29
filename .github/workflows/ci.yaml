@@ -51,6 +51,20 @@ jobs:
         with:
           version: ${{ env.POETRY_VERSION }}
 
+      - name: Try Load Cache venv - provisioner
+        id: cached-venv-provisioner
+        uses: actions/cache@v3
+        with:
+          path: ./provisioner/.venv
+          key: provisioner-venv-${{ runner.os }}-${{ hashFiles('./provisioner/poetry.lock') }}      
+
+      - name: Maybe Install venv - provisioner
+        if: steps.cached-venv-provisioner.outputs.cache-hit != 'true'
+        run: |
+          cd provisioner
+          poetry install --all-extras
+          cd ..
+
       - name: Try Load Cache venv - provisioner_examples_plugin
         id: cached-venv-provisioner-examples-plugin
         uses: actions/cache@v3
@@ -98,6 +112,7 @@ jobs:
           cd provisioner
           make pip-install
           pip install coverage
+          cd ..
           
       - name: Run tests
         run: make test-coverage-xml-all
