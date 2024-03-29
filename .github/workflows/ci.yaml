@@ -11,23 +11,33 @@ on:
 
 env:
   # Semantic version range syntax (3.x) or exact version of a Python version
-  PYTHON_VERSION: "3.10"
   POETRY_VERSION: "1.4.1"
 
 jobs:
   build:
     name: Tests Suite
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: [ '3.10' ]
 
     steps:
       - name: Checkout repo code
         uses: actions/checkout@v3
+        with:
+          repository: 'ZachiNachshon/provisioner'
+          token: ${{ secrets.PROVISIONER_REPO_ACCESS_TOKEN }}
+
+      - name: Checkout ZachiNachshon/provisioner-plugins
+        uses: actions/checkout@v3
+        with:
+          path: './plugins'
 
       - name: Set up Python ${{ env.PYTHON_VERSION }}
         id: setup-python
         uses: actions/setup-python@v4
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
+          python-version: ${{ matrix.python }}
 
       - name: Try Load Cached Poetry Installation
         id: cached-poetry
