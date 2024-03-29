@@ -79,13 +79,19 @@ python-hosts = "^1.0.3"
 #  - Run "make deps" from within the plugins folder
 
 ####################################################
-# USED ONLY FOR PLUGIN DEVELOPMENT & CI WORKFLOW
+# USED ONLY FOR PLUGIN DEVELOPMENT
 # 
-# When 'pip install' packages for production, this line should be commented
-# otherwise, the provisioner package won't be found (E ModuleNotFoundError: No module named 'provisioner')
-# It'll work only if 'provisioner' is pip installed
+# When 'pip install' packages for production, this line must be kept commented out
+# otherwise, the 'provisioner' package won't be found (E ModuleNotFoundError: No module named 'provisioner')
+# Either:
+#   * Pip install 'provisioner' globally or under user
+#   * Uncomment the line below  
 # 
 # provisioner = { path = "../../provisioner", develop = true }
+# 
+# Note: 
+# On GitHub CI, this line is enabled before running the tests suite.
+# We are not installing via pip since it is not shared between every GitHub action steps
 ####################################################
 
 [tool.poetry.dev-dependencies]
