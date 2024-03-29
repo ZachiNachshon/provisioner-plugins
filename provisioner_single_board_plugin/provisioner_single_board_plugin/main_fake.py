@@ -21,7 +21,7 @@ fake_app = EntryPoint.create_typer(
 
 
 def generate_fake_config():
-    return TestDataSingleBoardConfig.create_fake_example_config()
+    return TestDataSingleBoardConfig.create_fake_single_board_config()
 
 
 def register_fake_config(fake_cfg: SingleBoardConfig):

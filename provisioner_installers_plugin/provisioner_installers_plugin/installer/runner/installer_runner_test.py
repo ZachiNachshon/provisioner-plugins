@@ -485,9 +485,11 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
         test_env = TestEnv.create()
         fake_installer_env = self.create_fake_installer_env(test_env)
         eval = self.create_evaluator(fake_installer_env)
-        test_env.get_collaborators().process().on("run_fn", List, faker.Anything, str, bool, bool).side_effect = \
-            lambda args, working_dir, fail_msg, fail_on_error, allow_single_shell_command_str: \
-                self.assertEqual(args, [utility.source.script.install_cmd])
+        test_env.get_collaborators().process().on(
+            "run_fn", List, faker.Anything, str, bool, bool
+        ).side_effect = lambda args, working_dir, fail_msg, fail_on_error, allow_single_shell_command_str: self.assertEqual(
+            args, [utility.source.script.install_cmd]
+        )
         result = eval << self.get_runner(eval)._install_from_script(fake_installer_env, utility)
         Assertion.expect_equal_objects(self, result, utility)
 

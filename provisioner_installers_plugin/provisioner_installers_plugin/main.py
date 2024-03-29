@@ -8,7 +8,7 @@ from provisioner_features_lib.remote.typer_remote_opts import TyperRemoteOpts
 
 from provisioner_installers_plugin.config.domain.config import PLUGIN_NAME, InstallersConfig
 
-CONFIG_INTERNAL_PATH = f"{pathlib.Path(__file__).parent.parent}/resources/config.yaml"
+CONFIG_INTERNAL_PATH = f"{pathlib.Path(__file__).parent}/resources/config.yaml"
 
 
 def load_config():

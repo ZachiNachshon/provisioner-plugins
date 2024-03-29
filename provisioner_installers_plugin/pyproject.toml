@@ -18,12 +18,10 @@ exclude = [
     ".git-deps",
     ".pytest_cache"]
 
-# A list of patterns that will be included in the final package.
-# If no format is specified, it will default to include both sdist and wheel
-# i.e. { path = "tests", format = ["sdist", "wheel"] }
-include = [
-    { path = "resources" },
-    #     { path = "../../provisioner_features_lib" },
+# Include relative modules using the poetry-mutiproject-plugin
+packages = [
+    { include = "provisioner_installers_plugin", from = "../provisioner_installers_plugin" },
+    { include = "provisioner_features_lib", from = "../../provisioner_features_lib" }
 ]
 
 [tool.poetry.scripts]
@@ -74,23 +72,27 @@ python-libnmap = "^0.7.3"
 PyYAML = "^6.0"
 inquirer = "^2.10.0"
 python-hosts = "^1.0.3"
+
 # To perform a clean build:
 #  - Remove poetry.lock file
 #  - Remove the .venv folder
 #  - Run "make deps" from within the plugins folder
-# provisioner_features_lib = { git = "git@github.com:ZachiNachshon/provisioner.git", branch = "master", rev = "573c195", subdirectory = "provisioner_features_lib" }
 
-# When building for production, remember to comment out this line
-provisioner = { path = "../../provisioner", develop = true }
-provisioner_features_lib = { path = "../../provisioner_features_lib", develop = true }
+####################################################
+# USED ONLY FOR PLUGIN DEVELOPMENT
+# When building for production and/or before pip install, remember to comment out this line
+# provisioner = { path = "../../provisioner", develop = true }
+# provisioner_features_lib = { path = "../../provisioner_features_lib", develop = true }
+####################################################
 
 [tool.poetry.dev-dependencies]
 black = "^22.8.0"
 pytest = "^7.1.3"
-mypy = "^0.991"
+mypy = "^1.0.0"
 coverage = "^6.4.4"
 diagrams = "^0.22.0"
 ruff = "^0.0.265"
+poetry-multiproject-plugin = "^1.5.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

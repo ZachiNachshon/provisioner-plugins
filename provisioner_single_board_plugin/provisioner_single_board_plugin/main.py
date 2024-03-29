@@ -8,7 +8,7 @@ from provisioner_features_lib.remote.typer_remote_opts import TyperRemoteOpts
 
 from provisioner_single_board_plugin.config.domain.config import SINGLE_BOARD_PLUGIN_NAME, SingleBoardConfig
 
-CONFIG_INTERNAL_PATH = f"{pathlib.Path(__file__).parent.parent}/resources/config.yaml"
+CONFIG_INTERNAL_PATH = f"{pathlib.Path(__file__).parent}/resources/config.yaml"
 
 typer_remote_opts: TyperRemoteOpts = None
 

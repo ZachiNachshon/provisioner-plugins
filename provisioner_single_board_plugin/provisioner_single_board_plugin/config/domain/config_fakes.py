@@ -30,7 +30,7 @@ single_board:
 
 class TestDataSingleBoardConfig:
     @staticmethod
-    def create_fake_example_config() -> SingleBoardConfig:
+    def create_fake_single_board_config() -> SingleBoardConfig:
         cfg_with_remote = TEST_DATA_YAML_TEXT + "\n" + TEST_REMOTE_CFG_YAML_TEXT
         cfg_dict = yaml.safe_load(cfg_with_remote)
         example_cfg = SingleBoardConfig(cfg_dict)

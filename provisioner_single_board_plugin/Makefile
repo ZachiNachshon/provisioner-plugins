@@ -33,7 +33,7 @@ test-coverage-xml: ## Run tests suite with XML coverage report (for app.codecov.
 
 .PHONY: pip-install
 pip-install: ## Install a source distribution to local pip
-	@${POETRY_PIP_RELEASER} install --build-type sdist
+	@${POETRY_PIP_RELEASER} install --build-type sdist --multi-project
 
 .PHONY: pip-uninstall
 pip-uninstall: ## Uninstall a source distribution from local pip

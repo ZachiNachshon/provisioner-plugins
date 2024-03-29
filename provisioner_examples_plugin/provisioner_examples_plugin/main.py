@@ -9,7 +9,7 @@ from provisioner_features_lib.vcs.typer_vcs_opts import TyperVersionControl
 
 from provisioner_examples_plugin.config.domain.config import PLUGIN_NAME, ExamplesConfig
 
-CONFIG_INTERNAL_PATH = f"{pathlib.Path(__file__).parent.parent}/resources/config.yaml"
+CONFIG_INTERNAL_PATH = f"{pathlib.Path(__file__).parent}/resources/config.yaml"
 
 typer_remote_opts: TyperRemoteOpts = None
 
