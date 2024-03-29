@@ -73,7 +73,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ./provisioner_features_lib/.venv
-          key: provisioner_features_lib-venv-${{ runner.os }}-${{ hashFiles('./provisioner_features_lib/poetry.lock') }}-${{ hashFiles('./provisioner/pyproject.toml') }}
+          key: provisioner_features_lib-venv-${{ runner.os }}-${{ hashFiles('./provisioner_features_lib/poetry.lock') }}-${{ hashFiles('./provisioner_features_lib/pyproject.toml') }}
 
       - name: Maybe Install venv - provisioner_features_lib
         if: steps.cached-venv-provisioner-features-lib.outputs.cache-hit != 'true'
@@ -87,7 +87,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ./plugins/provisioner_examples_plugin/.venv
-          key: provisioner_examples_plugin-venv-${{ runner.os }}-${{ hashFiles('./plugins/provisioner_examples_plugin/poetry.lock') }}-${{ hashFiles('./provisioner/pyproject.toml') }}
+          key: provisioner_examples_plugin-venv-${{ runner.os }}-${{ hashFiles('./plugins/provisioner_examples_plugin/poetry.lock') }}-${{ hashFiles('./provisioner_examples_plugin/pyproject.toml') }}
 
       - name: Maybe Install venv - provisioner_examples_plugin
         if: steps.cached-venv-provisioner-examples-plugin.outputs.cache-hit != 'true'
@@ -101,7 +101,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ./plugins/provisioner_installers_plugin/.venv
-          key: provisioner_installers_plugin-venv-${{ runner.os }}-${{ hashFiles('./plugins/provisioner_installers_plugin/poetry.lock') }}-${{ hashFiles('./provisioner/pyproject.toml') }}
+          key: provisioner_installers_plugin-venv-${{ runner.os }}-${{ hashFiles('./plugins/provisioner_installers_plugin/poetry.lock') }}-${{ hashFiles('./provisioner_installers_plugin/pyproject.toml') }}
 
       - name: Maybe Install venv - provisioner_installers_plugin
         if: steps.cached-venv-provisioner-installers-plugin.outputs.cache-hit != 'true'
@@ -115,7 +115,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ./plugins/provisioner_single_board_plugin/.venv
-          key: provisioner_single_board_plugin-venv-${{ runner.os }}-${{ hashFiles('./plugins/provisioner_single_board_plugin/poetry.lock') }}-${{ hashFiles('./provisioner/pyproject.toml') }}
+          key: provisioner_single_board_plugin-venv-${{ runner.os }}-${{ hashFiles('./plugins/provisioner_single_board_plugin/poetry.lock') }}-${{ hashFiles('./provisioner_single_board_plugin/pyproject.toml') }}
 
       - name: Maybe Install venv - provisioner_single_board_plugin
         if: steps.cached-venv-provisioner-single-board-plugin.outputs.cache-hit != 'true'
