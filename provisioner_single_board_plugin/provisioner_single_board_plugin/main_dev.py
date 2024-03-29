@@ -24,10 +24,13 @@ ENV_VAR_ENABLE_PRE_INIT_DEBUG = "PROVISIONER_PRE_INIT_DEBUG"
 ENV_VAR_LOCAL_DEV_MODE = "PROVISIONER_LOCAL_DEV"
 debug_pre_init = os.getenv(key=ENV_VAR_ENABLE_PRE_INIT_DEBUG, default=False)
 
+if not debug_pre_init:
+    logger.remove()
+
 app = EntryPoint.create_typer(
     title="Provision Everything Anywhere (install plugins from https://zachinachshon.com/provisioner)",
     config_resolver_fn=lambda: ConfigManager.instance().load(
-        single_board_plugin_main.CONFIG_INTERNAL_PATH, CONFIG_USER_PATH, ProvisionerConfig, debug=debug_pre_init
+        single_board_plugin_main.CONFIG_INTERNAL_PATH, CONFIG_USER_PATH, ProvisionerConfig
     ),
 )
 

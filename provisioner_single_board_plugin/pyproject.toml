@@ -81,7 +81,6 @@ python-hosts = "^1.0.3"
 # USED ONLY FOR PLUGIN DEVELOPMENT
 # When building for production and/or before pip install, remember to comment out this line
 # provisioner = { path = "../../provisioner", develop = true }
-# provisioner_features_lib = { path = "../../provisioner_features_lib", develop = true }
 ####################################################
 
 [tool.poetry.dev-dependencies]

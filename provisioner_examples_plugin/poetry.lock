@@ -1322,32 +1322,6 @@ type = "directory"
 url = "../../provisioner"
 
 [[package]]
-name = "provisioner-features-lib"
-version = "0.1.0"
-description = "Python Features Library"
-category = "main"
-optional = false
-python-versions = "^3.10"
-files = []
-develop = true
-
-[package.dependencies]
-inquirer = "^2.10.0"
-loguru = "^0.6.0"
-provisioner = {path = "../provisioner", develop = true}
-python-hosts = "^1.0.3"
-python-libnmap = "^0.7.3"
-python3-nmap = "^1.5.4"
-PyYAML = "^6.0"
-requests = "^2.28.1"
-rich = "^12.5.1"
-typer = "^0.6.1"
-
-[package.source]
-type = "directory"
-url = "../../provisioner_features_lib"
-
-[[package]]
 name = "ptyprocess"
 version = "0.7.0"
 description = "Run a subprocess in a pseudo terminal"
@@ -2185,4 +2159,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "f627ff06e2669229656592665879dbfae42ec933b2706cde785511549a373b75"
+content-hash = "d365464fdaee28c6c55e5d36fcf107e13adff3050c7393c9eaffa0e40f461a51"
