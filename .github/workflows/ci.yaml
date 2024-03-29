@@ -127,7 +127,6 @@ jobs:
           
       - name: Run tests
         run: |
-          python3 -m pip list | grep -i prov
           make test-coverage-xml-all
       
       # Requires CODECOV_TOKEN in GitHub repository secrets
