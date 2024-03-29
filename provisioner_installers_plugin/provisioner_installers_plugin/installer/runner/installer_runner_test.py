@@ -15,6 +15,7 @@ from provisioner.infra.context import Context
 from provisioner.infra.remote_context import RemoteContext
 from provisioner.runner.ansible.ansible_fakes import FakeAnsibleRunnerLocal
 from provisioner.runner.ansible.ansible_runner import AnsiblePlaybook
+from provisioner.test_lib import faker
 from provisioner.test_lib.assertions import Assertion
 from provisioner.test_lib.test_env import TestEnv
 from provisioner.utils.os import OsArch
@@ -484,8 +485,10 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
         test_env = TestEnv.create()
         fake_installer_env = self.create_fake_installer_env(test_env)
         eval = self.create_evaluator(fake_installer_env)
+        test_env.get_collaborators().process().on("run_fn", List, faker.Anything, str, bool, bool).side_effect = \
+            lambda args, working_dir, fail_msg, fail_on_error, allow_single_shell_command_str: \
+                self.assertEqual(args, [utility.source.script.install_cmd])
         result = eval << self.get_runner(eval)._install_from_script(fake_installer_env, utility)
-        test_env.get_collaborators().process().assert_run_command(args=[utility.source.script.install_cmd])
         Assertion.expect_equal_objects(self, result, utility)
 
     def test_resolve_utility_version_when_version_is_defined(self) -> None:
