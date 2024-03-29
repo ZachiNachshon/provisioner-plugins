@@ -51,24 +51,17 @@ jobs:
         with:
           version: ${{ env.POETRY_VERSION }}
 
-      - name: Set up SSH access to ZachiNachshon/provisioner
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.PROV_SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
-          chmod 600 ~/.ssh/id_ed25519
-          ssh-keyscan github.com >> ~/.ssh/known_hosts
-
       - name: Try Load Cache venv - provisioner_examples_plugin
         id: cached-venv-provisioner-examples-plugin
         uses: actions/cache@v3
         with:
-          path: ./provisioner_examples_plugin/.venv
-          key: provisioner_examples_plugin-venv-${{ runner.os }}-${{ hashFiles('./provisioner_examples_plugin/poetry.lock') }}      
+          path: ./plugins/provisioner_examples_plugin/.venv
+          key: provisioner_examples_plugin-venv-${{ runner.os }}-${{ hashFiles('./plugins/provisioner_examples_plugin/poetry.lock') }}      
 
       - name: Maybe Install venv - provisioner_examples_plugin
         if: steps.cached-venv-provisioner-examples-plugin.outputs.cache-hit != 'true'
         run: |
-          cd provisioner_examples_plugin
+          cd plugins/provisioner_examples_plugin
           poetry install
           cd ..
 
@@ -76,13 +69,13 @@ jobs:
         id: cached-venv-provisioner-installers-plugin
         uses: actions/cache@v3
         with:
-          path: ./provisioner_installers_plugin/.venv
-          key: provisioner_installers_plugin-venv-${{ runner.os }}-${{ hashFiles('./provisioner_installers_plugin/poetry.lock') }}      
+          path: ./plugins/provisioner_installers_plugin/.venv
+          key: provisioner_installers_plugin-venv-${{ runner.os }}-${{ hashFiles('./plugins/provisioner_installers_plugin/poetry.lock') }}      
 
       - name: Maybe Install venv - provisioner_installers_plugin
         if: steps.cached-venv-provisioner-installers-plugin.outputs.cache-hit != 'true'
         run: |
-          cd provisioner_installers_plugin
+          cd plugins/provisioner_installers_plugin
           poetry install
           cd ..
       
@@ -90,13 +83,13 @@ jobs:
         id: cached-venv-provisioner-single-board-plugin
         uses: actions/cache@v3
         with:
-          path: ./provisioner_single_board_plugin/.venv
-          key: provisioner_single_board_plugin-venv-${{ runner.os }}-${{ hashFiles('./provisioner_single_board_plugin/poetry.lock') }}      
+          path: ./plugins/provisioner_single_board_plugin/.venv
+          key: provisioner_single_board_plugin-venv-${{ runner.os }}-${{ hashFiles('./plugins/provisioner_single_board_plugin/poetry.lock') }}      
 
       - name: Maybe Install venv - provisioner_single_board_plugin
         if: steps.cached-venv-provisioner-single-board-plugin.outputs.cache-hit != 'true'
         run: |
-          cd provisioner_single_board_plugin
+          cd plugins/provisioner_single_board_plugin
           poetry install
           cd ..
 
@@ -113,5 +106,5 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}  # Only required for private repositories
           # file: ./coverage-combined.xml
-          file: ./provisioner/coverage.xml,./provisioner_features_lib/coverage.xml,./provisioner_examples_plugin/coverage.xml,./provisioner_installers_plugin/coverage.xml,./provisioner_single_board_plugin/coverage.xml
+          file: ./provisioner/coverage.xml,./plugins/provisioner_features_lib/coverage.xml,./plugins/provisioner_examples_plugin/coverage.xml,./provisioner_installers_plugin/coverage.xml,./plugins/provisioner_single_board_plugin/coverage.xml
           fail_ci_if_error: true
