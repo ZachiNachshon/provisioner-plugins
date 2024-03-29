@@ -76,6 +76,7 @@ jobs:
         if: steps.cached-venv-provisioner-features-lib.outputs.cache-hit != 'true'
         run: |
           cd provisioner_features_lib
+          sed -i '/# provisioner = { path = "..\/provisioner", develop = true }/s/^# //' pyproject.toml
           poetry install
           cd ..
 
@@ -90,6 +91,7 @@ jobs:
         if: steps.cached-venv-provisioner-examples-plugin.outputs.cache-hit != 'true'
         run: |
           cd plugins/provisioner_examples_plugin
+	        sed -i '/# provisioner = { path = "..\/..\/provisioner", develop = true }/s/^# //' pyproject.toml
           poetry install
           cd ..
 
@@ -104,6 +106,7 @@ jobs:
         if: steps.cached-venv-provisioner-installers-plugin.outputs.cache-hit != 'true'
         run: |
           cd plugins/provisioner_installers_plugin
+          sed -i '/# provisioner = { path = "..\/..\/provisioner", develop = true }/s/^# //' pyproject.toml
           poetry install
           cd ..
       
@@ -118,6 +121,7 @@ jobs:
         if: steps.cached-venv-provisioner-single-board-plugin.outputs.cache-hit != 'true'
         run: |
           cd plugins/provisioner_single_board_plugin
+          sed -i '/# provisioner = { path = "..\/..\/provisioner", develop = true }/s/^# //' pyproject.toml
           poetry install
           cd ..
 
