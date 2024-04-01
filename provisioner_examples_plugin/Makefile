@@ -43,7 +43,7 @@ docs-site-lan: ## Run a local documentation site (LAN available)
 
 .PHONY: pip-install
 pip-install: ## Install a source distribution to local pip
-	@${POETRY_PIP_RELEASER} install --build-type sdist --multi-project
+	@${POETRY_PIP_RELEASER} install --build-type wheel --multi-project
 
 .PHONY: pip-uninstall
 pip-uninstall: ## Uninstall a source distribution from local pip
@@ -52,10 +52,18 @@ pip-uninstall: ## Uninstall a source distribution from local pip
 .PHONY: pip-publish-github
 pip-publish-github: ## Publish a pip package tarball as a GitHub release
 	@${POETRY_PIP_RELEASER} publish \
+		--multi-project \
 		--build-type sdist \
 		--plugin \
 		--release-type github \
-		--release-tag $(shell cat ../provisioner/resources/version.txt)
+		--release-tag $(shell cat ../../provisioner/provisioner/resources/version.txt)
+
+.PHONY: pip-publish-pypi
+pip-publish-pypi: ## Publish a pip package tarball as a PyPi release
+	@${POETRY_PIP_RELEASER} publish \
+		--multi-project \
+		--build-type wheel \
+		--release-type pypi
 
 .PHONY: clear-virtual-env
 clear-virtual-env: ## Clear Poetry virtual environments

@@ -75,19 +75,23 @@ class HelloWorldRunner:
     ) -> str:
 
         ssh_conn_info = get_ssh_conn_info_fn()
-        output = collaborators.printer().progress_indicator.status.long_running_process_fn(
-            call=lambda: collaborators.ansible_runner().run_fn(
-                selected_hosts=ssh_conn_info.ansible_hosts,
-                playbook=AnsiblePlaybook(
-                    name="hello_world",
-                    content=ANSIBLE_PLAYBOOK_HELLO_WORLD,
-                    remote_context=args.remote_opts.get_remote_context(),
+        output = (
+            collaborators.progress_indicator()
+            .get_status()
+            .long_running_process_fn(
+                call=lambda: collaborators.ansible_runner().run_fn(
+                    selected_hosts=ssh_conn_info.ansible_hosts,
+                    playbook=AnsiblePlaybook(
+                        name="hello_world",
+                        content=ANSIBLE_PLAYBOOK_HELLO_WORLD,
+                        remote_context=args.remote_opts.get_remote_context(),
+                    ),
+                    ansible_vars=[f"username='{args.username}'"],
+                    ansible_tags=["hello"],
                 ),
-                ansible_vars=[f"username='{args.username}'"],
-                ansible_tags=["hello"],
-            ),
-            desc_run="Running Ansible playbook (Hello World)",
-            desc_end="Ansible playbook finished (Hello World).",
+                desc_run="Running Ansible playbook (Hello World)",
+                desc_end="Ansible playbook finished (Hello World).",
+            )
         )
         collaborators.printer().new_line_fn().print_fn(output)
 
