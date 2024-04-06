@@ -1,0 +1,99 @@
+name: Publish Provisioner to PyPi
+
+on:
+  workflow_dispatch:
+    inputs:
+      plugin_to_publish:
+        type: choice
+        description: 'Select an plugin to publish to PyPi'
+        options: 
+          - 'examlpes-plugin'
+          - 'installers-plugin'
+          - 'single-board-plugin'
+          - 'All'
+        required: true
+
+env:
+  PYPI_API_TOKEN: ${{ secrets.PROVISIONER_PYPI_API_TOKEN }}
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  GH_ACTION_PLUGIN_TO_PUBLISH: ${{ github.event.inputs.plugin_to_publish }}
+  # Semantic version range syntax (3.x) or exact version of a Python version
+  POETRY_VERSION: "1.4.1"
+  
+jobs:
+  publis_to_pypi:
+    name: Publish provisioner to PyPi
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: [ '3.10' ]
+
+    steps:
+      - name: Checkout ZachiNachshon/provisioner
+        uses: actions/checkout@v3
+        with:
+          repository: 'ZachiNachshon/provisioner'
+          token: ${{ secrets.PROVISIONER_REPO_ACCESS_TOKEN }}
+
+      - name: Checkout ZachiNachshon/provisioner-plugins
+        uses: actions/checkout@v3
+        with:
+          path: './plugins'
+
+      - name: Setup Environment
+        uses: ./.github/actions/setup
+        env:
+          PYTHON_VERSION: ${{ matrix.python }}
+          POETRY_VERSION: ${{ env.POETRY_VERSION }}
+
+      - name: Install Required pip packages
+        run: |
+          pip install coverage twine
+
+      - name: Run Tests
+        uses: ./.github/actions/tests
+
+      - name: Prepare git for commit
+        run: |
+          git config --global user.email "zachi.nachshon@gmail.com"
+          git config --global user.name "ZachiNachshon"
+          git checkout -b released-plugins-ver
+
+      - name: Publish examples-plugin to PyPi
+        if: ${{ github.event.inputs.plugin_to_publish == 'examlpes-plugin' || github.event.inputs.plugin_to_publish == 'All' }}
+        run: |
+          cd plugins/provisioner_examples_plugin
+          poetry version patch
+          ver=$(poetry version | awk '{print $2}' | tr -d '\n')
+          echo -n $ver > provisioner_examples_plugin/resources/version.txt
+          make pip-publish-pypi
+          git commit -am "Released provisioner-example-plugins version ${ver}"
+          cd ../..
+
+      - name: Publish installers-plugin to PyPi
+        if: ${{ github.event.inputs.plugin_to_publish == 'installers-plugin' || github.event.inputs.plugin_to_publish == 'All' }}
+        run: |
+          cd plugins/provisioner_installers_plugin
+          poetry version patch
+          ver=$(poetry version | awk '{print $2}' | tr -d '\n')
+          echo -n $ver > provisioner_installers_plugin/resources/version.txt
+          make pip-publish-pypi
+          cd ../..
+        
+      - name: Publish single-board-plugin to PyPi
+        if: ${{ github.event.inputs.plugin_to_publish == 'single-board-plugin' || github.event.inputs.plugin_to_publish == 'All' }}
+        run: |
+          cd plugins/provisioner_single_board_plugin
+          poetry version patch
+          ver=$(poetry version | awk '{print $2}' | tr -d '\n')
+          echo -n $ver > provisioner_single_board_plugin/resources/version.txt
+          make pip-publish-pypi
+          cd ../..
+
+      - name: Commit new versions bump
+        run: |
+          git push --set-upstream origin released-plugins-ver
+          gh pr create --title "Released provisioner plugins version" \
+              --body "Released provisioner plugins version" \
+              --base master --head released-plugins-ver \
+              --label "auto pr"
