@@ -1,4 +1,4 @@
-name: Publish Provisioner to PyPi
+name: Publish Provisioner Plugins to PyPi (auto version increment)
 
 on:
   workflow_dispatch:
@@ -22,7 +22,7 @@ env:
   
 jobs:
   publis_to_pypi:
-    name: Publish provisioner to PyPi
+    name: Publish provisioner plugins to PyPi
     runs-on: ubuntu-latest
     strategy:
       matrix:
