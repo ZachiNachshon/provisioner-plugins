@@ -62,14 +62,11 @@ pip-publish-github: ## Publish a pip package tarball as a GitHub release
 		--build-type sdist \
 		--plugin \
 		--release-type github \
-		--release-tag $(shell cat ../../provisioner/provisioner/resources/version.txt)
+		--release-tag $(shell cat ../../provisioner/provisioner/resources/version.txt) -y
 
 .PHONY: pip-publish-pypi
 pip-publish-pypi: ## Publish a pip package tarball as a PyPi release
-	@${POETRY_PIP_RELEASER} publish \
-		--multi-project \
-		--build-type wheel \
-		--release-type pypi
+	@${POETRY_PIP_RELEASER} publish --multi-project --build-type wheel --release-type pypi -y
 
 .PHONY: clear-virtual-env
 clear-virtual-env: ## Clear Poetry virtual environments
