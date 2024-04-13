@@ -68,7 +68,9 @@ jobs:
           ver=$(poetry version | awk '{print $2}' | tr -d '\n')
           echo -n $ver > provisioner_examples_plugin/resources/version.txt
           make pip-publish-pypi
-          git commit -am "Released provisioner-example-plugins version ${ver}"
+          git add provisioner_examples_plugin/resources/version.txt
+          git add provisioner_examples_plugin/pyproject.yaml
+          git commit -m "Released provisioner-example-plugins version ${ver}"
           cd ../..
 
       - name: Publish installers-plugin to PyPi
@@ -79,6 +81,9 @@ jobs:
           ver=$(poetry version | awk '{print $2}' | tr -d '\n')
           echo -n $ver > provisioner_installers_plugin/resources/version.txt
           make pip-publish-pypi
+          git add provisioner_installers_plugin/resources/version.txt
+          git add provisioner_installers_plugin/pyproject.yaml
+          git commit -m "Released provisioner-installers-plugins version ${ver}"
           cd ../..
         
       - name: Publish single-board-plugin to PyPi
@@ -89,6 +94,9 @@ jobs:
           ver=$(poetry version | awk '{print $2}' | tr -d '\n')
           echo -n $ver > provisioner_single_board_plugin/resources/version.txt
           make pip-publish-pypi
+          git add provisioner_single_board_plugin/resources/version.txt
+          git add provisioner_single_board_plugin/pyproject.yaml
+          git commit -m "Released provisioner-single-board-plugins version ${ver}"
           cd ../..
 
       - name: Commit new versions bump
