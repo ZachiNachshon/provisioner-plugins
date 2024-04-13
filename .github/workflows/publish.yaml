@@ -73,8 +73,6 @@ jobs:
 
       - name: Publish installers-plugin to PyPi
         if: ${{ github.event.inputs.plugin_to_publish == 'installers-plugin' || github.event.inputs.plugin_to_publish == 'All' }}
-        env: 
-          PYPI_API_TOKEN: ${{ env.PYPI_API_TOKEN }}
         run: |
           cd plugins/provisioner_installers_plugin
           poetry version patch
