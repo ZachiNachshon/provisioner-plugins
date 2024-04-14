@@ -70,7 +70,7 @@ jobs:
           echo -n $ver > provisioner_examples_plugin/resources/version.txt
           make pip-publish-pypi
           git add provisioner_examples_plugin/resources/version.txt
-          git add provisioner_examples_plugin/pyproject.yaml
+          git add provisioner_examples_plugin/pyproject.toml
           git commit -m "Released provisioner-example-plugins version ${ver}"
           cd ../..
 
@@ -83,7 +83,7 @@ jobs:
           echo -n $ver > provisioner_installers_plugin/resources/version.txt
           make pip-publish-pypi
           git add provisioner_installers_plugin/resources/version.txt
-          git add provisioner_installers_plugin/pyproject.yaml
+          git add provisioner_installers_plugin/pyproject.toml
           git commit -m "Released provisioner-installers-plugins version ${ver}"
           cd ../..
         
@@ -96,7 +96,7 @@ jobs:
           echo -n $ver > provisioner_single_board_plugin/resources/version.txt
           make pip-publish-pypi
           git add provisioner_single_board_plugin/resources/version.txt
-          git add provisioner_single_board_plugin/pyproject.yaml
+          git add provisioner_single_board_plugin/pyproject.toml
           git commit -m "Released provisioner-single-board-plugins version ${ver}"
           cd ../..
 
