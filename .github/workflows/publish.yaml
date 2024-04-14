@@ -7,10 +7,10 @@ on:
         type: choice
         description: 'Select an plugin to publish to PyPi'
         options: 
-          - 'examlpes-plugin'
+          - 'examples-plugin'
           - 'installers-plugin'
           - 'single-board-plugin'
-          - 'All'
+          - 'all'
         required: true
 
 env:
@@ -53,6 +53,7 @@ jobs:
         uses: ./.github/actions/tests
         with:
           use_provisioner_from: pypi
+          modules_to_test: ${{ github.event.inputs.plugin_to_publish }}
 
       - name: Prepare git for commit
         run: |
@@ -61,7 +62,7 @@ jobs:
           git checkout -b released-plugins-ver
 
       - name: Publish examples-plugin to PyPi
-        if: ${{ github.event.inputs.plugin_to_publish == 'examlpes-plugin' || github.event.inputs.plugin_to_publish == 'All' }}
+        if: ${{ github.event.inputs.plugin_to_publish == 'examples-plugin' || github.event.inputs.plugin_to_publish == 'all' }}
         run: |
           cd plugins/provisioner_examples_plugin
           poetry version patch
@@ -74,7 +75,7 @@ jobs:
           cd ../..
 
       - name: Publish installers-plugin to PyPi
-        if: ${{ github.event.inputs.plugin_to_publish == 'installers-plugin' || github.event.inputs.plugin_to_publish == 'All' }}
+        if: ${{ github.event.inputs.plugin_to_publish == 'installers-plugin' || github.event.inputs.plugin_to_publish == 'all' }}
         run: |
           cd plugins/provisioner_installers_plugin
           poetry version patch
@@ -87,7 +88,7 @@ jobs:
           cd ../..
         
       - name: Publish single-board-plugin to PyPi
-        if: ${{ github.event.inputs.plugin_to_publish == 'single-board-plugin' || github.event.inputs.plugin_to_publish == 'All' }}
+        if: ${{ github.event.inputs.plugin_to_publish == 'single-board-plugin' || github.event.inputs.plugin_to_publish == 'all' }}
         run: |
           cd plugins/provisioner_single_board_plugin
           poetry version patch
