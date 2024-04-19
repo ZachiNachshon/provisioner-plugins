@@ -33,11 +33,13 @@ jobs:
         with:
           repository: 'ZachiNachshon/provisioner'
           token: ${{ secrets.PROVISIONER_REPO_ACCESS_TOKEN }}
+          ref: fix-github-actions
 
       - name: Checkout ZachiNachshon/provisioner-plugins
         uses: actions/checkout@v3
         with:
           path: './plugins'
+          ref: fix-github-actions
 
       - name: Setup Environment
         uses: ./.github/actions/setup
@@ -68,10 +70,10 @@ jobs:
           poetry version patch
           ver=$(poetry version | awk '{print $2}' | tr -d '\n')
           echo -n $ver > provisioner_examples_plugin/resources/version.txt
-          make pip-publish-pypi
           git add provisioner_examples_plugin/resources/version.txt
           git add pyproject.toml
           git commit -m "Released provisioner-example-plugins version ${ver}"
+          make pip-publish-pypi
           cd ../..
 
       - name: Publish installers-plugin to PyPi
@@ -81,10 +83,10 @@ jobs:
           poetry version patch
           ver=$(poetry version | awk '{print $2}' | tr -d '\n')
           echo -n $ver > provisioner_installers_plugin/resources/version.txt
-          make pip-publish-pypi
           git add provisioner_installers_plugin/resources/version.txt
           git add pyproject.toml
           git commit -m "Released provisioner-installers-plugins version ${ver}"
+          make pip-publish-pypi
           cd ../..
         
       - name: Publish single-board-plugin to PyPi
@@ -94,10 +96,10 @@ jobs:
           poetry version patch
           ver=$(poetry version | awk '{print $2}' | tr -d '\n')
           echo -n $ver > provisioner_single_board_plugin/resources/version.txt
-          make pip-publish-pypi
           git add provisioner_single_board_plugin/resources/version.txt
           git add pyproject.toml
           git commit -m "Released provisioner-single-board-plugins version ${ver}"
+          make pip-publish-pypi
           cd ../..
 
       - name: Commit new versions bump
