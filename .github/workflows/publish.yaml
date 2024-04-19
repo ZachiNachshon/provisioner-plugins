@@ -7,9 +7,9 @@ on:
         type: choice
         description: 'Select an plugin to publish to PyPi'
         options: 
-          - 'examples-plugin'
-          - 'installers-plugin'
-          - 'single-board-plugin'
+          - 'provisioner_examples_plugin'
+          - 'provisioner_installers_plugin'
+          - 'provisioner_single_board_plugin'
           - 'all'
         required: true
 
@@ -53,57 +53,11 @@ jobs:
         uses: ./.github/actions/tests
         with:
           use_provisioner_from: pypi
-          modules_to_test: ${{ github.event.inputs.plugin_to_publish }}
+          module_to_test: ${{ github.event.inputs.plugin_to_publish }}
 
-      - name: Prepare git for commit
-        run: |
-          git config --global user.email "zachi.nachshon@gmail.com"
-          git config --global user.name "ZachiNachshon"
-          git checkout -b released-plugins-ver
-
-      - name: Publish examples-plugin to PyPi
-        if: ${{ github.event.inputs.plugin_to_publish == 'examples-plugin' || github.event.inputs.plugin_to_publish == 'all' }}
-        run: |
-          cd plugins/provisioner_examples_plugin
-          poetry version patch
-          ver=$(poetry version | awk '{print $2}' | tr -d '\n')
-          echo -n $ver > provisioner_examples_plugin/resources/version.txt
-          make pip-publish-pypi
-          git add provisioner_examples_plugin/resources/version.txt
-          git add pyproject.toml
-          git commit -m "Released provisioner-example-plugins version ${ver}"
-          cd ../..
-
-      - name: Publish installers-plugin to PyPi
-        if: ${{ github.event.inputs.plugin_to_publish == 'installers-plugin' || github.event.inputs.plugin_to_publish == 'all' }}
-        run: |
-          cd plugins/provisioner_installers_plugin
-          poetry version patch
-          ver=$(poetry version | awk '{print $2}' | tr -d '\n')
-          echo -n $ver > provisioner_installers_plugin/resources/version.txt
-          make pip-publish-pypi
-          git add provisioner_installers_plugin/resources/version.txt
-          git add pyproject.toml
-          git commit -m "Released provisioner-installers-plugins version ${ver}"
-          cd ../..
-        
-      - name: Publish single-board-plugin to PyPi
-        if: ${{ github.event.inputs.plugin_to_publish == 'single-board-plugin' || github.event.inputs.plugin_to_publish == 'all' }}
-        run: |
-          cd plugins/provisioner_single_board_plugin
-          poetry version patch
-          ver=$(poetry version | awk '{print $2}' | tr -d '\n')
-          echo -n $ver > provisioner_single_board_plugin/resources/version.txt
-          make pip-publish-pypi
-          git add provisioner_single_board_plugin/resources/version.txt
-          git add pyproject.toml
-          git commit -m "Released provisioner-single-board-plugins version ${ver}"
-          cd ../..
-
-      - name: Commit new versions bump
-        run: |
-          git push --set-upstream origin released-plugins-ver
-          gh pr create --title "Released provisioner plugins version" \
-              --body "Released provisioner plugins version" \
-              --base master --head released-plugins-ver \
-              --label "auto pr"
+      - name: Publish to PyPi
+        uses: ./.github/actions/publish
+        with:
+          publishable: ${{ github.event.inputs.plugin_to_publish }}
+          is_plugin: true
+          PYPI_API_TOKEN: ${{ env.PYPI_API_TOKEN }}
