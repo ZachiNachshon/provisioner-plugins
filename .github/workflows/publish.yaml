@@ -55,7 +55,7 @@ jobs:
         uses: ./.github/actions/tests
         with:
           use_provisioner_from: pypi
-          modules_to_test: ${{ github.event.inputs.plugin_to_publish }}
+          module_to_test: ${{ github.event.inputs.plugin_to_publish }}
 
       - name: Publish to PyPi
         uses: ./.github/actions/publish
