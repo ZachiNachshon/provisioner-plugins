@@ -33,13 +33,11 @@ jobs:
         with:
           repository: 'ZachiNachshon/provisioner'
           token: ${{ secrets.PROVISIONER_REPO_ACCESS_TOKEN }}
-          ref: fix-github-actions
 
       - name: Checkout ZachiNachshon/provisioner-plugins
         uses: actions/checkout@v3
         with:
           path: './plugins'
-          ref: fix-github-actions
 
       - name: Setup Environment
         uses: ./.github/actions/setup
