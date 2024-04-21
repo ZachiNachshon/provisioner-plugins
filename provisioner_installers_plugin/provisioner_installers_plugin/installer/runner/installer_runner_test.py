@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import string
 import unittest
 from typing import Callable, List
 from unittest import mock
@@ -628,61 +629,93 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
         )
 
     def test_maybe_extract_downloaded_binary_success_with_archive(self) -> None:
-        utility = TestSupportedToolings[TEST_UTILITY_1_NAME_GITHUB]
         test_env = TestEnv.create()
+        utility = TestSupportedToolings[TEST_UTILITY_1_NAME_GITHUB]
+        
+        unpacked_release_folderpath = f"/home/user/provisioner/binaries/{utility.binary_name}/{utility.version}"
         release_filename = utility.source.github.release_name_resolver(
             utility.version, test_env.get_context().os_arch.os, test_env.get_context().os_arch.arch
         )
-        unpacked_release_folderpath = f"/home/user/provisioner/binaries/{utility.binary_name}/{utility.version}"
         release_download_filepath = f"{unpacked_release_folderpath}/{release_filename}"
+
+        fake_io_utils = test_env.get_collaborators().io_utils()
+
+        def is_archive_fn(filepath: str) -> bool:
+            self.assertEqual(filepath, release_download_filepath)
+            return True
+        fake_io_utils.on("is_archive_fn", str).side_effect = is_archive_fn
+
+        def unpack_archive_fn(filepath: str) -> str:
+            self.assertEqual(filepath, release_download_filepath)
+            return unpacked_release_folderpath
+        fake_io_utils.on("unpack_archive_fn", str).side_effect = unpack_archive_fn
+
         expected_input = ReleaseFilename_ReleaseDownloadFilePath_Utility_Tuple(
             release_filename, release_download_filepath, utility
         )
-        test_env.get_collaborators().io_utils().mock_is_archive(release_download_filepath, is_archive=True)
         fake_installer_env = self.create_fake_installer_env(test_env)
         eval = self.create_evaluator(fake_installer_env)
         result = eval << self.get_runner(eval)._maybe_extract_downloaded_binary(fake_installer_env, expected_input)
         Assertion.expect_equal_objects(
             self, result, UnpackedReleaseFolderPath_Utility_Tuple(unpacked_release_folderpath, utility)
         )
-        test_env.get_collaborators().io_utils().assert_is_archive(release_download_filepath, is_archive=True)
-        test_env.get_collaborators().io_utils().assert_unpack_archive(release_download_filepath)
 
     def test_maybe_extract_downloaded_binary_success_with_regular_file(self) -> None:
-        utility = TestSupportedToolings[TEST_UTILITY_1_NAME_GITHUB]
         test_env = TestEnv.create()
+        utility = TestSupportedToolings[TEST_UTILITY_1_NAME_GITHUB]
         release_filename = utility.source.github.release_name_resolver(
             utility.version, test_env.get_context().os_arch.os, test_env.get_context().os_arch.arch
         )
         unpacked_release_folderpath = f"/home/user/provisioner/binaries/{utility.binary_name}/{utility.version}"
         release_download_filepath = f"{unpacked_release_folderpath}/{release_filename}"
+
+        fake_io_utils = test_env.get_collaborators().io_utils()
+
+        def is_archive_fn(filepath: str) -> bool:
+            self.assertEqual(filepath, release_download_filepath)
+            return False
+        fake_io_utils.on("is_archive_fn", str).side_effect = is_archive_fn
+
+        def unpack_archive_fn(filepath: str) -> str:
+            self.assertEqual(filepath, release_download_filepath)
+            return unpacked_release_folderpath
+        fake_io_utils.on("unpack_archive_fn", str).side_effect = unpack_archive_fn
+
         expected_input = ReleaseFilename_ReleaseDownloadFilePath_Utility_Tuple(
             release_filename, release_download_filepath, utility
         )
-        test_env.get_collaborators().io_utils().mock_is_archive(release_download_filepath, is_archive=False)
         fake_installer_env = self.create_fake_installer_env(test_env)
         eval = self.create_evaluator(fake_installer_env)
         result = eval << self.get_runner(eval)._maybe_extract_downloaded_binary(fake_installer_env, expected_input)
         Assertion.expect_equal_objects(
             self, result, UnpackedReleaseFolderPath_Utility_Tuple(unpacked_release_folderpath, utility)
         )
-        test_env.get_collaborators().io_utils().assert_is_archive(release_download_filepath, is_archive=False)
 
     def test_elevate_permission_and_symlink(self) -> None:
         utility = TestSupportedToolings[TEST_UTILITY_1_NAME_GITHUB]
-        test_env = TestEnv.create()
         unpacked_release_folderpath = f"/home/user/provisioner/binaries/{utility.binary_name}/{utility.version}"
         unpacked_release_binary_filepath = f"{unpacked_release_folderpath}/{utility.binary_name}"
         symlink_path = f"{ProvisionerInstallableSymlinksPath}/{utility.binary_name}"
+        test_env = TestEnv.create()
+        fake_io_utils= test_env.get_collaborators().io_utils()
+
+        def set_file_permissions_fn(filepath: str, permissions: int) -> str:
+            self.assertEqual(filepath, unpacked_release_binary_filepath)
+            self.assertEqual(permissions, 0o111)
+            return filepath
+        fake_io_utils.on("set_file_permissions_fn", str, int).side_effect = set_file_permissions_fn
+
+        def write_symlink_fn(source: str, target: str) -> str:
+            self.assertEqual(source, unpacked_release_binary_filepath)
+            self.assertEqual(target, symlink_path)
+            return symlink_path
+        fake_io_utils.on("write_symlink_fn", str, str).side_effect = write_symlink_fn
+
         expected_input = UnpackedReleaseFolderPath_Utility_Tuple(unpacked_release_folderpath, utility)
         fake_installer_env = self.create_fake_installer_env(test_env)
         eval = self.create_evaluator(fake_installer_env)
         result = eval << self.get_runner(eval)._elevate_permission_and_symlink(fake_installer_env, expected_input)
         Assertion.expect_equal_objects(self, result, symlink_path)
-        test_env.get_collaborators().io_utils().assert_set_file_permissions(
-            unpacked_release_binary_filepath, permissions_octal=0o111
-        )
-        test_env.get_collaborators().io_utils().assert_write_symlink(unpacked_release_binary_filepath, symlink_path)
 
     @mock.patch(f"{UTILITY_INSTALLER_CMD_RUNNER_PATH}._elevate_permission_and_symlink", return_value=PyFn.empty())
     @mock.patch(f"{UTILITY_INSTALLER_CMD_RUNNER_PATH}._maybe_extract_downloaded_binary", return_value=PyFn.empty())
