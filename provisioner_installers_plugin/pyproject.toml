@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "provisioner_installers_plugin"
-version = "0.1.2"
+version = "0.1.3"
 description = "Python Installers Library"
 authors = ["Zachi Nachshon <zachi.nachshon@gmail.com>"]
 exclude = [
