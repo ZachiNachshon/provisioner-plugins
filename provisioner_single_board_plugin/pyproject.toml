@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "provisioner_single_board_plugin"
-version = "0.1.0"
+version = "0.1.1"
 description = "Python Single Boards Library"
 authors = ["Zachi Nachshon <zachi.nachshon@gmail.com>"]
 exclude = [
