@@ -316,7 +316,7 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
             return PyFn.fail(error=InstallerSourceError("Missing installation source. name: Ansible"))
         else:
             return PyFn.effect(
-                lambda: env.collaborators.printer().progress_indicator.status.long_running_process_fn(
+                lambda: env.collaborators.progress_indicator().get_status().long_running_process_fn(
                     call=lambda: env.collaborators.ansible_runner().run_fn(
                         selected_hosts=self._get_ssh_conn_info_localhost().ansible_hosts,
                         playbook=AnsiblePlaybook.copy_and_add_context(
