@@ -18,6 +18,7 @@ ANCHOR_COMMAND_PATH = "provisioner_examples_plugin.anchor.anchor_cmd.AnchorCmd"
 
 runner = CliRunner()
 
+
 # To run as a single test target:
 #  poetry run coverage run -m pytest provisioner_examples_plugin/anchor/cli_test.py
 #

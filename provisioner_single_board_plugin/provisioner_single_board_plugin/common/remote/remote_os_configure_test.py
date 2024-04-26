@@ -129,9 +129,9 @@ class RemoteMachineConfigureTestShould(unittest.TestCase):
     )
     def test_get_ssh_conn_info_with_summary(self, run_call: mock.MagicMock) -> None:
         env = TestEnv.create()
-        env.get_collaborators().summary().on(
-            "append", str, faker.Anything
-        ).side_effect = lambda attribute_name, value: self.assertEqual(attribute_name, "ssh_conn_info")
+        env.get_collaborators().summary().on("append", str, faker.Anything).side_effect = (
+            lambda attribute_name, value: self.assertEqual(attribute_name, "ssh_conn_info")
+        )
 
         RemoteMachineOsConfigureRunner()._get_ssh_conn_info(env.get_context(), env.get_collaborators())
         Assertion.expect_call_argument(self, run_call, arg_name="force_single_conn_info", expected_value=True)
@@ -139,9 +139,9 @@ class RemoteMachineConfigureTestShould(unittest.TestCase):
     def test_ansible_os_configure_playbook_run_success(self) -> None:
         env = TestEnv.create()
 
-        env.get_collaborators().summary().on(
-            "show_summary_and_prompt_for_enter", str
-        ).side_effect = lambda title: self.assertEqual(title, "Configure OS")
+        env.get_collaborators().summary().on("show_summary_and_prompt_for_enter", str).side_effect = (
+            lambda title: self.assertEqual(title, "Configure OS")
+        )
         env.get_collaborators().progress_indicator().get_status().on(
             "long_running_process_fn", Callable, str, str
         ).return_value = "Test Output"
@@ -160,45 +160,45 @@ class RemoteMachineConfigureTestShould(unittest.TestCase):
     def test_run_ansible(self) -> None:
         env = TestEnv.create()
         fake_runner = FakeAnsibleRunnerLocal(env.get_context())
-        fake_runner.on(
-            "run_fn", List, AnsiblePlaybook, List, List, str
-        ).side_effect = lambda selected_hosts, playbook, ansible_vars, ansible_tags, ansible_playbook_package: (
-            self.assertEqual(selected_hosts, TestDataRemoteConnector.TEST_DATA_SSH_ANSIBLE_HOSTS),
-            Assertion.expect_equal_objects(
-                self,
-                playbook,
-                AnsiblePlaybook(
-                    name="rpi_configure_node",
-                    content=ANSIBLE_PLAYBOOK_RPI_CONFIGURE_NODE,
-                    remote_context=REMOTE_CONTEXT,
+        fake_runner.on("run_fn", List, AnsiblePlaybook, List, List, str).side_effect = (
+            lambda selected_hosts, playbook, ansible_vars, ansible_tags, ansible_playbook_package: (
+                self.assertEqual(selected_hosts, TestDataRemoteConnector.TEST_DATA_SSH_ANSIBLE_HOSTS),
+                Assertion.expect_equal_objects(
+                    self,
+                    playbook,
+                    AnsiblePlaybook(
+                        name="rpi_configure_node",
+                        content=ANSIBLE_PLAYBOOK_RPI_CONFIGURE_NODE,
+                        remote_context=REMOTE_CONTEXT,
+                    ),
                 ),
-            ),
-            Assertion.expect_equal_objects(
-                self, ansible_vars, [f"host_name={TestDataRemoteConnector.TEST_DATA_SSH_HOSTNAME_1}"]
-            ),
-            self.assertEqual(ansible_tags, ["configure_remote_node", "reboot"]),
+                Assertion.expect_equal_objects(
+                    self, ansible_vars, [f"host_name={TestDataRemoteConnector.TEST_DATA_SSH_HOSTNAME_1}"]
+                ),
+                self.assertEqual(ansible_tags, ["configure_remote_node", "reboot"]),
+            )
         )
 
     def test_pre_run_instructions_printed_successfully(self) -> None:
         env = TestEnv.create()
         env.get_collaborators().printer().on("print_fn", str).return_value = None
-        env.get_collaborators().printer().on(
-            "print_with_rich_table_fn", str, str
-        ).side_effect = lambda message, line_color: self.assertEqual(message, generate_instructions_pre_configure())
+        env.get_collaborators().printer().on("print_with_rich_table_fn", str, str).side_effect = (
+            lambda message, line_color: self.assertEqual(message, generate_instructions_pre_configure())
+        )
         env.get_collaborators().prompter().on("prompt_for_enter_fn", PromptLevel).return_value = None
         RemoteMachineOsConfigureRunner()._print_pre_run_instructions(env.get_collaborators())
 
     def test_post_run_instructions_printed_successfully(self) -> None:
         env = TestEnv.create()
-        env.get_collaborators().printer().on(
-            "print_with_rich_table_fn", str, str
-        ).side_effect = lambda message, line_color: (
-            self.assertEqual(
-                message,
-                generate_instructions_post_configure(
-                    ansible_host=TestDataRemoteConnector.TEST_DATA_ANSIBLE_HOST_1,
+        env.get_collaborators().printer().on("print_with_rich_table_fn", str, str).side_effect = (
+            lambda message, line_color: (
+                self.assertEqual(
+                    message,
+                    generate_instructions_post_configure(
+                        ansible_host=TestDataRemoteConnector.TEST_DATA_ANSIBLE_HOST_1,
+                    ),
                 ),
-            ),
+            )
         )
         RemoteMachineOsConfigureRunner()._print_post_run_instructions(
             TestDataRemoteConnector.TEST_DATA_ANSIBLE_HOST_1,

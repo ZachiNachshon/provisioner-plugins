@@ -16,6 +16,7 @@ ANSIBLE_HELLO_WORLD_RUNNER_PATH = "provisioner_examples_plugin.ansible.hello_wor
 
 EXPECTED_USERNAME = "test-user"
 
+
 #
 # To run these directly from the terminal use:
 #  poetry run coverage run -m pytest provisioner_examples_plugin/ansible/hello_world_runner_test.py

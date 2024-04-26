@@ -14,6 +14,7 @@ HELLO_WORLD_COMMAND_PATH = "provisioner_examples_plugin.ansible.hello_world_cmd.
 
 runner = CliRunner()
 
+
 # To run as a single test target:
 #  poetry run coverage run -m pytest provisioner_examples_plugin/ansible/cli_test.py
 #

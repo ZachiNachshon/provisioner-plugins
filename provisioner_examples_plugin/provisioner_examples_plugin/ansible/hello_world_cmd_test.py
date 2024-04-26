@@ -15,6 +15,7 @@ from provisioner_examples_plugin.ansible.hello_world_cmd import (
 
 ANSIBLE_HELLO_WORLD_RUNNER_PATH = "provisioner_examples_plugin.ansible.hello_world_runner.HelloWorldRunner"
 
+
 #
 # To run these directly from the terminal use:
 #  poetry run coverage run -m pytest provisioner_examples_plugin/ansible/hello_world_cmd_test.py

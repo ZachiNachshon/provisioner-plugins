@@ -16,6 +16,7 @@ ARG_IMAGE_DOWNLOAD_PATH = "/test/image/download/path"
 
 IMAGE_BURNER_COMMAND_RUNNER_PATH = "provisioner_features_lib.sd_card.image_burner.ImageBurnerCmdRunner"
 
+
 #
 # To run these directly from the terminal use:
 #  poetry run coverage run -m pytest provisioner_single_board_plugin/raspberry_pi/os/burn_image_cmd_test.py

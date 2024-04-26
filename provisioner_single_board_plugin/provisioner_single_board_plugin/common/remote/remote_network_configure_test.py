@@ -148,9 +148,9 @@ class RemoteMachineNetworkConfigureTestShould(unittest.TestCase):
     )
     def test_get_ssh_conn_info_with_summary(self, run_call: mock.MagicMock) -> None:
         env = TestEnv.create()
-        env.get_collaborators().summary().on(
-            "append", str, faker.Anything
-        ).side_effect = lambda attribute_name, value: self.assertEqual(attribute_name, "ssh_conn_info")
+        env.get_collaborators().summary().on("append", str, faker.Anything).side_effect = (
+            lambda attribute_name, value: self.assertEqual(attribute_name, "ssh_conn_info")
+        )
         RemoteMachineNetworkConfigureRunner()._get_ssh_conn_info(env.get_context(), env.get_collaborators())
         Assertion.expect_call_argument(self, run_call, arg_name="force_single_conn_info", expected_value=True)
 
@@ -162,9 +162,9 @@ class RemoteMachineNetworkConfigureTestShould(unittest.TestCase):
         env = TestEnv.create()
         args = self.create_fake_configure_args()
         ssh_conn_info = TestDataRemoteConnector.create_fake_ssh_conn_info_fn()()
-        env.get_collaborators().summary().on(
-            "append", str, faker.Anything
-        ).side_effect = lambda attribute_name, value: self.assertEqual(attribute_name, "dhcpcd_configure_info")
+        env.get_collaborators().summary().on("append", str, faker.Anything).side_effect = (
+            lambda attribute_name, value: self.assertEqual(attribute_name, "dhcpcd_configure_info")
+        )
 
         RemoteMachineNetworkConfigureRunner()._get_dhcpcd_configure_info(
             env.get_context(), env.get_collaborators(), args, ssh_conn_info
@@ -181,9 +181,9 @@ class RemoteMachineNetworkConfigureTestShould(unittest.TestCase):
     def test_ansible_network_playbook_run_success(self) -> None:
         env = TestEnv.create()
 
-        env.get_collaborators().summary().on(
-            "show_summary_and_prompt_for_enter", str
-        ).side_effect = lambda title: self.assertEqual(title, "Configure Network")
+        env.get_collaborators().summary().on("show_summary_and_prompt_for_enter", str).side_effect = (
+            lambda title: self.assertEqual(title, "Configure Network")
+        )
         env.get_collaborators().progress_indicator().get_status().on(
             "long_running_process_fn", Callable, str, str
         ).return_value = "Test Output"
@@ -207,30 +207,30 @@ class RemoteMachineNetworkConfigureTestShould(unittest.TestCase):
     def test_run_ansible(self) -> None:
         env = TestEnv.create()
         fake_runner = FakeAnsibleRunnerLocal(env.get_context())
-        fake_runner.on(
-            "run_fn", List, AnsiblePlaybook, List, List, str
-        ).side_effect = lambda selected_hosts, playbook, ansible_vars, ansible_tags, ansible_playbook_package: (
-            self.assertEqual(selected_hosts, TestDataRemoteConnector.TEST_DATA_SSH_ANSIBLE_HOSTS),
-            Assertion.expect_equal_objects(
-                self,
-                playbook,
-                AnsiblePlaybook(
-                    name="rpi_configure_network",
-                    content=ANSIBLE_PLAYBOOK_RPI_CONFIGURE_NETWORK,
-                    remote_context=REMOTE_CONTEXT,
+        fake_runner.on("run_fn", List, AnsiblePlaybook, List, List, str).side_effect = (
+            lambda selected_hosts, playbook, ansible_vars, ansible_tags, ansible_playbook_package: (
+                self.assertEqual(selected_hosts, TestDataRemoteConnector.TEST_DATA_SSH_ANSIBLE_HOSTS),
+                Assertion.expect_equal_objects(
+                    self,
+                    playbook,
+                    AnsiblePlaybook(
+                        name="rpi_configure_network",
+                        content=ANSIBLE_PLAYBOOK_RPI_CONFIGURE_NETWORK,
+                        remote_context=REMOTE_CONTEXT,
+                    ),
                 ),
-            ),
-            Assertion.expect_equal_objects(
-                self,
-                ansible_vars,
-                [
-                    f"host_name={TestDataRemoteConnector.TEST_DATA_SSH_HOSTNAME_1}",
-                    f"static_ip={TestDataRemoteConnector.TEST_DATA_DHCP_STATIC_IP_ADDRESS}",
-                    f"gateway_address={TestDataRemoteConnector.TEST_DATA_DHCP_GW_IP_ADDRESS}",
-                    f"dns_address={TestDataRemoteConnector.TEST_DATA_DHCP_DNS_IP_ADDRESS}",
-                ],
-            ),
-            self.assertEqual(ansible_tags, ["configure_rpi_network", "define_static_ip", "reboot"]),
+                Assertion.expect_equal_objects(
+                    self,
+                    ansible_vars,
+                    [
+                        f"host_name={TestDataRemoteConnector.TEST_DATA_SSH_HOSTNAME_1}",
+                        f"static_ip={TestDataRemoteConnector.TEST_DATA_DHCP_STATIC_IP_ADDRESS}",
+                        f"gateway_address={TestDataRemoteConnector.TEST_DATA_DHCP_GW_IP_ADDRESS}",
+                        f"dns_address={TestDataRemoteConnector.TEST_DATA_DHCP_DNS_IP_ADDRESS}",
+                    ],
+                ),
+                self.assertEqual(ansible_tags, ["configure_rpi_network", "define_static_ip", "reboot"]),
+            )
         )
 
         RemoteMachineNetworkConfigureRunner()._run_ansible(
@@ -243,21 +243,21 @@ class RemoteMachineNetworkConfigureTestShould(unittest.TestCase):
 
     def test_add_hosts_file_entry_upon_prompt(self) -> None:
         env = TestEnv.create()
-        env.get_collaborators().prompter().on(
-            "prompt_yes_no_fn", str, PromptLevel, str, str
-        ).side_effect = lambda message, level, post_yes_message, post_no_message: (
-            self.assertIn("Add entry", message),
-            self.assertEqual(level, PromptLevel.HIGHLIGHT),
-            self.assertEqual(post_no_message, "Skipped adding new entry to /etc/hosts"),
-            self.assertEqual(post_yes_message, "Selected to update /etc/hosts file"),
+        env.get_collaborators().prompter().on("prompt_yes_no_fn", str, PromptLevel, str, str).side_effect = (
+            lambda message, level, post_yes_message, post_no_message: (
+                self.assertIn("Add entry", message),
+                self.assertEqual(level, PromptLevel.HIGHLIGHT),
+                self.assertEqual(post_no_message, "Skipped adding new entry to /etc/hosts"),
+                self.assertEqual(post_yes_message, "Selected to update /etc/hosts file"),
+            )
         )
-        env.get_collaborators().hosts_file().on(
-            "add_entry_fn", str, List, str, str
-        ).side_effect = lambda ip_address, dns_names, comment=None, entry_type="ipv4": (
-            self.assertEqual(ip_address, TestDataRemoteConnector.TEST_DATA_DHCP_STATIC_IP_ADDRESS),
-            self.assertEqual(dns_names, [TestDataRemoteConnector.TEST_DATA_SSH_HOSTNAME_1]),
-            self.assertEqual(comment, "Added by provisioner"),
-            None,
+        env.get_collaborators().hosts_file().on("add_entry_fn", str, List, str, str).side_effect = (
+            lambda ip_address, dns_names, comment=None, entry_type="ipv4": (
+                self.assertEqual(ip_address, TestDataRemoteConnector.TEST_DATA_DHCP_STATIC_IP_ADDRESS),
+                self.assertEqual(dns_names, [TestDataRemoteConnector.TEST_DATA_SSH_HOSTNAME_1]),
+                self.assertEqual(comment, "Added by provisioner"),
+                None,
+            )
         )
         RemoteMachineNetworkConfigureRunner()._maybe_add_hosts_file_entry(
             env.get_context(),
@@ -271,26 +271,26 @@ class RemoteMachineNetworkConfigureTestShould(unittest.TestCase):
     def test_pre_run_instructions_printed_successfully(self) -> None:
         env = TestEnv.create()
         env.get_collaborators().printer().on("print_fn", str).return_value = None
-        env.get_collaborators().printer().on(
-            "print_with_rich_table_fn", str, str
-        ).side_effect = lambda message, line_color: self.assertEqual(message, generate_instructions_pre_network())
+        env.get_collaborators().printer().on("print_with_rich_table_fn", str, str).side_effect = (
+            lambda message, line_color: self.assertEqual(message, generate_instructions_pre_network())
+        )
         env.get_collaborators().prompter().on("prompt_for_enter_fn", PromptLevel).return_value = None
         RemoteMachineNetworkConfigureRunner()._print_pre_run_instructions(env.get_collaborators())
 
     def test_post_run_instructions_printed_successfully(self) -> None:
         env = TestEnv.create()
-        env.get_collaborators().printer().on(
-            "print_with_rich_table_fn", str, str
-        ).side_effect = lambda message, line_color: (
-            self.assertEqual(
-                message,
-                generate_instructions_post_network(
-                    ip_address=TestDataRemoteConnector.TEST_DATA_SSH_IP_ADDRESS_1,
-                    static_ip=TestDataRemoteConnector.TEST_DATA_DHCP_STATIC_IP_ADDRESS,
-                    username=TestDataRemoteConnector.TEST_DATA_SSH_USERNAME_1,
-                    hostname=TestDataRemoteConnector.TEST_DATA_SSH_HOSTNAME_1,
+        env.get_collaborators().printer().on("print_with_rich_table_fn", str, str).side_effect = (
+            lambda message, line_color: (
+                self.assertEqual(
+                    message,
+                    generate_instructions_post_network(
+                        ip_address=TestDataRemoteConnector.TEST_DATA_SSH_IP_ADDRESS_1,
+                        static_ip=TestDataRemoteConnector.TEST_DATA_DHCP_STATIC_IP_ADDRESS,
+                        username=TestDataRemoteConnector.TEST_DATA_SSH_USERNAME_1,
+                        hostname=TestDataRemoteConnector.TEST_DATA_SSH_HOSTNAME_1,
+                    ),
                 ),
-            ),
+            )
         )
         RemoteMachineNetworkConfigureRunner()._print_post_run_instructions(
             env.get_context(),

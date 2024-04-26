@@ -18,6 +18,7 @@ EXPECTED_REPOSITORY_NAME = "test-repo"
 EXPECTED_BRANCH_NAME = "test-branch"
 EXPECTED_GIT_ACCESS_TOKEN = "test-git-access-token"
 
+
 #
 # To run these directly from the terminal use:
 #  poetry run coverage run -m pytest provisioner_examples_plugin/anchor/anchor_cmd_test.py

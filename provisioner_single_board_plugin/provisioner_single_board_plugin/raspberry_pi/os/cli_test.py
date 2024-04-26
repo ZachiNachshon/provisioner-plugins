@@ -21,6 +21,7 @@ RPI_OS_MODULE_PATH = "provisioner_single_board_plugin.raspberry_pi.os"
 
 STEP_ERROR_OUTPUT = "This is a sample step error output for a test expected to fail"
 
+
 # To run as a single test target:
 #  poetry run coverage run -m pytest provisioner_single_board_plugin/raspberry_pi/os/cli_test.py
 #
