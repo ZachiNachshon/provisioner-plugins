@@ -27,6 +27,7 @@ DYNAMIC_ARGS_DICT = {
     "second-key": "second-val",
 }
 
+
 # To run as a single test target:
 #  poetry run coverage run -m pytest provisioner_installers_plugin/installer/cmd/installer_cmd_test.py
 #

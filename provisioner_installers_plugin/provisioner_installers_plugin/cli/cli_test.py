@@ -22,6 +22,7 @@ from provisioner_installers_plugin.main_fake import get_fake_app
 
 INSTALLER_CMD_MODULE_PATH = "provisioner_installers_plugin.installer.cmd.installer_cmd"
 
+
 # To run as a single test target:
 #  poetry run coverage run -m pytest provisioner_installers_plugin/cli/cli_test.py
 #

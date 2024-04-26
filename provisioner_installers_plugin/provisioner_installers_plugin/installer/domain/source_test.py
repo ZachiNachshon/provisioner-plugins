@@ -16,6 +16,7 @@ TEST_GITHUB_RELEASE_VERSION = "v0.10.0"
 TEST_GITHUB_RELEASE_FILENAME = f"{TEST_GITHUB_RELEASE_NAME}_v0.10.0_darwin_arm64.tar.gz"
 TEST_RELEASE_BINARY_OS_ARCH = OsArch(os=MAC_OS, arch="arm64")
 
+
 # To run as a single test target:
 #  poetry run coverage run -m pytest provisioner_installers_plugin/installer/domain/source_test.py
 #

@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import string
 import unittest
 from typing import Callable, List
 from unittest import mock
@@ -189,15 +188,11 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
             TestSupportedToolings[TEST_UTILITY_2_NAME_SCRIPT],
         ]
         test_env = TestEnv.create(verbose=True)
-        test_env.get_collaborators().summary().on(
-            "append", str, Installable.Utility
-        ).side_effect = lambda attribute_name, value: (
-            self.assertIn(attribute_name, utilities[0].display_name),
+        test_env.get_collaborators().summary().on("append", str, Installable.Utility).side_effect = (
+            lambda attribute_name, value: (self.assertIn(attribute_name, utilities[0].display_name),)
         )
-        test_env.get_collaborators().summary().on(
-            "append", str, Installable.Utility
-        ).side_effect = lambda attribute_name, value: (
-            self.assertIn(attribute_name, utilities[1].display_name),
+        test_env.get_collaborators().summary().on("append", str, Installable.Utility).side_effect = (
+            lambda attribute_name, value: (self.assertIn(attribute_name, utilities[1].display_name),)
         )
         fake_installer_env = self.create_fake_installer_env(test_env)
         eval = self.create_evaluator(fake_installer_env)
@@ -210,12 +205,12 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
             TestSupportedToolings[TEST_UTILITY_2_NAME_SCRIPT],
         ]
         test_env = TestEnv.create()
-        test_env.get_collaborators().printer().on(
-            "print_with_rich_table_fn", str, str
-        ).side_effect = lambda message, border_color: (
-            self.assertIn(f"- {utilities[0].display_name}", message),
-            self.assertIn(f"- {utilities[1].display_name}", message),
-            self.assertIn("Running on [yellow]Local[/yellow] environment.", message),
+        test_env.get_collaborators().printer().on("print_with_rich_table_fn", str, str).side_effect = (
+            lambda message, border_color: (
+                self.assertIn(f"- {utilities[0].display_name}", message),
+                self.assertIn(f"- {utilities[1].display_name}", message),
+                self.assertIn("Running on [yellow]Local[/yellow] environment.", message),
+            )
         )
         fake_installer_env = self.create_fake_installer_env(test_env)
         eval = self.create_evaluator(fake_installer_env)
@@ -300,9 +295,9 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
     def test_print_pre_install_summary_success(self) -> None:
         utility = TestSupportedToolings[TEST_UTILITY_1_NAME_GITHUB]
         test_env = TestEnv.create()
-        test_env.get_collaborators().summary().on(
-            "show_summary_and_prompt_for_enter", str
-        ).side_effect = lambda title: self.assertIn(title, f"Installing Utility: {utility.display_name}")
+        test_env.get_collaborators().summary().on("show_summary_and_prompt_for_enter", str).side_effect = (
+            lambda title: self.assertIn(title, f"Installing Utility: {utility.display_name}")
+        )
         fake_installer_env = self.create_fake_installer_env(test_env)
         eval = self.create_evaluator(fake_installer_env)
         eval << self.get_runner(eval)._print_pre_install_summary(fake_installer_env, maybe_utility=utility)
@@ -486,10 +481,10 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
         test_env = TestEnv.create()
         fake_installer_env = self.create_fake_installer_env(test_env)
         eval = self.create_evaluator(fake_installer_env)
-        test_env.get_collaborators().process().on(
-            "run_fn", List, faker.Anything, str, bool, bool
-        ).side_effect = lambda args, working_dir, fail_msg, fail_on_error, allow_single_shell_command_str: self.assertEqual(
-            args, [utility.source.script.install_cmd]
+        test_env.get_collaborators().process().on("run_fn", List, faker.Anything, str, bool, bool).side_effect = (
+            lambda args, working_dir, fail_msg, fail_on_error, allow_single_shell_command_str: self.assertEqual(
+                args, [utility.source.script.install_cmd]
+            )
         )
         result = eval << self.get_runner(eval)._install_from_script(fake_installer_env, utility)
         Assertion.expect_equal_objects(self, result, utility)
@@ -631,7 +626,7 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
     def test_maybe_extract_downloaded_binary_success_with_archive(self) -> None:
         test_env = TestEnv.create()
         utility = TestSupportedToolings[TEST_UTILITY_1_NAME_GITHUB]
-        
+
         unpacked_release_folderpath = f"/home/user/provisioner/binaries/{utility.binary_name}/{utility.version}"
         release_filename = utility.source.github.release_name_resolver(
             utility.version, test_env.get_context().os_arch.os, test_env.get_context().os_arch.arch
@@ -643,11 +638,13 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
         def is_archive_fn(filepath: str) -> bool:
             self.assertEqual(filepath, release_download_filepath)
             return True
+
         fake_io_utils.on("is_archive_fn", str).side_effect = is_archive_fn
 
         def unpack_archive_fn(filepath: str) -> str:
             self.assertEqual(filepath, release_download_filepath)
             return unpacked_release_folderpath
+
         fake_io_utils.on("unpack_archive_fn", str).side_effect = unpack_archive_fn
 
         expected_input = ReleaseFilename_ReleaseDownloadFilePath_Utility_Tuple(
@@ -674,11 +671,13 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
         def is_archive_fn(filepath: str) -> bool:
             self.assertEqual(filepath, release_download_filepath)
             return False
+
         fake_io_utils.on("is_archive_fn", str).side_effect = is_archive_fn
 
         def unpack_archive_fn(filepath: str) -> str:
             self.assertEqual(filepath, release_download_filepath)
             return unpacked_release_folderpath
+
         fake_io_utils.on("unpack_archive_fn", str).side_effect = unpack_archive_fn
 
         expected_input = ReleaseFilename_ReleaseDownloadFilePath_Utility_Tuple(
@@ -697,18 +696,20 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
         unpacked_release_binary_filepath = f"{unpacked_release_folderpath}/{utility.binary_name}"
         symlink_path = f"{ProvisionerInstallableSymlinksPath}/{utility.binary_name}"
         test_env = TestEnv.create()
-        fake_io_utils= test_env.get_collaborators().io_utils()
+        fake_io_utils = test_env.get_collaborators().io_utils()
 
         def set_file_permissions_fn(filepath: str, permissions: int) -> str:
             self.assertEqual(filepath, unpacked_release_binary_filepath)
             self.assertEqual(permissions, 0o111)
             return filepath
+
         fake_io_utils.on("set_file_permissions_fn", str, int).side_effect = set_file_permissions_fn
 
         def write_symlink_fn(source: str, target: str) -> str:
             self.assertEqual(source, unpacked_release_binary_filepath)
             self.assertEqual(target, symlink_path)
             return symlink_path
+
         fake_io_utils.on("write_symlink_fn", str, str).side_effect = write_symlink_fn
 
         expected_input = UnpackedReleaseFolderPath_Utility_Tuple(unpacked_release_folderpath, utility)
@@ -788,11 +789,11 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
     )
     def test_collect_ssh_connection_info(self, run_call: mock.MagicMock) -> None:
         test_env = TestEnv.create()
-        test_env.get_collaborators().summary().on(
-            "append_result", str, Callable[[], str]
-        ).side_effect = lambda attribute_name, call: (
-            self.assertEqual(attribute_name, "ssh_conn_info"),
-            call(),
+        test_env.get_collaborators().summary().on("append_result", str, Callable[[], str]).side_effect = (
+            lambda attribute_name, call: (
+                self.assertEqual(attribute_name, "ssh_conn_info"),
+                call(),
+            )
         )
         fake_installer_env = self.create_fake_installer_env(test_env)
         eval = self.create_evaluator(fake_installer_env)
@@ -829,29 +830,29 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
         env = TestEnv.create()
         remote_ctx = RemoteContext.no_op()
         fake_runner = FakeAnsibleRunnerLocal(env.get_context())
-        fake_runner.on(
-            "run_fn", List, AnsiblePlaybook, List, List, str
-        ).side_effect = lambda selected_hosts, playbook, ansible_vars, ansible_tags, ansible_playbook_package: (
-            self.assertEqual(selected_hosts, TestDataRemoteConnector.TEST_DATA_SSH_ANSIBLE_HOSTS),
-            Assertion.expect_equal_objects(
-                self,
-                playbook,
-                AnsiblePlaybook(
-                    name="provisioner_wrapper",
-                    content=ANSIBLE_PLAYBOOK_REMOTE_PROVISIONER_WRAPPER,
-                    remote_context=remote_ctx,
+        fake_runner.on("run_fn", List, AnsiblePlaybook, List, List, str).side_effect = (
+            lambda selected_hosts, playbook, ansible_vars, ansible_tags, ansible_playbook_package: (
+                self.assertEqual(selected_hosts, TestDataRemoteConnector.TEST_DATA_SSH_ANSIBLE_HOSTS),
+                Assertion.expect_equal_objects(
+                    self,
+                    playbook,
+                    AnsiblePlaybook(
+                        name="provisioner_wrapper",
+                        content=ANSIBLE_PLAYBOOK_REMOTE_PROVISIONER_WRAPPER,
+                        remote_context=remote_ctx,
+                    ),
                 ),
-            ),
-            Assertion.expect_equal_objects(
-                self,
-                ansible_vars,
-                [
-                    f"provisioner_command='provisioner -y {'-v ' if remote_ctx.is_verbose() else ''}install {InstallerSubCommandName.CLI} --environment=Local {utility.display_name}'",
-                    "required_plugins=['provisioner_installers_plugin:0.1.0']",
-                    f"git_access_token={TEST_GITHUB_ACCESS_TOKEN}",
-                ],
-            ),
-            self.assertEqual(ansible_tags, ["provisioner_wrapper"]),
+                Assertion.expect_equal_objects(
+                    self,
+                    ansible_vars,
+                    [
+                        f"provisioner_command='provisioner -y {'-v ' if remote_ctx.is_verbose() else ''}install {InstallerSubCommandName.CLI} --environment=Local {utility.display_name}'",
+                        "required_plugins=['provisioner_installers_plugin:0.1.0']",
+                        f"git_access_token={TEST_GITHUB_ACCESS_TOKEN}",
+                    ],
+                ),
+                self.assertEqual(ansible_tags, ["provisioner_wrapper"]),
+            )
         )
 
         UtilityInstallerCmdRunner(env.get_context())._run_ansible(
