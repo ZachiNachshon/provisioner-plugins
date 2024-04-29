@@ -3,7 +3,7 @@
 from provisioner.domain.serialize import SerializationBase
 from provisioner_features_lib.remote.domain.config import RemoteConfig
 
-PLUGIN_NAME = "installers-plugin"
+PLUGIN_NAME = "installers_plugin"
 
 
 class InstallersConfig(SerializationBase):

@@ -4,7 +4,7 @@ from provisioner.domain.serialize import SerializationBase
 from provisioner_features_lib.remote.domain.config import RemoteConfig
 from provisioner_features_lib.vcs.domain.config import VersionControlConfig
 
-PLUGIN_NAME = "example-plugin"
+PLUGIN_NAME = "example_plugin"
 
 
 class ExamplesConfig(SerializationBase):
@@ -30,16 +30,20 @@ class ExamplesConfig(SerializationBase):
             self._parse_hello_world_block(dict_obj["hello_world"])
 
     def merge(self, other: "ExamplesConfig") -> SerializationBase:
-        if other.hello_world.username:
-            self.hello_world.username = other.hello_world.username
+        if hasattr(other, "remote"):
+            self.remote.merge(other.remote)
+        if hasattr(other, "vcs"):
+            self.vcs.merge(other.vcs)
+        if hasattr(other, "hello_world"):
+            self.hello_world = self.HelloWorldConfig()
+            self.hello_world.merge(other.hello_world)
 
         return self
 
-    def _parse_hello_world_block(self, dummy_block: dict):
-        if "hello_world" in dummy_block:
-            hello_world_block = dummy_block["hello_world"]
-            if "username" in hello_world_block:
-                self.hello_world.username = hello_world_block["username"]
+    def _parse_hello_world_block(self, hello_world_block: dict):
+        self.hello_world = self.HelloWorldConfig()
+        if "username" in hello_world_block:
+            self.hello_world.username = hello_world_block["username"]
 
     class HelloWorldConfig:
 
@@ -48,6 +52,12 @@ class ExamplesConfig(SerializationBase):
         def __init__(self, username: str = None) -> None:
             self.username = username
 
-    hello_world: HelloWorldConfig = None
-    remote: RemoteConfig = None
-    vcs: VersionControlConfig = None
+        def merge(self, other: "ExamplesConfig.HelloWorldConfig") -> SerializationBase:
+            if hasattr(other, "username"):
+                self.username = other.username
+
+            return self
+
+    hello_world: HelloWorldConfig = {}
+    remote: RemoteConfig = {}
+    vcs: VersionControlConfig = {}

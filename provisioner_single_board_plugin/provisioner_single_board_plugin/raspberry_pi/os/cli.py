@@ -23,7 +23,7 @@ def burn_image(
     image_download_url: Optional[str] = typer.Option(
         ConfigManager.instance().get_plugin_config(SINGLE_BOARD_PLUGIN_NAME).get_os_raspbian_download_url(),
         help="OS image file download URL",
-        envvar="IMAGE_DOWNLOAD_URL",
+        envvar="PROV_IMAGE_DOWNLOAD_URL",
     )
 ) -> None:
     """

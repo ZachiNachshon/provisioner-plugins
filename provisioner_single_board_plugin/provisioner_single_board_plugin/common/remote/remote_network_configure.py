@@ -3,7 +3,7 @@
 from typing import Callable, Optional
 
 from loguru import logger
-from provisioner.colors import color
+from provisioner.colors import colors
 from provisioner.infra.context import Context
 from provisioner.infra.evaluator import Evaluator
 from provisioner.infra.remote_context import RemoteContext
@@ -218,7 +218,7 @@ class RemoteMachineNetworkConfigureRunner:
         network_info = self._bundle_network_information_from_tuple(ctx, tuple_info)
 
         if collaborators.prompter().prompt_yes_no_fn(
-            message=f"Add entry '{network_info.ssh_hostname} {network_info.static_ip_address}' to /etc/hosts file ({color.RED}password required{color.NONE})",
+            message=f"Add entry '{network_info.ssh_hostname} {network_info.static_ip_address}' to /etc/hosts file ({colors.RED}password required{colors.NONE})",
             post_no_message="Skipped adding new entry to /etc/hosts",
             post_yes_message="Selected to update /etc/hosts file",
         ):

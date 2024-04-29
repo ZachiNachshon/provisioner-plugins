@@ -2,16 +2,23 @@
 
 import importlib
 import os
+import pathlib
 
 from loguru import logger
 from provisioner.cli.entrypoint import EntryPoint
+from provisioner.cmd.config.cli import append_config_cmd_to_cli
+from provisioner.cmd.plugins.cli import append_plugins_cmd_to_cli
 from provisioner.config.domain.config import ProvisionerConfig
 from provisioner.config.manager.config_manager import ConfigManager
+from provisioner.infra.context import Context
+from provisioner.main import COMMON_COMMANDS_GROUP_NAME
+from provisioner.shared.collaborators import CoreCollaborators
 
 from provisioner_examples_plugin import main as example_plugin_main
 
 PLUGIN_IMPORT_PATH = "provisioner_examples_plugin.main"
 
+PROVISIONER_CONFIG_DEV_INTERNAL_PATH = f"{pathlib.Path(__file__).parent.parent.parent.parent}/provisioner/provisioner/resources/config.yaml"
 CONFIG_USER_PATH = os.path.expanduser("~/.config/provisioner/config.yaml")
 
 """
@@ -30,7 +37,7 @@ if not debug_pre_init:
 app = EntryPoint.create_typer(
     title="Provision Everything Anywhere (install plugins from https://zachinachshon.com/provisioner)",
     config_resolver_fn=lambda: ConfigManager.instance().load(
-        example_plugin_main.CONFIG_INTERNAL_PATH, CONFIG_USER_PATH, ProvisionerConfig
+        PROVISIONER_CONFIG_DEV_INTERNAL_PATH, CONFIG_USER_PATH, ProvisionerConfig
     ),
 )
 
@@ -45,6 +52,9 @@ except Exception as ex:
     logger.error(err_msg)
     raise Exception(err_msg)
 
+cols = CoreCollaborators(Context.createEmpty())
+append_config_cmd_to_cli(app, cli_group_name=COMMON_COMMANDS_GROUP_NAME, cols=cols)
+append_plugins_cmd_to_cli(app, cli_group_name=COMMON_COMMANDS_GROUP_NAME, cols=cols)
 
 # ==============
 # ENTRY POINT

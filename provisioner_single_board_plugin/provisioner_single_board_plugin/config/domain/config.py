@@ -5,7 +5,7 @@ from provisioner.domain.serialize import SerializationBase
 from provisioner_features_lib.remote.domain.config import RemoteConfig
 from provisioner_features_lib.vcs.domain.config import VersionControlConfig
 
-SINGLE_BOARD_PLUGIN_NAME = "single-board-plugin"
+SINGLE_BOARD_PLUGIN_NAME = "single_board_plugin"
 
 
 class SingleBoardConfig(SerializationBase):
@@ -42,19 +42,16 @@ class SingleBoardConfig(SerializationBase):
             self._parse_network_block(dict_obj["network"])
 
     def merge(self, other: "SingleBoardConfig") -> SerializationBase:
-        if other.os.raspbian.active_system:
-            self.os.raspbian.active_system = other.os.raspbian.active_system
-        if other.os.raspbian.download_path:
-            self.os.raspbian.download_path = other.os.raspbian.download_path
-        if other.os.raspbian.download_url.url_32bit:
-            self.os.raspbian.download_url.url_32bit = other.os.raspbian.download_url.url_32bit
-        if other.os.raspbian.download_url.url_64bit:
-            self.os.raspbian.download_url.url_64bit = other.os.raspbian.download_url.url_64bit
-
-        if other.network.gw_ip_address:
-            self.network.gw_ip_address = other.network.gw_ip_address
-        if other.network.dns_ip_address:
-            self.network.dns_ip_address = other.network.dns_ip_address
+        if hasattr(other, "remote"):
+            self.remote.merge(other.remote)
+        if hasattr(other, "vcs"):
+            self.vcs.merge(other.vcs)
+        if hasattr(other, "os"):
+            self.os = self.SingleBoardOsConfig()
+            self.os.merge(other.os)
+        if hasattr(other, "network"):
+            self.network = self.SingleBoardNetworkConfig()
+            self.network.merge(other.network)
 
         return self
 
@@ -97,6 +94,14 @@ class SingleBoardConfig(SerializationBase):
             self.gw_ip_address = gw_ip_address
             self.dns_ip_address = dns_ip_address
 
+        def merge(self, other: "SingleBoardConfig.SingleBoardNetworkConfig") -> SerializationBase:
+            if hasattr(other, "gw_ip_address"):
+                self.gw_ip_address = other.gw_ip_address
+            if hasattr(other, "dns_ip_address"):
+                self.dns_ip_address = other.dns_ip_address
+
+            return self
+
     class SingleBoardOsConfig:
         class SingleBoardOsRaspbianConfig:
             class DownloadUrl:
@@ -122,10 +127,27 @@ class SingleBoardConfig(SerializationBase):
                 self.download_url = download_url
                 self.download_path = download_path
 
+            def merge(self, other: "SingleBoardConfig.SingleBoardOsConfig.SingleBoardOsRaspbianConfig") -> SerializationBase:
+                if hasattr(other, "download_path"):
+                    self.download_path = other.download_path
+                if hasattr(other, "active_system"):
+                    self.active_system = other.active_system
+                if hasattr(other, "download_url"):
+                    self.download_url = other.download_url
+
+                return self
+        
         raspbian: SingleBoardOsRaspbianConfig
 
         def __init__(self, raspbian: SingleBoardOsRaspbianConfig = None) -> None:
             self.raspbian = raspbian
+
+        def merge(self, other: "SingleBoardConfig.SingleBoardOsConfig") -> SerializationBase:
+            if hasattr(other, "raspbian"):
+                self.raspbian = SingleBoardConfig.SingleBoardOsConfig.SingleBoardOsRaspbianConfig()
+                self.raspbian.merge(other.raspbian)
+
+            return self
 
     os: SingleBoardOsConfig = None
     network: SingleBoardNetworkConfig = None

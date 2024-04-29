@@ -2,6 +2,7 @@
 
 import importlib
 import os
+import pathlib
 
 from loguru import logger
 from provisioner.cli.entrypoint import EntryPoint
@@ -12,6 +13,7 @@ from provisioner_single_board_plugin import main as single_board_plugin_main
 
 PLUGIN_IMPORT_PATH = "provisioner_single_board_plugin.main"
 
+PROVISIONER_CONFIG_DEV_INTERNAL_PATH = f"{pathlib.Path(__file__).parent.parent.parent.parent}/provisioner/provisioner/resources/config.yaml"
 CONFIG_USER_PATH = os.path.expanduser("~/.config/provisioner/config.yaml")
 
 """
@@ -30,7 +32,7 @@ if not debug_pre_init:
 app = EntryPoint.create_typer(
     title="Provision Everything Anywhere (install plugins from https://zachinachshon.com/provisioner)",
     config_resolver_fn=lambda: ConfigManager.instance().load(
-        single_board_plugin_main.CONFIG_INTERNAL_PATH, CONFIG_USER_PATH, ProvisionerConfig
+        PROVISIONER_CONFIG_DEV_INTERNAL_PATH, CONFIG_USER_PATH, ProvisionerConfig
     ),
 )
 

@@ -21,6 +21,9 @@ def load_config():
 
 def append_to_cli(app: typer.Typer):
     examples_cfg = ConfigManager.instance().get_plugin_config(PLUGIN_NAME)
+    print("==============================")
+    print(examples_cfg)
+    print("==============================")
     if examples_cfg.remote is None:
         raise Exception("Remote configuration is mandatory and missing from plugin configuration")
 

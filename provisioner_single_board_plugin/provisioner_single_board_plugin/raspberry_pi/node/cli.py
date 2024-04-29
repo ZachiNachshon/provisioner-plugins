@@ -48,17 +48,17 @@ def configure() -> None:
 @logger.catch(reraise=True)
 def network(
     static_ip_address: Optional[str] = typer.Option(
-        None, show_default=False, help="Static IP address to set as the remote host IP address", envvar="RPI_STATIC_IP"
+        None, show_default=False, help="Static IP address to set as the remote host IP address", envvar="PROV_RPI_STATIC_IP"
     ),
     gw_ip_address: Optional[str] = typer.Option(
         ConfigManager.instance().get_plugin_config(SINGLE_BOARD_PLUGIN_NAME).maybe_get("network.gw_ip_address"),
         help="Internet gateway address / home router address",
-        envvar="GATEWAY_ADDRESS",
+        envvar="PROV_GATEWAY_ADDRESS",
     ),
     dns_ip_address: Optional[str] = typer.Option(
         ConfigManager.instance().get_plugin_config(SINGLE_BOARD_PLUGIN_NAME).maybe_get("network.dns_ip_address"),
         help="Domain name server address / home router address",
-        envvar="DNS_ADDRESS",
+        envvar="PROV_DNS_ADDRESS",
     ),
 ) -> None:
     """
