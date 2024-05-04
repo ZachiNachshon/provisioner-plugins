@@ -26,12 +26,7 @@ class AnsibleHelloCliTestShould(unittest.TestCase):
             ["--dry-run", "--verbose", "examples", "ansible", "hello", f"--username={EXPECTED_USERNAME}"],
         )
 
-        print("========================")
-        print(run_call.__dict__)
-        print("========================")
-
         def assertion_callback(args):
-            print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
             self.assertEqual(EXPECTED_USERNAME, args.username)
 
         Assertion.expect_call_arguments(self, run_call, arg_name="args", assertion_callable=assertion_callback)

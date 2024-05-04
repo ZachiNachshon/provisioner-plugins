@@ -27,8 +27,8 @@ vcs: {}
 """
 
 class DownloadUrl(SerializationBase):
-    url_32bit: str
-    url_64bit: str
+    url_32bit: str = ""
+    url_64bit: str = ""
 
     def __init__(self, dict_obj: dict) -> None:
         super().__init__(dict_obj)
@@ -46,11 +46,10 @@ class DownloadUrl(SerializationBase):
         if "url_64bit" in dict_obj:
             self.url_64bit = dict_obj["url_64bit"]
 
-class SingleBoardOsRaspbianConfig:
-            
-    download_path: str
-    active_system: str
-    download_url: DownloadUrl
+class SingleBoardOsRaspbianConfig(SerializationBase):
+    download_path: str = ""
+    active_system: str = ""
+    download_url: DownloadUrl = DownloadUrl({})
 
     def __init__(self, dict_obj: dict) -> None:
         super().__init__(dict_obj)
@@ -72,9 +71,8 @@ class SingleBoardOsRaspbianConfig:
         if "download_url" in dict_obj:
             self.download_url = DownloadUrl(dict_obj["download_url"])
 
-class SingleBoardOsConfig:
-            
-    raspbian: SingleBoardOsRaspbianConfig
+class SingleBoardOsConfig(SerializationBase):
+    raspbian: SingleBoardOsRaspbianConfig = SingleBoardOsRaspbianConfig({})
 
     def __init__(self, dict_obj: dict) -> None:
         super().__init__(dict_obj)
@@ -88,9 +86,9 @@ class SingleBoardOsConfig:
         if "raspbian" in dict_obj:
             self.raspbian = SingleBoardOsRaspbianConfig(dict_obj["raspbian"])
 
-class SingleBoardNetworkConfig:
-    gw_ip_address: str
-    dns_ip_address: str
+class SingleBoardNetworkConfig(SerializationBase):
+    gw_ip_address: str = ""
+    dns_ip_address: str = ""
 
     def __init__(self, dict_obj: dict) -> None:
         super().__init__(dict_obj)
@@ -108,10 +106,10 @@ class SingleBoardNetworkConfig:
             self.dns_ip_address = dict_obj["dns_ip_address"]
         
 class SingleBoardConfig(SerializationBase):
-    os: SingleBoardOsConfig = None
-    network: SingleBoardNetworkConfig = None
-    remote: RemoteConfig = None
-    vcs: VersionControlConfig = None
+    os: SingleBoardOsConfig = SingleBoardOsConfig({})
+    network: SingleBoardNetworkConfig = SingleBoardNetworkConfig({})
+    remote: RemoteConfig = RemoteConfig({})
+    vcs: VersionControlConfig = VersionControlConfig({})
 
     def __init__(self, dict_obj: dict) -> None:
         super().__init__(dict_obj)

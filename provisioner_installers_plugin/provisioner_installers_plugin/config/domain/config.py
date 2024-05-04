@@ -10,7 +10,7 @@ PLUGIN_NAME = "installers_plugin"
 """
 
 class InstallersConfig(SerializationBase):
-    remote: RemoteConfig = None
+    remote: RemoteConfig = RemoteConfig({})
 
     def __init__(self, dict_obj: dict) -> None:
         super().__init__(dict_obj)

@@ -18,7 +18,7 @@ PLUGIN_NAME = "example_plugin"
 
 
 class HelloWorldConfig(SerializationBase):
-    username: str = None
+    username: str = ""
 
     def __init__(self, dict_obj: dict) -> None:
         super().__init__(dict_obj)
@@ -34,9 +34,9 @@ class HelloWorldConfig(SerializationBase):
 
 
 class ExamplesConfig(SerializationBase):
-    hello_world: HelloWorldConfig = {}
-    remote: RemoteConfig = {}
-    vcs: VersionControlConfig = {}
+    hello_world: HelloWorldConfig = HelloWorldConfig({})
+    remote: RemoteConfig = RemoteConfig({})
+    vcs: VersionControlConfig = VersionControlConfig({})
 
     def __init__(self, dict_obj: dict) -> None:
         super().__init__(dict_obj)
