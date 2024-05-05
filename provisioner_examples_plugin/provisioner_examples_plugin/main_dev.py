@@ -18,7 +18,9 @@ from provisioner_examples_plugin import main as example_plugin_main
 
 PLUGIN_IMPORT_PATH = "provisioner_examples_plugin.main"
 
-PROVISIONER_CONFIG_DEV_INTERNAL_PATH = f"{pathlib.Path(__file__).parent.parent.parent.parent}/provisioner/provisioner/resources/config.yaml"
+PROVISIONER_CONFIG_DEV_INTERNAL_PATH = (
+    f"{pathlib.Path(__file__).parent.parent.parent.parent}/provisioner/provisioner/resources/config.yaml"
+)
 CONFIG_USER_PATH = os.path.expanduser("~/.config/provisioner/config.yaml")
 
 """
@@ -55,6 +57,7 @@ except Exception as ex:
 cols = CoreCollaborators(Context.createEmpty())
 append_config_cmd_to_cli(app, cli_group_name=COMMON_COMMANDS_GROUP_NAME, cols=cols)
 append_plugins_cmd_to_cli(app, cli_group_name=COMMON_COMMANDS_GROUP_NAME, cols=cols)
+
 
 # ==============
 # ENTRY POINT
