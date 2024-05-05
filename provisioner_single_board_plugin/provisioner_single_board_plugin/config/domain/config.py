@@ -34,9 +34,9 @@ class DownloadUrl(SerializationBase):
         super().__init__(dict_obj)
 
     def merge(self, other: "DownloadUrl") -> SerializationBase:
-        if hasattr(other, "url_32bit"):
+        if hasattr(other, "url_32bit") and len(other.url_32bit) > 0:
             self.url_32bit = other.url_32bit
-        if hasattr(other, "url_64bit"):
+        if hasattr(other, "url_64bit") and len(other.url_64bit) > 0:
             self.url_64bit = other.url_64bit
         return self
 
@@ -55,9 +55,9 @@ class SingleBoardOsRaspbianConfig(SerializationBase):
         super().__init__(dict_obj)
 
     def merge(self, other: "SingleBoardOsRaspbianConfig") -> SerializationBase:
-        if hasattr(other, "download_path"):
+        if hasattr(other, "download_path") and len(other.download_path) > 0:
             self.download_path = other.download_path
-        if hasattr(other, "active_system"):
+        if hasattr(other, "active_system") and len(other.active_system) > 0:
             self.active_system = other.active_system
         if hasattr(other, "download_url"):
             self.download_url = self.download_url if self.download_url is not None else DownloadUrl()
@@ -94,9 +94,9 @@ class SingleBoardNetworkConfig(SerializationBase):
         super().__init__(dict_obj)
 
     def merge(self, other: "SingleBoardNetworkConfig") -> SerializationBase:
-        if hasattr(other, "gw_ip_address"):
+        if hasattr(other, "gw_ip_address") and len(other.gw_ip_address) > 0:
             self.gw_ip_address = other.gw_ip_address
-        if hasattr(other, "dns_ip_address"):
+        if hasattr(other, "dns_ip_address") and len(other.dns_ip_address) > 0:
             self.dns_ip_address = other.dns_ip_address
 
     def _try_parse_config(self, dict_obj: dict):

@@ -24,7 +24,7 @@ class HelloWorldConfig(SerializationBase):
         super().__init__(dict_obj)
 
     def merge(self, other: "HelloWorldConfig") -> SerializationBase:
-        if hasattr(other, "username"):
+        if hasattr(other, "username") and len(other.username) > 0:
             self.username = other.username
         return self
 
