@@ -1,11 +1,11 @@
-name: Publish Plugins to PyPi (tested with PyPi provisioner & auto version increment)
+name: Create a GitHub plugin release
 
 on:
   workflow_dispatch:
     inputs:
       plugin_to_publish:
         type: choice
-        description: 'Select an plugin to publish to PyPi'
+        description: 'Select plugin to add as GitHub release'
         options: 
           - 'provisioner_examples_plugin'
           - 'provisioner_installers_plugin'
@@ -44,19 +44,11 @@ jobs:
           PYTHON_VERSION: ${{ matrix.python }}
           POETRY_VERSION: ${{ env.POETRY_VERSION }}
 
-      - name: Install Required pip packages
-        run: |
-          pip install coverage twine
+      # Tests should be run when the PR created after publish to PyPi was merged
 
-      - name: Run Tests
-        uses: ./.github/actions/tests
-        with:
-          use_provisioner_from: pypi
-          module_to_test: ${{ github.event.inputs.plugin_to_publish }}
-
-      - name: Publish to PyPi
-        uses: ./.github/actions/publish
+      - name: Create a GitHub release
+        uses: ./.github/actions/release
         with:
           publishable: ${{ github.event.inputs.plugin_to_publish }}
           is_plugin: true
-          PYPI_API_TOKEN: ${{ env.PYPI_API_TOKEN }}
+          GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}

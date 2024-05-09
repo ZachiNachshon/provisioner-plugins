@@ -68,12 +68,12 @@ pip-uninstall: ## Uninstall a source distribution from local pip
 
 .PHONY: pip-publish-github
 pip-publish-github: ## Publish a pip package tarball as a GitHub release
-	@${POETRY_PIP_RELEASER} publish \
+	@${POETRY_PIP_RELEASER} publish -y \
 		--multi-project \
-		--build-type sdist \
+		--build-type wheel \
 		--plugin \
 		--release-type github \
-		--release-tag $(shell cat ../../provisioner/provisioner/resources/version.txt) -y
+		--release-tag-prefix examples_plugin
 
 .PHONY: pip-publish-pypi
 pip-publish-pypi: ## Publish a pip package tarball as a PyPi release
