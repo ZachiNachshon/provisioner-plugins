@@ -71,7 +71,6 @@ pip-publish-github: ## Publish a pip package tarball as a GitHub release
 	@${POETRY_PIP_RELEASER} publish -y \
 		--multi-project \
 		--build-type wheel \
-		--plugin \
 		--release-type github \
 		--release-tag-prefix examples_plugin
 
