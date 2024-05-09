@@ -62,7 +62,7 @@ pip-publish-github: ## Publish a pip package tarball as a GitHub release
 		--multi-project \
 		--build-type wheel \
 		--release-type github \
-		--release-tag-prefix single_board_plugin
+		--release-tag-prefix single-board-plugin
 
 .PHONY: pip-publish-pypi
 pip-publish-pypi: ## Publish a pip package tarball as a PyPi release
