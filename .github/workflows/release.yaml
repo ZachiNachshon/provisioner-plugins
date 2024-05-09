@@ -13,14 +13,13 @@ on:
         required: true
 
 env:
-  PYPI_API_TOKEN: ${{ secrets.PROVISIONER_PYPI_API_TOKEN }}
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   GH_ACTION_PLUGIN_TO_PUBLISH: ${{ github.event.inputs.plugin_to_publish }}
   POETRY_VERSION: "1.4.1"
   
 jobs:
   publish_to_pypi:
-    name: Publish provisioner plugins to PyPi
+    name: Publish provisioner plugins as GitHub release
     runs-on: ubuntu-latest
     strategy:
       matrix:
