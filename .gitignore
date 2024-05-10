@@ -14,7 +14,7 @@ out/
 *.iws
 
 # VSCode
-.vscode
+# .vscode
 
 # Log directory
 logs/
