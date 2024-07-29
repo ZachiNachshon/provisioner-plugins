@@ -65,9 +65,9 @@ class SingleBoardOsRaspbianConfig(SerializationBase):
     
     def _try_parse_config(self, dict_obj: dict):
         if "download_path" in dict_obj:
-            self.download_path = dict_obj["url_32bit"]
+            self.download_path = dict_obj["download_path"]
         if "active_system" in dict_obj:
-            self.active_system = dict_obj["url_64bit"]
+            self.active_system = dict_obj["active_system"]
         if "download_url" in dict_obj:
             self.download_url = DownloadUrl(dict_obj["download_url"])
 
