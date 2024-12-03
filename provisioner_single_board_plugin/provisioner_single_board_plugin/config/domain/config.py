@@ -26,6 +26,7 @@ remote: {}
 vcs: {}
 """
 
+
 class DownloadUrl(SerializationBase):
     url_32bit: str = ""
     url_64bit: str = ""
@@ -46,6 +47,7 @@ class DownloadUrl(SerializationBase):
         if "url_64bit" in dict_obj:
             self.url_64bit = dict_obj["url_64bit"]
 
+
 class SingleBoardOsRaspbianConfig(SerializationBase):
     download_path: str = ""
     active_system: str = ""
@@ -62,7 +64,7 @@ class SingleBoardOsRaspbianConfig(SerializationBase):
         if hasattr(other, "download_url"):
             self.download_url = self.download_url if self.download_url is not None else DownloadUrl()
             self.download_url.merge(other.download_url)
-    
+
     def _try_parse_config(self, dict_obj: dict):
         if "download_path" in dict_obj:
             self.download_path = dict_obj["download_path"]
@@ -70,6 +72,7 @@ class SingleBoardOsRaspbianConfig(SerializationBase):
             self.active_system = dict_obj["active_system"]
         if "download_url" in dict_obj:
             self.download_url = DownloadUrl(dict_obj["download_url"])
+
 
 class SingleBoardOsConfig(SerializationBase):
     raspbian: SingleBoardOsRaspbianConfig = SingleBoardOsRaspbianConfig({})
@@ -85,6 +88,7 @@ class SingleBoardOsConfig(SerializationBase):
     def _try_parse_config(self, dict_obj: dict):
         if "raspbian" in dict_obj:
             self.raspbian = SingleBoardOsRaspbianConfig(dict_obj["raspbian"])
+
 
 class SingleBoardNetworkConfig(SerializationBase):
     gw_ip_address: str = ""
@@ -104,7 +108,8 @@ class SingleBoardNetworkConfig(SerializationBase):
             self.gw_ip_address = dict_obj["gw_ip_address"]
         if "dns_ip_address" in dict_obj:
             self.dns_ip_address = dict_obj["dns_ip_address"]
-        
+
+
 class SingleBoardConfig(SerializationBase):
     os: SingleBoardOsConfig = SingleBoardOsConfig({})
     network: SingleBoardNetworkConfig = SingleBoardNetworkConfig({})
@@ -127,7 +132,7 @@ class SingleBoardConfig(SerializationBase):
             self.network.merge(other.network)
 
         return self
-    
+
     def _try_parse_config(self, dict_obj: dict) -> None:
         if "remote" in dict_obj:
             self.remote = RemoteConfig(dict_obj["remote"])

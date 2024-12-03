@@ -48,7 +48,10 @@ def configure() -> None:
 @logger.catch(reraise=True)
 def network(
     static_ip_address: Optional[str] = typer.Option(
-        None, show_default=False, help="Static IP address to set as the remote host IP address", envvar="PROV_RPI_STATIC_IP"
+        None,
+        show_default=False,
+        help="Static IP address to set as the remote host IP address",
+        envvar="PROV_RPI_STATIC_IP",
     ),
     gw_ip_address: Optional[str] = typer.Option(
         ConfigManager.instance().get_plugin_config(SINGLE_BOARD_PLUGIN_NAME).maybe_get("network.gw_ip_address"),

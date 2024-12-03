@@ -13,7 +13,9 @@ from provisioner_single_board_plugin import main as single_board_plugin_main
 
 PLUGIN_IMPORT_PATH = "provisioner_single_board_plugin.main"
 
-PROVISIONER_CONFIG_DEV_INTERNAL_PATH = f"{pathlib.Path(__file__).parent.parent.parent.parent}/provisioner/provisioner/resources/config.yaml"
+PROVISIONER_CONFIG_DEV_INTERNAL_PATH = (
+    f"{pathlib.Path(__file__).parent.parent.parent.parent}/provisioner/provisioner/resources/config.yaml"
+)
 CONFIG_USER_PATH = os.path.expanduser("~/.config/provisioner/config.yaml")
 
 """
