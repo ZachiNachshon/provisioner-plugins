@@ -3,47 +3,28 @@ name = "provisioner_installers_plugin"
 version = "0.1.3"
 description = "Python Installers Library"
 authors = ["Zachi Nachshon <zachi.nachshon@gmail.com>"]
-exclude = [
-    "**/*_test*", 
-    "**/*_fake*", 
-    "dist", 
-    "htmlcov", 
-    "poetry.lock", 
-    "pytest", 
-    "Makefile", 
-    "runners", 
-    ".gitignore",
-    ".coverage",
-    ".coveragerc",
-    ".git-deps",
-    ".pytest_cache"]
 
 # Include relative modules using the poetry-mutiproject-plugin
 packages = [
-    { include = "provisioner_installers_plugin", from = "../provisioner_installers_plugin" },
-    { include = "provisioner_features_lib", from = "../../provisioner_features_lib" }
+    { include = "main.py", to = "provisioner_installers_plugin"},
+    { include = "src", to = "provisioner_installers_plugin" },
+    { include = "resources", to = "provisioner_installers_plugin" },
 ]
 
 [tool.poetry.scripts]
 # This module is not meant to be used as a standalone CLI, rather used as a plugin/library for a module with a main entry point i.e. provisioner
-test_runner = "provisioner_installers_plugin.main_fake:fake_app"
-# poetry run installers_plugin
-installers_plugin = "provisioner_installers_plugin.main_dev:main"
+test_runner = "main_fake:fake_app"
+installers_plugin = "main_dev:main"
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = "^3.11"
+
+# For development
+provisioner-shared = { path = "/Users/zachin/codebase/github/provisioner/provisioner_shared", develop = true }
 
 # For production and PyPi publishing
-# provisioner-runtime = "^0.1.2"
-
-# For development or testing, uncomment the line below
-# provisioner_runtime = { path = "../../provisioner", develop = true }
-
-# 
-# DEV DEPENDENCIES AND THEIR CONFIGS ARE AUTO GENERATED USING:
-#   make set-dev-deps
-# 
+# provisioner-shared = "^0.1.11"
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
+requires = ["poetry-core>=1.4.0"]
 build-backend = "poetry.core.masonry.api"
