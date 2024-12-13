@@ -33,7 +33,7 @@ from provisioner_shared.components.runtime.utils.os import LINUX, MAC_OS, WINDOW
 from provisioner_shared.components.runtime.utils.prompter import PromptLevel
 
 # To run as a single test target:
-#  poetry run coverage run -m pytest provisioner_single_board_plugin/common/remote/remote_network_configure_test.py
+#  poetry run coverage run -m pytest plugins/provisioner_single_board_plugin/src/common/remote/remote_network_configure_test.py
 #
 ARG_GW_IP_ADDRESS = "1.1.1.1"
 ARG_DNS_IP_ADDRESS = "2.2.2.2"
@@ -41,6 +41,10 @@ ARG_STATIC_IP_ADDRESS = "1.1.1.200"
 
 REMOTE_NETWORK_CONFIGURE_RUNNER_PATH = (
     "provisioner_single_board_plugin.src.common.remote.remote_network_configure.RemoteMachineNetworkConfigureRunner"
+)
+
+REMOTE_MACHINE_CONNECTOR_PATH = (
+    "provisioner_shared.components.remote.remote_connector.RemoteMachineConnector"
 )
 
 REMOTE_CONTEXT = RemoteContext.create(verbose=True, dry_run=False, silent=False, non_interactive=False)
@@ -142,8 +146,9 @@ class RemoteMachineNetworkConfigureTestShould(unittest.TestCase):
         post_run_call.assert_called_once()
         maybe_add_hosts_file_call.assert_called_once()
 
+    # TODO: Fix me
     @mock.patch(
-        target="components.remote.remote_connector.RemoteMachineConnector.collect_ssh_connection_info",
+        target=f"{REMOTE_MACHINE_CONNECTOR_PATH}.collect_ssh_connection_info",
         spec=TestDataRemoteConnector.create_fake_ssh_conn_info_fn(),
     )
     def test_get_ssh_conn_info_with_summary(self, run_call: mock.MagicMock) -> None:
@@ -155,7 +160,7 @@ class RemoteMachineNetworkConfigureTestShould(unittest.TestCase):
         Assertion.expect_call_argument(self, run_call, arg_name="force_single_conn_info", expected_value=True)
 
     @mock.patch(
-        target="components.remote.remote_connector.RemoteMachineConnector.collect_dhcpcd_configuration_info",
+        target=f"{REMOTE_MACHINE_CONNECTOR_PATH}.collect_dhcpcd_configuration_info",
         spec=TestDataRemoteConnector.create_fake_get_dhcpcd_configure_info_fn(),
     )
     def test_get_dhcpcd_config_info_with_summary(self, run_call: mock.MagicMock) -> None:

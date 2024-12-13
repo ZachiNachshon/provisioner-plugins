@@ -9,7 +9,7 @@ from provisioner_shared.components.runtime.test_lib.test_env import TestEnv
 from provisioner_shared.components.vcs.typer_vcs_opts_fakes import TestDataVersionControlOpts
 from provisioner_examples_plugin.src.anchor.anchor_cmd import AnchorCmd, AnchorCmdArgs
 
-ANCHOR_RUN_COMMAND_RUNNER_PATH = "components.anchor.anchor_runner.AnchorCmdRunner"
+ANCHOR_RUN_COMMAND_RUNNER_PATH = "provisioner_shared.components.anchor.anchor_runner.AnchorCmdRunner"
 
 EXPECTED_ANCHOR_RUN_COMMAND = "run --action=test-action"
 EXPECTED_GITHUB_ORGANIZATION = "test-org"

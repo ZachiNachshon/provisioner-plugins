@@ -29,7 +29,7 @@ from provisioner_shared.components.runtime.utils.os import LINUX, MAC_OS, WINDOW
 from provisioner_shared.components.runtime.utils.prompter import PromptLevel
 
 # To run as a single test target:
-#  poetry run coverage run -m pytest provisioner_single_board_plugin/common/remote/remote_os_configure_test.py
+#  poetry run coverage run -m pytest plugins/provisioner_single_board_plugin/src/common/remote/remote_os_configure_test.py
 #
 ARG_NODE_USERNAME = "test-username"
 ARG_NODE_PASSWORD = "test-password"
@@ -124,7 +124,7 @@ class RemoteMachineConfigureTestShould(unittest.TestCase):
         post_run_call.assert_called_once()
 
     @mock.patch(
-        target="components.remote.remote_connector.RemoteMachineConnector.collect_ssh_connection_info",
+        target="provisioner_shared.components.remote.remote_connector.RemoteMachineConnector.collect_ssh_connection_info",
         spec=TestDataRemoteConnector.create_fake_ssh_conn_info_fn(),
     )
     def test_get_ssh_conn_info_with_summary(self, run_call: mock.MagicMock) -> None:

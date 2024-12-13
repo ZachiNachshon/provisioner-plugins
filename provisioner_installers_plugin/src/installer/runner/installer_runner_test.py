@@ -26,7 +26,7 @@ from provisioner_shared.components.runtime.test_lib.assertions import Assertion
 from provisioner_shared.components.runtime.test_lib.test_env import TestEnv
 from provisioner_shared.components.runtime.utils.os import OsArch
 from provisioner_shared.components.runtime.utils.summary import Summary
-from framework.functional.pyfn import Environment, PyFn, PyFnEvaluator
+from provisioner_shared.framework.functional.pyfn import Environment, PyFn, PyFnEvaluator
 from provisioner_installers_plugin.src.installer.domain.command import InstallerSubCommandName
 from provisioner_installers_plugin.src.installer.domain.installable import Installable
 from provisioner_installers_plugin.src.installer.domain.source import (
@@ -51,7 +51,7 @@ from provisioner_installers_plugin.src.installer.runner.installer_runner import 
 )
 
 # To run as a single test target:
-#  poetry run coverage run -m pytest provisioner_installers_plugin/installer/runner/installer_runner_test.py
+#  poetry run coverage run -m pytest plugins/provisioner_installers_plugin/src/installer/runner/installer_runner_test.py
 #
 TEST_GITHUB_ACCESS_TOKEN = "top-secret"
 TEST_UTILITY_1_NAME_GITHUB = "test_util_github"
@@ -60,7 +60,7 @@ TEST_UTILITY_2_NAME_SCRIPT = "test_util_script"
 UTILITY_INSTALLER_CMD_RUNNER_PATH = (
     "provisioner_installers_plugin.src.installer.runner.installer_runner.UtilityInstallerCmdRunner"
 )
-REMOTE_MACHINE_CONNECTOR_PATH = "components.remote.remote_connector.RemoteMachineConnector"
+REMOTE_MACHINE_CONNECTOR_PATH = "provisioner_shared.components.remote.remote_connector.RemoteMachineConnector"
 
 TestSupportedToolings = {
     TEST_UTILITY_1_NAME_GITHUB: Installable.Utility(

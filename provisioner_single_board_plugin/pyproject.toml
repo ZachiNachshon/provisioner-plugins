@@ -17,12 +17,7 @@ single_board_plugin = "main_dev:main"
 
 [tool.poetry.dependencies]
 python = "^3.11"
-
-# For development
-provisioner-shared = { path = "/Users/zachin/codebase/github/provisioner/provisioner_shared", develop = true }
-
-# For production and PyPi publishing
-# provisioner-shared = "^0.1.11"
+provisioner-shared = {path = "/Users/zachin/codebase/github/provisioner/provisioner_shared", develop = true}  # provisioner-shared = "^0.1.11"
 
 [build-system]
 requires = ["poetry-core>=1.4.0"]

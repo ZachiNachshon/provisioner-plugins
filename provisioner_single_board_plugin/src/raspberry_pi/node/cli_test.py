@@ -19,7 +19,7 @@ ARG_GW_IP_ADDRESS = "1.1.1.1"
 ARG_DNS_IP_ADDRESS = "2.2.2.2"
 ARG_STATIC_IP_ADDRESS = "1.1.1.200"
 
-RPI_NODE_MODULE_PATH = "provisioner_single_board_plugin.raspberry_pi.node"
+RPI_NODE_MODULE_PATH = "provisioner_single_board_plugin.src.raspberry_pi.node"
 
 STEP_ERROR_OUTPUT = "This is a sample step error output for a test expected to fail"
 

@@ -24,7 +24,7 @@ INSTALLER_CMD_MODULE_PATH = "provisioner_installers_plugin.src.installer.cmd.ins
 
 
 # To run as a single test target:
-#  poetry run coverage run -m pytest plugins/provisioner_installers_plugin/cli/cli_test.py
+#  poetry run coverage run -m pytest plugins/provisioner_installers_plugin/src/cli/cli_test.py
 #
 class UtilityInstallerCliTestShould(unittest.TestCase):
 

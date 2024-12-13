@@ -17,7 +17,7 @@ from provisioner_shared.components.runtime.test_lib.test_env import TestEnv
 ARG_IMAGE_DOWNLOAD_URL = "http://test.image.download.url.com"
 
 AUTO_PROMPT_RESPONSE = "DRY_RUN_RESPONSE"
-RPI_OS_MODULE_PATH = "provisioner_single_board_plugin.raspberry_pi.os"
+RPI_OS_MODULE_PATH = "provisioner_single_board_plugin.src.raspberry_pi.os"
 
 STEP_ERROR_OUTPUT = "This is a sample step error output for a test expected to fail"
 

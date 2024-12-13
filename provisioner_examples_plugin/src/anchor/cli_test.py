@@ -20,7 +20,7 @@ runner = CliRunner()
 
 
 # To run as a single test target:
-#  poetry run coverage run -m pytest provisioner_examples_plugin/anchor/cli_test.py
+#  poetry run coverage run -m pytest plugins/provisioner_examples_plugin/src/anchor/cli_test.py
 #
 class AnchorCliTestShould(unittest.TestCase):
     @mock.patch(f"{ANCHOR_COMMAND_PATH}.run")

@@ -22,7 +22,7 @@ from provisioner_shared.components.runtime.infra.context import Context
 from provisioner_shared.components.runtime.infra.remote_context import RemoteContext
 from provisioner_shared.components.runtime.runner.ansible.ansible_runner import AnsibleHost, AnsiblePlaybook, AnsibleRunnerLocal
 from provisioner_shared.components.runtime.shared.collaborators import CoreCollaborators
-from framework.functional.pyfn import Environment, PyFn, PyFnEnvBase, PyFnEvaluator
+from provisioner_shared.framework.functional.pyfn import Environment, PyFn, PyFnEnvBase, PyFnEvaluator
 from provisioner_installers_plugin.src.installer.domain.command import InstallerSubCommandName
 from provisioner_installers_plugin.src.installer.domain.dynamic_args import DynamicArgs
 from provisioner_installers_plugin.src.installer.domain.installable import Installable
