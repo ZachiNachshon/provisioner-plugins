@@ -1,4 +1,10 @@
 [virtualenvs]
+# This setting tells Poetry to create a virtual environment automatically if one doesn't already exist when you run commands like poetry install.
 create = true
-path = ".venv"
-in-project = true
+# This instructs Poetry to create the virtual environment inside the project's directory.
+# By default, Poetry places virtual environments in a global cache directory (e.g., ~/.cache/pypoetry/virtualenvs/).
+in-project = false
+# This setting ensures that if multiple projects share the same parent directory, they all use the same virtual environment instead of creating one for each project.
+same-dir = true
+# In this case, the virtual environment will be created (or looked for) at the relative path ../../.venv from the project directory.
+path = "../../.venv"

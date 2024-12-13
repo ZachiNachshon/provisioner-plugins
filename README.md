@@ -26,7 +26,7 @@ Plugins are using the Provisioner CLI as the runtime and also as the development
 <h2 id="requirements">🏴‍☠️ Requirements</h2>
 
 - A Unix-like operating system: macOS, Linux
-- Python `v3.10` and above
+- Python `v3.11` and above
 - [Provisioner CLI](https://github.com/ZachiNachshon/provisioner) installed and ready to use
 
 <br>

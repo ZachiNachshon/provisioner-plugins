@@ -3,46 +3,22 @@ name = "provisioner_single_board_plugin"
 version = "0.1.2"
 description = "Python Single Boards Library"
 authors = ["Zachi Nachshon <zachi.nachshon@gmail.com>"]
-exclude = [
-    "**/*_test*", 
-    "**/*_fake*", 
-    "dist", 
-    "htmlcov", 
-    "poetry.lock", 
-    "pytest", 
-    "Makefile", 
-    "runners", 
-    ".gitignore",
-    ".coverage",
-    ".coveragerc",
-    ".git-deps",
-    ".pytest_cache"]
 
-# Include relative modules using the poetry-mutiproject-plugin
 packages = [
-    { include = "provisioner_single_board_plugin", from = "../provisioner_single_board_plugin" },
-    { include = "provisioner_features_lib", from = "../../provisioner_features_lib" }
+    { include = "main.py", to = "provisioner_single_board_plugin"},
+    { include = "src", to = "provisioner_single_board_plugin" },
+    { include = "resources", to = "provisioner_single_board_plugin" },
 ]
 
 [tool.poetry.scripts]
 # This module is not meant to be used as a standalone CLI, rather used as a plugin/library for a module with a main entry point i.e. provisioner
-test_runner = "provisioner_single_board_plugin.main_fake:main"
-single_board_plugin = "provisioner_single_board_plugin.main_dev:main"
+test_runner = "main_fake:main"
+single_board_plugin = "main_dev:main"
 
 [tool.poetry.dependencies]
-python = "^3.10"
-
-# For production and PyPi publishing
-# provisioner-runtime = "^0.1.2"
-
-# For development or testing, uncomment the line below
-# provisioner_runtime = { path = "../../provisioner", develop = true }
-
-# 
-# DEV DEPENDENCIES AND THEIR CONFIGS ARE AUTO GENERATED USING:
-#   make set-dev-deps
-# 
+python = "^3.11"
+provisioner-shared = "^0.1.11"
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
+requires = ["poetry-core>=1.4.0"]
 build-backend = "poetry.core.masonry.api"
