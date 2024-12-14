@@ -1,0 +1,44 @@
+name: 'Tests Suite'
+description: 'Run Tests Suite'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Print Action Arguments
+      run: |
+        echo "::group::Print test action arguments"
+        echo "No action arguments"
+        echo "::endgroup::"
+      shell: bash
+
+    - name: Switch to DEV mode on all projects
+      run: |
+        echo "::group::Switching to DEV mode on all projects"
+        make dev-mode
+        echo "::endgroup::"
+      shell: bash
+
+    # 
+    # Temporary disable caching since the upload time takes longer than the actual action time
+    # 
+    # - name: (Cache) Try Load - provisioner monorepo
+    #   id: cached-venv-provisioner-monorepo
+    #   uses: actions/cache@v3
+    #   with:
+    #     path: ./.venv
+    #     key: provisioner-monorepo-venv-${{ runner.os }}-${{ hashFiles('./poetry.lock') }}-${{ hashFiles('./pyproject.toml') }}
+
+    - name: (Install) provisioner monorepo
+      if: steps.cached-venv-provisioner-monorepo.outputs.cache-hit != 'true'
+      run: |
+        echo "::group::Installing provisioner monorepo dependecies"
+        make deps-install
+        echo "::endgroup::"
+      shell: bash
+    
+    - name: (Test) provisioner monorepo
+      run: |
+        echo "::group::Running tests on provisioner monorepo"
+        make test-coverage-xml
+        echo "::endgroup::"
+      shell: bash    

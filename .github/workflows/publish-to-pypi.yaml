@@ -1,0 +1,59 @@
+name: Publish Provisioner to PyPi (auto version increment)
+
+on:
+  workflow_dispatch:
+    inputs:
+      publishable_project:
+        type: choice
+        description: 'Select a PyPi publishable plugin'
+        options: 
+          - 'provisioner_examples_plugin'
+          - 'provisioner_installers_plugin'
+          - 'provisioner_single_board_plugin'
+        required: true
+
+env:
+  PYPI_API_TOKEN_PROVISIONER_EXAMPLES_PLUGIN: ${{ secrets.PYPI_API_TOKEN_PROVISIONER_EXAMPLES_PLUGIN }}
+  PYPI_API_TOKEN_PROVISIONER_INSTALLERS_PLUGIN: ${{ secrets.PYPI_API_TOKEN_PROVISIONER_INSTALLERS_PLUGIN }}
+  PYPI_API_TOKEN_PROVISIONER_SINGLE_BOARD_PLUGIN: ${{ secrets.PYPI_API_TOKEN_PROVISIONER_SINGLE_BOARD_PLUGIN }}
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  POETRY_VERSION: "1.8.4"
+  
+jobs:
+  publish_to_pypi:
+    name: Publish provisioner to PyPi
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: [ '3.11' ]
+
+    steps:
+      - name: Checkout ZachiNachshon/provisioner
+        uses: actions/checkout@v3
+        with:
+          repository: 'ZachiNachshon/provisioner'
+          token: ${{ secrets.PROVISIONER_REPO_ACCESS_TOKEN }}
+
+      - name: Checkout ZachiNachshon/provisioner-plugins
+        uses: actions/checkout@v3
+        with:
+          path: './plugins'
+
+      - name: Setup Environment
+        uses: ./.github/actions/setup
+        env:
+          PYTHON_VERSION: ${{ matrix.python }}
+          POETRY_VERSION: ${{ env.POETRY_VERSION }}
+
+      - name: Run Tests
+        uses: ./.github/actions/tests
+
+      - name: Publish to PyPi & GitHub
+        uses: ./.github/actions/publish_to_pypi
+        with:
+          project_to_publish: ${{ github.event.inputs.publishable_project }}
+          GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
+          # PyPi access tokens
+          PYPI_API_TOKEN_PROVISIONER_EXAMPLES_PLUGIN: ${{ env.PYPI_API_TOKEN_PROVISIONER_EXAMPLES_PLUGIN }}
+          PYPI_API_TOKEN_PROVISIONER_INSTALLERS_PLUGIN: ${{ env.PYPI_API_TOKEN_PROVISIONER_INSTALLERS_PLUGIN }}
+          PYPI_API_TOKEN_PROVISIONER_SINGLE_BOARD_PLUGIN: ${{ env.PYPI_API_TOKEN_PROVISIONER_SINGLE_BOARD_PLUGIN }}
