@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "provisioner_examples_plugin"
-version = "0.1.4"
+version = "0.1.5"
 description = "Python Examples Library"
 authors = ["Zachi Nachshon <zachi.nachshon@gmail.com>"]
 
