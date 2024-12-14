@@ -5,8 +5,8 @@ from unittest import mock
 
 from typer.testing import CliRunner
 
-from provisioner_shared.components.runtime.test_lib.assertions import Assertion
 from provisioner_examples_plugin.main_fake import get_fake_app
+from provisioner_shared.components.runtime.test_lib.assertions import Assertion
 
 EXPECTED_USERNAME = "test-user"
 

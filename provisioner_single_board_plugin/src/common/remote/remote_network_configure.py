@@ -3,7 +3,6 @@
 from typing import Callable, Optional
 
 from loguru import logger
-from provisioner_shared.components.runtime.colors import colors
 
 from provisioner_shared.components.remote.remote_connector import (
     DHCPCDConfigurationInfo,
@@ -11,6 +10,7 @@ from provisioner_shared.components.remote.remote_connector import (
     SSHConnectionInfo,
 )
 from provisioner_shared.components.remote.typer_remote_opts import CliRemoteOpts
+from provisioner_shared.components.runtime.colors import colors
 from provisioner_shared.components.runtime.infra.context import Context
 from provisioner_shared.components.runtime.infra.evaluator import Evaluator
 from provisioner_shared.components.runtime.infra.remote_context import RemoteContext

@@ -5,11 +5,11 @@ import os
 import pathlib
 
 from loguru import logger
+
+from provisioner_installers_plugin import main as installers_plugin_main
+from provisioner_shared.components.runtime.cli.entrypoint import EntryPoint
 from provisioner_shared.components.runtime.config.domain.config import ProvisionerConfig
 from provisioner_shared.components.runtime.config.manager.config_manager import ConfigManager
-
-from provisioner_shared.components.runtime.cli.entrypoint import EntryPoint
-from provisioner_installers_plugin import main as installers_plugin_main
 
 PLUGIN_IMPORT_PATH = "provisioner_installers_plugin.main"
 

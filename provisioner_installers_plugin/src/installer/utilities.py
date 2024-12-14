@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 
-from provisioner_shared.components.runtime.runner.ansible.ansible_runner import AnsiblePlaybook
 from provisioner_installers_plugin.src.installer.domain.installable import Installable
 from provisioner_installers_plugin.src.installer.domain.source import (
     ActiveInstallSource,
     InstallSource,
 )
 from provisioner_installers_plugin.src.installer.versions import ToolingVersions
+
+from provisioner_shared.components.runtime.runner.ansible.ansible_runner import AnsiblePlaybook
 
 SupportedOS = ["linux", "darwin"]
 SupportedArchitectures = ["x86_64", "arm", "amd64", "armv6l", "armv7l", "arm64", "aarch64"]

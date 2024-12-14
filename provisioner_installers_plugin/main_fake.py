@@ -2,13 +2,12 @@
 
 import traceback
 
-from provisioner_shared.components.runtime.config.manager.config_manager import ConfigManager
-
-from provisioner_shared.components.remote.typer_remote_opts_fakes import *
-from provisioner_shared.components.runtime.cli.entrypoint import EntryPoint
+from provisioner_installers_plugin.main import append_to_cli
 from provisioner_installers_plugin.src.config.domain.config import PLUGIN_NAME, InstallersConfig
 from provisioner_installers_plugin.src.config.domain.config_fakes import TestDataInstallersConfig
-from provisioner_installers_plugin.main import append_to_cli
+from provisioner_shared.components.remote.typer_remote_opts_fakes import *
+from provisioner_shared.components.runtime.cli.entrypoint import EntryPoint
+from provisioner_shared.components.runtime.config.manager.config_manager import ConfigManager
 
 FAKE_APP_TITLE = "Fake Utility Installer Test App"
 FAKE_CONFIG_USER_PATH = "~/my/config.yaml"

@@ -11,7 +11,6 @@ from provisioner_single_board_plugin.src.common.remote.remote_os_configure impor
     generate_instructions_post_configure,
     generate_instructions_pre_configure,
 )
-from provisioner_shared.components.runtime.test_lib import faker
 
 from provisioner_shared.components.remote.remote_connector_fakes import (
     TestDataRemoteConnector,
@@ -23,6 +22,7 @@ from provisioner_shared.components.runtime.runner.ansible.ansible_fakes import F
 from provisioner_shared.components.runtime.runner.ansible.ansible_runner import (
     AnsiblePlaybook,
 )
+from provisioner_shared.components.runtime.test_lib import faker
 from provisioner_shared.components.runtime.test_lib.assertions import Assertion
 from provisioner_shared.components.runtime.test_lib.test_env import TestEnv
 from provisioner_shared.components.runtime.utils.os import LINUX, MAC_OS, WINDOWS, OsArch

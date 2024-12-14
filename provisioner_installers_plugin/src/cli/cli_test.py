@@ -4,6 +4,9 @@ import unittest
 from unittest import mock
 
 import typer
+from provisioner_installers_plugin.main_fake import get_fake_app
+from provisioner_installers_plugin.src.cli.cli import anchor, helm, register_cli_commands
+from provisioner_installers_plugin.src.k3s.cli import k3s_agent, k3s_server, register_k3s_commands
 from typer.testing import CliRunner
 
 from provisioner_shared.components.remote.domain.config import RemoteConfig
@@ -16,9 +19,6 @@ from provisioner_shared.components.runtime.infra.context import Context
 from provisioner_shared.components.runtime.test_lib.assertions import Assertion
 from provisioner_shared.components.runtime.test_lib.test_cli_runner import TestCliRunner
 from provisioner_shared.components.runtime.test_lib.test_env import TestEnv
-from provisioner_installers_plugin.src.cli.cli import anchor, helm, register_cli_commands
-from provisioner_installers_plugin.src.k3s.cli import k3s_agent, k3s_server, register_k3s_commands
-from provisioner_installers_plugin.main_fake import get_fake_app
 
 INSTALLER_CMD_MODULE_PATH = "provisioner_installers_plugin.src.installer.cmd.installer_cmd"
 

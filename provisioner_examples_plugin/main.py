@@ -3,11 +3,11 @@
 import pathlib
 
 import typer
-from provisioner_shared.components.runtime.config.manager.config_manager import ConfigManager
 
-from provisioner_shared.components.remote.typer_remote_opts import TyperRemoteOpts
-from provisioner_shared.components.vcs.typer_vcs_opts import TyperVersionControl
 from provisioner_examples_plugin.src.config.domain.config import PLUGIN_NAME, ExamplesConfig
+from provisioner_shared.components.remote.typer_remote_opts import TyperRemoteOpts
+from provisioner_shared.components.runtime.config.manager.config_manager import ConfigManager
+from provisioner_shared.components.vcs.typer_vcs_opts import TyperVersionControl
 
 CONFIG_INTERNAL_PATH = f"{pathlib.Path(__file__).parent}/resources/config.yaml"
 
