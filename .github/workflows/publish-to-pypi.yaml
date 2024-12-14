@@ -1,4 +1,4 @@
-name: Publish Provisioner to PyPi (auto version increment)
+name: Publish plugin to PyPi (auto version increment)
 
 on:
   workflow_dispatch:
