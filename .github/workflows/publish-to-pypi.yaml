@@ -48,8 +48,8 @@ jobs:
       - name: Run Tests
         uses: ./.github/actions/tests
 
-      - name: Publish to PyPi & GitHub
-        uses: ./.github/actions/publish_to_pypi
+      - name: Publish plugin to PyPi & GitHub
+        uses: ./plugins/.github/actions/publish_to_pypi
         with:
           project_to_publish: ${{ github.event.inputs.publishable_project }}
           GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
