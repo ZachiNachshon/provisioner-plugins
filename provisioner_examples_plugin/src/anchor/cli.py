@@ -4,11 +4,11 @@
 import typer
 from loguru import logger
 
+from provisioner_examples_plugin.src.anchor.anchor_cmd import AnchorCmd, AnchorCmdArgs
 from provisioner_shared.components.remote.typer_remote_opts import TyperRemoteOpts
 from provisioner_shared.components.runtime.infra.context import CliContextManager
 from provisioner_shared.components.runtime.infra.evaluator import Evaluator
 from provisioner_shared.components.vcs.typer_vcs_opts import TyperVersionControl
-from provisioner_examples_plugin.src.anchor.anchor_cmd import AnchorCmd, AnchorCmdArgs
 
 example_anchor_cli_app = typer.Typer()
 

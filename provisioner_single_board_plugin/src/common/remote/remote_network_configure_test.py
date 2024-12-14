@@ -11,7 +11,6 @@ from provisioner_single_board_plugin.src.common.remote.remote_network_configure 
     generate_instructions_post_network,
     generate_instructions_pre_network,
 )
-from provisioner_shared.components.runtime.test_lib import faker
 
 from provisioner_shared.components.remote.remote_connector import (
     DHCPCDConfigurationInfo,
@@ -27,6 +26,7 @@ from provisioner_shared.components.runtime.runner.ansible.ansible_fakes import F
 from provisioner_shared.components.runtime.runner.ansible.ansible_runner import (
     AnsiblePlaybook,
 )
+from provisioner_shared.components.runtime.test_lib import faker
 from provisioner_shared.components.runtime.test_lib.assertions import Assertion
 from provisioner_shared.components.runtime.test_lib.test_env import TestEnv
 from provisioner_shared.components.runtime.utils.os import LINUX, MAC_OS, WINDOWS, OsArch
@@ -43,9 +43,7 @@ REMOTE_NETWORK_CONFIGURE_RUNNER_PATH = (
     "provisioner_single_board_plugin.src.common.remote.remote_network_configure.RemoteMachineNetworkConfigureRunner"
 )
 
-REMOTE_MACHINE_CONNECTOR_PATH = (
-    "provisioner_shared.components.remote.remote_connector.RemoteMachineConnector"
-)
+REMOTE_MACHINE_CONNECTOR_PATH = "provisioner_shared.components.remote.remote_connector.RemoteMachineConnector"
 
 REMOTE_CONTEXT = RemoteContext.create(verbose=True, dry_run=False, silent=False, non_interactive=False)
 

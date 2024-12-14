@@ -9,8 +9,8 @@ from provisioner_single_board_plugin.src.raspberry_pi.os.burn_image_cmd import (
     RPiOsBurnImageCmd,
     RPiOsBurnImageCmdArgs,
 )
-from provisioner_shared.components.runtime.config.manager.config_manager import ConfigManager
 
+from provisioner_shared.components.runtime.config.manager.config_manager import ConfigManager
 from provisioner_shared.components.runtime.infra.context import CliContextManager
 from provisioner_shared.components.runtime.infra.evaluator import Evaluator
 

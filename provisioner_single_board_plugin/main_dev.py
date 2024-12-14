@@ -6,10 +6,10 @@ import pathlib
 
 from loguru import logger
 from provisioner_single_board_plugin import main as single_board_plugin_main
-from provisioner_shared.components.runtime.config.domain.config import ProvisionerConfig
-from provisioner_shared.components.runtime.config.manager.config_manager import ConfigManager
 
 from provisioner_shared.components.runtime.cli.entrypoint import EntryPoint
+from provisioner_shared.components.runtime.config.domain.config import ProvisionerConfig
+from provisioner_shared.components.runtime.config.manager.config_manager import ConfigManager
 
 PLUGIN_IMPORT_PATH = "provisioner_single_board_plugin.main"
 

@@ -4,29 +4,6 @@ import unittest
 from typing import Callable, List
 from unittest import mock
 
-from provisioner_shared.components.runtime.test_lib import faker
-
-from provisioner_shared.components.remote.domain.config import RunEnvironment
-from provisioner_shared.components.remote.remote_connector import RemoteMachineConnector
-from provisioner_shared.components.remote.remote_connector_fakes import (
-    TestDataRemoteConnector,
-)
-from provisioner_shared.components.remote.typer_remote_opts_fakes import TestDataRemoteOpts
-from provisioner_shared.components.runtime.errors.cli_errors import (
-    InstallerSourceError,
-    InstallerUtilityNotSupported,
-    OsArchNotSupported,
-    VersionResolverError,
-)
-from provisioner_shared.components.runtime.infra.context import Context
-from provisioner_shared.components.runtime.infra.remote_context import RemoteContext
-from provisioner_shared.components.runtime.runner.ansible.ansible_fakes import FakeAnsibleRunnerLocal
-from provisioner_shared.components.runtime.runner.ansible.ansible_runner import AnsiblePlaybook
-from provisioner_shared.components.runtime.test_lib.assertions import Assertion
-from provisioner_shared.components.runtime.test_lib.test_env import TestEnv
-from provisioner_shared.components.runtime.utils.os import OsArch
-from provisioner_shared.components.runtime.utils.summary import Summary
-from provisioner_shared.framework.functional.pyfn import Environment, PyFn, PyFnEvaluator
 from provisioner_installers_plugin.src.installer.domain.command import InstallerSubCommandName
 from provisioner_installers_plugin.src.installer.domain.installable import Installable
 from provisioner_installers_plugin.src.installer.domain.source import (
@@ -49,6 +26,29 @@ from provisioner_installers_plugin.src.installer.runner.installer_runner import 
     UtilityInstallerRunnerCmdArgs,
     generate_installer_welcome,
 )
+
+from provisioner_shared.components.remote.domain.config import RunEnvironment
+from provisioner_shared.components.remote.remote_connector import RemoteMachineConnector
+from provisioner_shared.components.remote.remote_connector_fakes import (
+    TestDataRemoteConnector,
+)
+from provisioner_shared.components.remote.typer_remote_opts_fakes import TestDataRemoteOpts
+from provisioner_shared.components.runtime.errors.cli_errors import (
+    InstallerSourceError,
+    InstallerUtilityNotSupported,
+    OsArchNotSupported,
+    VersionResolverError,
+)
+from provisioner_shared.components.runtime.infra.context import Context
+from provisioner_shared.components.runtime.infra.remote_context import RemoteContext
+from provisioner_shared.components.runtime.runner.ansible.ansible_fakes import FakeAnsibleRunnerLocal
+from provisioner_shared.components.runtime.runner.ansible.ansible_runner import AnsiblePlaybook
+from provisioner_shared.components.runtime.test_lib import faker
+from provisioner_shared.components.runtime.test_lib.assertions import Assertion
+from provisioner_shared.components.runtime.test_lib.test_env import TestEnv
+from provisioner_shared.components.runtime.utils.os import OsArch
+from provisioner_shared.components.runtime.utils.summary import Summary
+from provisioner_shared.framework.functional.pyfn import Environment, PyFn, PyFnEvaluator
 
 # To run as a single test target:
 #  poetry run coverage run -m pytest plugins/provisioner_installers_plugin/src/installer/runner/installer_runner_test.py

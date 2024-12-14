@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 
-from provisioner_shared.components.runtime.domain.serialize import SerializationBase
-
 from provisioner_shared.components.remote.domain.config import RemoteConfig
+from provisioner_shared.components.runtime.domain.serialize import SerializationBase
 from provisioner_shared.components.vcs.domain.config import VersionControlConfig
 
 PLUGIN_NAME = "example_plugin"
