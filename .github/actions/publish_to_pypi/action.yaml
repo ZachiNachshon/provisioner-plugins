@@ -76,12 +76,13 @@ runs:
       shell: bash
 
     - name: Publish to PyPi
+      env:
+        PYPI_API_TOKEN: ${{ env.PYPI_API_TOKEN }}
       run: |
         echo "::group::Publishing to PyPi"
         publishable=${{ inputs.project_to_publish }}
 
         echo "Publishing ${publishable} plugin"
-        publisher_script_path="../../scripts/publish_to_pypi.sh"
 
         # 
         # Publish plugin package
@@ -91,8 +92,7 @@ runs:
         ver=$(poetry version | awk '{print $2}' | tr -d '\n')
         echo -n $ver > resources/version.txt
 
-        PYPI_API_TOKEN=${PYPI_API_TOKEN} \
-          ${publisher_script_path} publish --build-type wheel --release-type pypi -y
+        ../../scripts/publish_to_pypi.sh publish --build-type wheel --release-type pypi -y
         cd ../..
 
         echo "::endgroup::" 
@@ -105,6 +105,8 @@ runs:
       shell: bash
 
     - name: Open a GitHub PR with released version
+      env:
+        GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
       run: |
         echo "::group::Opening a GitHub PR with released version"
         publishable=${{ inputs.project_to_publish }}
