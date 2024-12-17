@@ -6,9 +6,7 @@ authors = ["Zachi Nachshon <zachi.nachshon@gmail.com>"]
 
 # Include relative modules using the poetry-mutiproject-plugin
 packages = [
-    { include = "main.py", to = "provisioner_installers_plugin"},
-    { include = "src", to = "provisioner_installers_plugin" },
-    { include = "resources", to = "provisioner_installers_plugin" },
+    { include = "provisioner_installers_plugin"}
 ]
 
 [tool.poetry.scripts]
@@ -16,6 +14,7 @@ packages = [
 test_runner = "main_fake:fake_app"
 installers_plugin = "main_dev:main"
 
+# For production and PyPi publishing
 [tool.poetry.dependencies]
 python = "^3.11"
 provisioner-shared = "^0.1.11"
