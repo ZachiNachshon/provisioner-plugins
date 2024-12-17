@@ -6,9 +6,7 @@ authors = ["Zachi Nachshon <zachi.nachshon@gmail.com>"]
 
 # Include relative modules using the poetry-mutiproject-plugin
 packages = [
-    { include = "main.py", to = "provisioner_examples_plugin"},
-    { include = "src", to = "provisioner_examples_plugin" },
-    { include = "resources", to = "provisioner_examples_plugin" },
+    { include = "provisioner_examples_plugin" }
 ]
 
 [tool.poetry.scripts]

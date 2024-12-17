@@ -5,9 +5,7 @@ description = "Python Single Boards Library"
 authors = ["Zachi Nachshon <zachi.nachshon@gmail.com>"]
 
 packages = [
-    { include = "main.py", to = "provisioner_single_board_plugin"},
-    { include = "src", to = "provisioner_single_board_plugin" },
-    { include = "resources", to = "provisioner_single_board_plugin" },
+    { include = "provisioner_single_board_plugin" },
 ]
 
 [tool.poetry.scripts]
