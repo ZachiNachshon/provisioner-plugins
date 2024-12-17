@@ -45,9 +45,9 @@ runs:
         plugin_pure_name=${project_to_release#provisioner_} # Remove 'provisioner_' prefix
         plugin_pure_name=${plugin_pure_name//_/\-}          # Replace '_' with '-'
 
-        cd plugins/${project_to_release}
-        ../../scripts/publish_to_pypi.sh publish -y --build-type wheel --release-type github --release-tag-prefix ${plugin_pure_name}
-        cd ../..
+        cd plugins/${project_to_release}/${project_to_release}
+        ../../../scripts/publish_to_pypi.sh publish -y --build-type wheel --release-type github --release-tag-prefix ${plugin_pure_name}
+        cd ../../..
 
         echo "::endgroup::" 
       shell: bash

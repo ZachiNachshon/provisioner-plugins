@@ -87,13 +87,13 @@ runs:
         # 
         # Publish plugin package
         # 
-        cd plugins/${publishable}
+        cd plugins/${publishable}/${publishable}
         poetry version patch
         ver=$(poetry version | awk '{print $2}' | tr -d '\n')
         echo -n $ver > resources/version.txt
 
-        ../../scripts/publish_to_pypi.sh publish --build-type wheel --release-type pypi -y
-        cd ../..
+        ../../../scripts/publish_to_pypi.sh publish --build-type wheel --release-type pypi -y
+        cd ../../..
 
         echo "::endgroup::" 
       shell: bash
@@ -116,7 +116,7 @@ runs:
         # 
         # Open a GitHub PR on the plugins repository with plugin version bump
         # 
-        cd plugins/${publishable}
+        cd plugins/${publishable}/${publishable}
         ver=$(poetry version | awk '{print $2}' | tr -d '\n')
         git add resources/version.txt
         git add pyproject.toml
@@ -131,7 +131,7 @@ runs:
             --base master --head ${branch_name} \
             --label "auto pr"
 
-        cd ../..
+        cd ../../..
             
         echo "::endgroup::"
       shell: bash
