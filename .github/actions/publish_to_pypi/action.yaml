@@ -111,7 +111,11 @@ runs:
         echo "::group::Opening a GitHub PR with released version"
         publishable=${{ inputs.project_to_publish }}
 
-        echo "Opening a GitHub PR on plugin version bump"
+        log_info "Opening a GitHub PR on plugin version bump"
+        log_info "Working directory: $(pwd)"
+
+        log_info "Printing affected files:"
+        git status
 
         # 
         # Open a GitHub PR on the plugins repository with plugin version bump
