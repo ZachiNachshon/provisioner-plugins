@@ -124,7 +124,7 @@ runs:
 
         ver=$(poetry version | awk '{print $2}' | tr -d '\n')
         git add resources/version.txt
-        git add pyproject.toml
+        git add ../pyproject.toml
 
         branch_name=released-${publishable}-ver-${ver}
         git commit -m "Bump ${publishable} released version to ${ver}"
