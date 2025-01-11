@@ -10,7 +10,7 @@ from provisioner_installers_plugin.src.k3s.cli import k3s_agent, k3s_server, reg
 from typer.testing import CliRunner
 
 from provisioner_shared.components.remote.domain.config import RemoteConfig
-from provisioner_shared.components.remote.typer_remote_opts import TyperRemoteOpts
+from provisioner_shared.components.remote.remote_opts import TyperRemoteOpts
 from provisioner_shared.components.runtime.cli.state import CliGlobalArgs
 from provisioner_shared.components.runtime.errors.cli_errors import (
     CliApplicationException,

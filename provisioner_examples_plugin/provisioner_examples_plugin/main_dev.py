@@ -36,7 +36,7 @@ debug_pre_init = os.getenv(key=ENV_VAR_ENABLE_PRE_INIT_DEBUG, default=False)
 if not debug_pre_init:
     logger.remove()
 
-app = EntryPoint.create_typer(
+app = EntryPoint.create_cli_menu(
     title="Provision Everything Anywhere (install plugins from https://zachinachshon.com/provisioner)",
     config_resolver_fn=lambda: ConfigManager.instance().load(
         PROVISIONER_CONFIG_DEV_INTERNAL_PATH, CONFIG_USER_PATH, ProvisionerConfig
@@ -54,7 +54,7 @@ except Exception as ex:
     logger.error(err_msg)
     raise Exception(err_msg)
 
-cols = CoreCollaborators(Context.createEmpty())
+cols = CoreCollaborators(Context.create_empty())
 append_config_cmd_to_cli(app, cli_group_name=COMMON_COMMANDS_GROUP_NAME, cols=cols)
 append_plugins_cmd_to_cli(app, cli_group_name=COMMON_COMMANDS_GROUP_NAME, cols=cols)
 

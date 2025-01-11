@@ -14,7 +14,7 @@ from provisioner_single_board_plugin.src.raspberry_pi.node.network_cmd import (
     RPiNetworkConfigureCmdArgs,
 )
 
-from provisioner_shared.components.remote.typer_remote_opts import TyperRemoteOpts
+from provisioner_shared.components.remote.remote_opts import TyperRemoteOpts
 from provisioner_shared.components.runtime.config.manager.config_manager import ConfigManager
 from provisioner_shared.components.runtime.infra.context import CliContextManager
 from provisioner_shared.components.runtime.infra.evaluator import Evaluator

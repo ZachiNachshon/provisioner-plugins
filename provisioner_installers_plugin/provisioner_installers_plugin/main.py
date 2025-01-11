@@ -5,7 +5,7 @@ import pathlib
 import typer
 
 from provisioner_installers_plugin.src.config.domain.config import PLUGIN_NAME, InstallersConfig
-from provisioner_shared.components.remote.typer_remote_opts import TyperRemoteOpts
+from provisioner_shared.components.remote.remote_opts import TyperRemoteOpts
 from provisioner_shared.components.runtime.config.manager.config_manager import ConfigManager
 
 CONFIG_INTERNAL_PATH = f"{pathlib.Path(__file__).parent}/resources/config.yaml"

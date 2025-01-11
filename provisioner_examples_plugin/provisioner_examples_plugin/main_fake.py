@@ -14,7 +14,7 @@ from provisioner_shared.components.runtime.config.manager.config_manager import 
 FAKE_APP_TITLE = "Fake Examples Plugin Test App"
 FAKE_CONFIG_USER_PATH = "~/my/config.yaml"
 
-fake_app = EntryPoint.create_typer(
+fake_app = EntryPoint.create_cli_menu(
     title=FAKE_APP_TITLE,
 )
 

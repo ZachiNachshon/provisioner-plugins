@@ -7,7 +7,7 @@ from provisioner_installers_plugin.src.installer.cmd.installer_cmd import (
 )
 from provisioner_installers_plugin.src.installer.domain.command import InstallerSubCommandName
 
-from provisioner_shared.components.remote.typer_remote_opts import TyperRemoteOpts
+from provisioner_shared.components.remote.remote_opts import TyperRemoteOpts
 from provisioner_shared.components.runtime.infra.context import CliContextManager
 from provisioner_shared.components.runtime.infra.evaluator import Evaluator
 

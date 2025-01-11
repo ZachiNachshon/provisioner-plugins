@@ -7,7 +7,7 @@ from provisioner_single_board_plugin.src.common.remote.remote_os_configure impor
     RemoteMachineOsConfigureRunner,
 )
 
-from provisioner_shared.components.remote.typer_remote_opts import CliRemoteOpts
+from provisioner_shared.components.remote.remote_opts import CliRemoteOpts
 from provisioner_shared.components.runtime.infra.context import Context
 from provisioner_shared.components.runtime.shared.collaborators import CoreCollaborators
 

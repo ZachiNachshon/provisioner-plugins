@@ -15,7 +15,7 @@ from provisioner_shared.components.remote.remote_connector import (
     RemoteMachineConnector,
     SSHConnectionInfo,
 )
-from provisioner_shared.components.remote.typer_remote_opts import CliRemoteOpts
+from provisioner_shared.components.remote.remote_opts import CliRemoteOpts
 from provisioner_shared.components.runtime.errors.cli_errors import (
     InstallerSourceError,
     InstallerUtilityNotSupported,
