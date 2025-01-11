@@ -3,7 +3,7 @@
 import yaml
 from provisioner_installers_plugin.src.config.domain.config import InstallersConfig
 
-from provisioner_shared.components.remote.typer_remote_opts_fakes import TEST_REMOTE_CFG_YAML_TEXT
+from components.remote.remote_opts_fakes import TEST_REMOTE_CFG_YAML_TEXT
 
 
 class TestDataInstallersConfig:

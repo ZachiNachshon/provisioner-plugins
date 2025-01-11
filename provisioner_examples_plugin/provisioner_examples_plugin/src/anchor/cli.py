@@ -24,7 +24,7 @@ def register_anchor_commands(
 ):
 
     @cli_group.group(invoke_without_command=True, no_args_is_help=True, cls=CustomGroup)
-    @cli_vcs_opts(vcs_config=None)
+    @cli_vcs_opts(vcs_config=vcs_config)
     @cli_remote_opts(remote_config=remote_config)
     @cli_modifiers
     @click.pass_context
@@ -40,7 +40,8 @@ def register_anchor_commands(
         required=True,
     )
     @cli_modifiers
-    def run_command(run_command: str):
+    @click.pass_context
+    def run_command(ctx, run_command: str):
         """
         Run a dummy anchor run scenario locally or on remote machine via Ansible playbook
         """
@@ -50,8 +51,8 @@ def register_anchor_commands(
                 ctx=CliContextManager.create(),
                 args=AnchorCmdArgs(
                     anchor_run_command=run_command,
-                    vcs_opts=CliVersionControlOpts.options,
-                    remote_opts=CliRemoteOpts.options,
+                    vcs_opts=CliVersionControlOpts.from_click_ctx(ctx),
+                    remote_opts=CliRemoteOpts.from_click_ctx(ctx),
                 ),
             ),
             error_message="Failed to run anchor command",

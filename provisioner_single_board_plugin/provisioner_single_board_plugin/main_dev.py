@@ -31,12 +31,14 @@ debug_pre_init = os.getenv(key=ENV_VAR_ENABLE_PRE_INIT_DEBUG, default=False)
 if not debug_pre_init:
     logger.remove()
 
-app = EntryPoint.create_cli_menu(
-    title="Provision Everything Anywhere (install plugins from https://zachinachshon.com/provisioner)",
-    config_resolver_fn=lambda: ConfigManager.instance().load(
-        PROVISIONER_CONFIG_DEV_INTERNAL_PATH, CONFIG_USER_PATH, ProvisionerConfig
-    ),
-)
+root_menu = EntryPoint.create_cli_menu()
+
+# app = EntryPoint.create_cli_menu(
+#     title="Provision Everything Anywhere (install plugins from https://zachinachshon.com/provisioner)",
+#     config_resolver_fn=lambda: ConfigManager.instance().load(
+#         PROVISIONER_CONFIG_DEV_INTERNAL_PATH, CONFIG_USER_PATH, ProvisionerConfig
+#     ),
+# )
 
 try:
     logger.debug(f"Importing module {PLUGIN_IMPORT_PATH}")

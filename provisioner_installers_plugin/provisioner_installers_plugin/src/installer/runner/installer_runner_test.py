@@ -32,7 +32,7 @@ from provisioner_shared.components.remote.remote_connector import RemoteMachineC
 from provisioner_shared.components.remote.remote_connector_fakes import (
     TestDataRemoteConnector,
 )
-from provisioner_shared.components.remote.typer_remote_opts_fakes import TestDataRemoteOpts
+from components.remote.remote_opts_fakes import TestDataRemoteOpts
 from provisioner_shared.components.runtime.errors.cli_errors import (
     InstallerSourceError,
     InstallerUtilityNotSupported,

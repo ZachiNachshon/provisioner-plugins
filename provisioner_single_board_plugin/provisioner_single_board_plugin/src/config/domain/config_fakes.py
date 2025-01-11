@@ -3,7 +3,7 @@
 import yaml
 from provisioner_single_board_plugin.src.config.domain.config import SingleBoardConfig
 
-from provisioner_shared.components.remote.typer_remote_opts_fakes import TEST_REMOTE_CFG_YAML_TEXT
+from components.remote.remote_opts_fakes import TEST_REMOTE_CFG_YAML_TEXT
 
 TEST_DATA_DOWNLOAD_PATH = "/test/path/to/download/os/image"
 TEST_DATA_ACTIVE_SYSTEM = "64bit"

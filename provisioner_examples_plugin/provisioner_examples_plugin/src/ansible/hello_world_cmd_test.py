@@ -8,7 +8,7 @@ from provisioner_examples_plugin.src.ansible.hello_world_cmd import (
     HelloWorldCmdArgs,
 )
 from provisioner_shared.components.remote.domain.config import RunEnvironment
-from provisioner_shared.components.remote.typer_remote_opts_fakes import TestDataRemoteOpts
+from components.remote.remote_opts_fakes import TestDataRemoteOpts
 from provisioner_shared.components.runtime.test_lib.assertions import Assertion
 from provisioner_shared.components.runtime.test_lib.test_env import TestEnv
 
@@ -17,7 +17,7 @@ ANSIBLE_HELLO_WORLD_RUNNER_PATH = "provisioner_examples_plugin.src.ansible.hello
 
 #
 # To run these directly from the terminal use:
-#  poetry run coverage run -m pytest plugins/provisioner_examples_plugin/src/ansible/hello_world_cmd_test.py
+#  poetry run coverage run -m pytest plugins/provisioner_examples_plugin/provisioner_examples_plugin/src/ansible/hello_world_cmd_test.py
 #
 class HelloWorldCmdTestShould(unittest.TestCase):
 
