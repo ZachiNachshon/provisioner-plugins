@@ -3,11 +3,12 @@
 import unittest
 from unittest import mock
 
+from components.remote.remote_opts_fakes import TestDataRemoteOpts
+
 from provisioner_examples_plugin.src.ansible.hello_world_runner import (
     HelloWorldRunner,
     HelloWorldRunnerArgs,
 )
-from components.remote.remote_opts_fakes import TestDataRemoteOpts
 from provisioner_shared.components.runtime.test_lib.assertions import Assertion
 from provisioner_shared.components.runtime.test_lib.test_env import TestEnv
 
@@ -18,7 +19,7 @@ EXPECTED_USERNAME = "test-user"
 
 #
 # To run these directly from the terminal use:
-#  poetry run coverage run -m pytest src/ansible/hello_world_runner_test.py
+#  poetry run coverage run -m pytest plugins/provisioner_examples_plugin/provisioner_examples_plugin/src/ansible/hello_world_runner_test.py
 #
 class HelloWorldRunnerTestShould(unittest.TestCase):
     @mock.patch(f"{ANSIBLE_HELLO_WORLD_RUNNER_PATH}.run")

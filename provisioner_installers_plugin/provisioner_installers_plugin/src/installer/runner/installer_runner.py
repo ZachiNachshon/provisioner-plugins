@@ -624,9 +624,6 @@ def generate_installer_welcome(
 
 When opting-in for the remote option you will be prompted for additional arguments."""
     else:
-        print("======================")
-        print(environment)
-        print("======================")
         env_indicator = f"Running on [yellow]{environment}[/yellow] environment."
 
     return f"""About to install the following CLI utilities:

@@ -8,6 +8,7 @@ from components.remote.domain.config import RemoteConfig
 from components.remote.remote_opts import CliRemoteOpts
 from components.runtime.cli.cli_modifiers import cli_modifiers
 from components.runtime.cli.menu_format import CustomGroup
+from components.runtime.cli.modifiers import CliModifiers
 from components.vcs.cli_vcs_opts import cli_vcs_opts
 from components.vcs.domain.config import VersionControlConfig
 from components.vcs.vcs_opts import CliVersionControlOpts
@@ -41,14 +42,15 @@ def register_anchor_commands(
     )
     @cli_modifiers
     @click.pass_context
-    def run_command(ctx, run_command: str):
+    def run_command(ctx: click.Context, run_command: str):
         """
         Run a dummy anchor run scenario locally or on remote machine via Ansible playbook
         """
+        cli_ctx = CliContextManager.create(modifiers=CliModifiers.from_click_ctx(ctx))
         Evaluator.eval_cli_entrypoint_step(
             name="Run Anchor Command",
             call=lambda: AnchorCmd().run(
-                ctx=CliContextManager.create(),
+                ctx=cli_ctx,
                 args=AnchorCmdArgs(
                     anchor_run_command=run_command,
                     vcs_opts=CliVersionControlOpts.from_click_ctx(ctx),
@@ -56,4 +58,5 @@ def register_anchor_commands(
                 ),
             ),
             error_message="Failed to run anchor command",
+            verbose=cli_ctx.is_verbose(),
         )

@@ -18,7 +18,7 @@ TEST_RELEASE_BINARY_OS_ARCH = OsArch(os=MAC_OS, arch="arm64")
 
 
 # To run as a single test target:
-#  poetry run coverage run -m pytest provisioner_installers_plugin/installer/domain/source_test.py
+#  poetry run coverage run -m pytest plugins/provisioner_installers_plugin/provisioner_installers_plugin/src/installer/domain/source_test.py
 #
 class InstallSourcesTestShould(unittest.TestCase):
 

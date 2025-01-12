@@ -3,12 +3,12 @@
 import unittest
 from unittest import mock
 
+from components.remote.remote_opts_fakes import TestDataRemoteOpts
 from provisioner_single_board_plugin.src.raspberry_pi.node.configure_cmd import (
     RPiOsConfigureCmd,
     RPiOsConfigureCmdArgs,
 )
 
-from components.remote.remote_opts_fakes import TestDataRemoteOpts
 from provisioner_shared.components.runtime.test_lib.assertions import Assertion
 from provisioner_shared.components.runtime.test_lib.test_env import TestEnv
 

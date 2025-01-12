@@ -2,8 +2,8 @@
 
 import unittest
 from unittest import mock
-from click.testing import CliRunner
 
+from click.testing import CliRunner
 from provisioner_single_board_plugin.main_fake import get_fake_app
 
 from provisioner_shared.components.runtime.errors.cli_errors import (

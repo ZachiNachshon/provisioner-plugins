@@ -15,13 +15,13 @@ from provisioner_shared.components.runtime.shared.collaborators import CoreColla
 class AnchorCmdArgs:
 
     anchor_run_command: str
-    vcs_opts = CliVersionControlOpts
+    vcs_opts: CliVersionControlOpts
     remote_opts: CliRemoteOpts
 
     def __init__(
         self,
         anchor_run_command: str,
-        vcs_opts=CliVersionControlOpts,
+        vcs_opts: CliVersionControlOpts = None,
         remote_opts: CliRemoteOpts = None,
     ) -> None:
 

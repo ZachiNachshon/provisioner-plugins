@@ -8,6 +8,7 @@ from components.remote.domain.config import RemoteConfig
 from components.remote.remote_opts import CliRemoteOpts
 from components.runtime.cli.cli_modifiers import cli_modifiers
 from components.runtime.cli.menu_format import CustomGroup, get_nested_value
+from components.runtime.cli.modifiers import CliModifiers
 
 from provisioner_examples_plugin.src.ansible.hello_world_cmd import HelloWorldCmd, HelloWorldCmdArgs
 from provisioner_examples_plugin.src.config.domain.config import ExamplesConfig
@@ -25,7 +26,7 @@ def register_ansible_commands(
     @cli_remote_opts(remote_config=examples_cfg.remote if examples_cfg is not None else RemoteConfig())
     @cli_modifiers
     @click.pass_context
-    def ansible(ctx):
+    def ansible(ctx: click.Context):
         """Playground for using the CLI framework with basic dummy commands"""
         if ctx.invoked_subcommand is None:
             click.echo(ctx.get_help())
@@ -44,12 +45,13 @@ def register_ansible_commands(
         """
         Run a dummy hello world scenario locally via Ansible playbook
         """
+        cli_ctx = CliContextManager.create(modifiers=CliModifiers.from_click_ctx(ctx))
         Evaluator.eval_cli_entrypoint_step(
             name="Ansible Hello World",
             call=lambda: HelloWorldCmd().run(
-                ctx=CliContextManager.create(),
-                args=HelloWorldCmdArgs(username=username, 
-                                       remote_opts=CliRemoteOpts.from_click_ctx(ctx)),
+                ctx=cli_ctx,
+                args=HelloWorldCmdArgs(username=username, remote_opts=CliRemoteOpts.from_click_ctx(ctx)),
             ),
             error_message="Failed to run hello world command",
+            verbose=cli_ctx.is_verbose(),
         )

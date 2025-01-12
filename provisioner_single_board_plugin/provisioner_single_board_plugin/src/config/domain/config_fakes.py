@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 
 import yaml
-from provisioner_single_board_plugin.src.config.domain.config import SingleBoardConfig
-
 from components.remote.remote_opts_fakes import TEST_REMOTE_CFG_YAML_TEXT
+from provisioner_single_board_plugin.src.config.domain.config import SingleBoardConfig
 
 TEST_DATA_DOWNLOAD_PATH = "/test/path/to/download/os/image"
 TEST_DATA_ACTIVE_SYSTEM = "64bit"

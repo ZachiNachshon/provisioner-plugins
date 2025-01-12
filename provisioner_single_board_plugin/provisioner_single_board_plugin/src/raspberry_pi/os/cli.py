@@ -2,43 +2,42 @@
 
 from typing import Optional
 
-import typer
-from loguru import logger
-from provisioner_single_board_plugin.src.config.domain.config import SINGLE_BOARD_PLUGIN_NAME
-from provisioner_single_board_plugin.src.raspberry_pi.os.burn_image_cmd import (
-    RPiOsBurnImageCmd,
-    RPiOsBurnImageCmdArgs,
-)
+import click
+from components.runtime.cli.modifiers import CliModifiers
+from provisioner_single_board_plugin.src.raspberry_pi.os.burn_image_cmd import RPiOsBurnImageCmd, RPiOsBurnImageCmdArgs
 
-from provisioner_shared.components.runtime.config.manager.config_manager import ConfigManager
+from plugins.provisioner_single_board_plugin.provisioner_single_board_plugin.src.config.domain.config import (
+    SingleBoardConfig,
+)
 from provisioner_shared.components.runtime.infra.context import CliContextManager
 from provisioner_shared.components.runtime.infra.evaluator import Evaluator
 
-rpi_os_cli_app = typer.Typer()
 
+def register_os_commands(cli_group: click.Group, single_board_cfg: Optional[SingleBoardConfig] = None):
 
-@rpi_os_cli_app.command(name="burn-image")
-@logger.catch(reraise=True)
-def burn_image(
-    image_download_url: Optional[str] = typer.Option(
-        ConfigManager.instance().get_plugin_config(SINGLE_BOARD_PLUGIN_NAME).get_os_raspbian_download_url(),
+    @cli_group.command()
+    @click.option(
+        "--image-download-url",
+        type=str,
         help="OS image file download URL",
+        show_default=False,
         envvar="PROV_IMAGE_DOWNLOAD_URL",
     )
-) -> None:
-    """
-    Select an available block device to burn a Raspbian OS image (SD-Card / HDD)
-    """
-    Evaluator.eval_cli_entrypoint_step(
-        name="Raspbian OS Image Burn",
-        call=lambda: RPiOsBurnImageCmd().run(
-            ctx=CliContextManager.create(),
-            args=RPiOsBurnImageCmdArgs(
-                image_download_url=image_download_url,
-                image_download_path=ConfigManager.instance()
-                .get_plugin_config(SINGLE_BOARD_PLUGIN_NAME)
-                .maybe_get("os.download_path"),
+    @click.pass_context
+    def burn_image(ctx: click.Context, image_download_url: Optional[str] = None) -> None:
+        """
+        Select an available block device to burn a Raspbian OS image (SD-Card / HDD)
+        """
+        cli_ctx = CliContextManager.create(modifiers=CliModifiers.from_click_ctx(ctx))
+        Evaluator.eval_cli_entrypoint_step(
+            name="Raspbian OS Image Burn",
+            call=lambda: RPiOsBurnImageCmd().run(
+                ctx=cli_ctx,
+                args=RPiOsBurnImageCmdArgs(
+                    image_download_url=image_download_url,
+                    image_download_path=single_board_cfg.maybe_get("os.download_path"),
+                ),
             ),
-        ),
-        error_message="Failed to burn Raspbian OS",
-    )
+            error_message="Failed to burn Raspbian OS",
+            verbose=cli_ctx.is_verbose(),
+        )
