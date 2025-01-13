@@ -3,6 +3,7 @@
 from typing import Optional
 
 import click
+from components.runtime.cli.cli_modifiers import cli_modifiers
 from components.runtime.cli.modifiers import CliModifiers
 from provisioner_single_board_plugin.src.raspberry_pi.os.burn_image_cmd import RPiOsBurnImageCmd, RPiOsBurnImageCmdArgs
 
@@ -23,6 +24,7 @@ def register_os_commands(cli_group: click.Group, single_board_cfg: Optional[Sing
         show_default=False,
         envvar="PROV_IMAGE_DOWNLOAD_URL",
     )
+    @cli_modifiers
     @click.pass_context
     def burn_image(ctx: click.Context, image_download_url: Optional[str] = None) -> None:
         """

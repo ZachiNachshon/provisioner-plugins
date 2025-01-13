@@ -23,15 +23,15 @@ STEP_ERROR_OUTPUT = "This is a sample step error output for a test expected to f
 
 
 # To run as a single test target:
-#  poetry run coverage run -m pytest provisioner_single_board_plugin/raspberry_pi/os/cli_test.py
+#  poetry run coverage run -m pytest plugins/provisioner_single_board_plugin/provisioner_single_board_plugin/src/raspberry_pi/os/cli_test.py
 #
 class RaspberryPiOsCliTestShould(unittest.TestCase):
 
     env = TestEnv.create()
 
     @staticmethod
-    def create_os_burn_image_runner(runner: CliRunner):
-        return runner.invoke(
+    def create_os_burn_image_runner():
+        return TestCliRunner.run(
             get_fake_app(),
             [
                 "--dry-run",
@@ -46,8 +46,8 @@ class RaspberryPiOsCliTestShould(unittest.TestCase):
         )
 
     @staticmethod
-    def create_os_burn_image_runner_darwin(runner: CliRunner):
-        return runner.invoke(
+    def create_os_burn_image_runner_darwin():
+        return TestCliRunner.run(
             get_fake_app(),
             [
                 "--dry-run",
@@ -63,8 +63,8 @@ class RaspberryPiOsCliTestShould(unittest.TestCase):
         )
 
     @staticmethod
-    def create_os_burn_image_runner_linux(runner: CliRunner):
-        return runner.invoke(
+    def create_os_burn_image_runner_linux():
+        return TestCliRunner.run(
             get_fake_app(),
             [
                 "--dry-run",
@@ -81,7 +81,7 @@ class RaspberryPiOsCliTestShould(unittest.TestCase):
 
     @mock.patch(f"{RPI_OS_MODULE_PATH}.burn_image_cmd.RPiOsBurnImageCmd.run")
     def test_run_rpi_os_burn_image_cmd_with_args_success(self, run_call: mock.MagicMock) -> None:
-        TestCliRunner.run(RaspberryPiOsCliTestShould.create_os_burn_image_runner)
+        self.create_os_burn_image_runner()
 
         def assertion_callback(args):
             self.assertEqual(args.image_download_url, ARG_IMAGE_DOWNLOAD_URL)
@@ -97,7 +97,7 @@ class RaspberryPiOsCliTestShould(unittest.TestCase):
         Assertion.expect_output(
             self,
             expected=STEP_ERROR_OUTPUT,
-            method_to_run=lambda: TestCliRunner.run(RaspberryPiOsCliTestShould.create_os_burn_image_runner),
+            method_to_run=lambda: self.create_os_burn_image_runner(),
         )
 
     @mock.patch(f"{RPI_OS_MODULE_PATH}.burn_image_cmd.RPiOsBurnImageCmd.run", side_effect=Exception())
@@ -105,10 +105,10 @@ class RaspberryPiOsCliTestShould(unittest.TestCase):
         Assertion.expect_raised_failure(
             self,
             ex_type=CliApplicationException,
-            method_to_run=lambda: TestCliRunner.run(RaspberryPiOsCliTestShould.create_os_burn_image_runner),
+            method_to_run=lambda: self.create_os_burn_image_runner(),
         )
 
-    def test_e2e_run_rpi_os_burn_image_darwin_success(self) -> None:
+    def test_run_rpi_os_burn_image_darwin_success(self) -> None:
         Assertion.expect_outputs(
             self,
             expected=[
@@ -121,10 +121,10 @@ class RaspberryPiOsCliTestShould(unittest.TestCase):
                 "sudo touch /Volumes/boot/ssh",
                 f"diskutil eject {AUTO_PROMPT_RESPONSE}",
             ],
-            method_to_run=lambda: TestCliRunner.run(RaspberryPiOsCliTestShould.create_os_burn_image_runner_darwin),
+            method_to_run=lambda: self.create_os_burn_image_runner_darwin(),
         )
 
-    def test_e2e_run_rpi_os_burn_image_linux_success(self) -> None:
+    def test_run_rpi_os_burn_image_linux_success(self) -> None:
         Assertion.expect_outputs(
             self,
             expected=[
@@ -132,5 +132,5 @@ class RaspberryPiOsCliTestShould(unittest.TestCase):
                 f"unzip -p DRY_RUN_DOWNLOAD_FILE_PATH | dd of={AUTO_PROMPT_RESPONSE} bs=4M conv=fsync status=progress",
                 "sync",
             ],
-            method_to_run=lambda: TestCliRunner.run(RaspberryPiOsCliTestShould.create_os_burn_image_runner_linux),
+            method_to_run=lambda: self.create_os_burn_image_runner_linux(),
         )
