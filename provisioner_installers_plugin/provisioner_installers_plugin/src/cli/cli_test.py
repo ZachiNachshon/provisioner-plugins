@@ -32,7 +32,7 @@ class UtilityInstallerCliTestShould(unittest.TestCase):
 
     @staticmethod
     def create_cli_installer_runner(cli_app: click.Group, utility_name: str, is_remote: bool = False):
-        os_arch_pair = Context.create().os_arch.as_pair()
+        os_arch_pair = Context.create().os_arch.as_pair(mapping={"x86_64": "amd64"})
         args = [
             "--dry-run",
             "--verbose",
@@ -50,7 +50,7 @@ class UtilityInstallerCliTestShould(unittest.TestCase):
 
     @staticmethod
     def create_k3s_installer_runner(cli_app: click.Group, utility_name: str, is_remote: bool = False):
-        os_arch_pair = Context.create().os_arch.as_pair()
+        os_arch_pair = Context.create().os_arch.as_pair(mapping={"x86_64": "amd64"})
         return TestCliRunner.run(
             cli_app,
             [
