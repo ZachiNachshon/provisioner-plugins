@@ -132,7 +132,7 @@ class UtilityInstallerCliTestShould(unittest.TestCase):
         )
 
     def test_expect_detailed_local_install_summary_when_using_verbose(self) -> None:
-        os_arch_pair = Context.create().os_arch.as_pair()
+        os_arch_pair = Context.create().os_arch.as_pair(mapping={"x86_64": "amd64"})
         Assertion.expect_outputs(
             self,
             expected=[
