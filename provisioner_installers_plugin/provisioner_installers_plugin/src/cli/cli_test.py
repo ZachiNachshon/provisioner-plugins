@@ -32,13 +32,14 @@ class UtilityInstallerCliTestShould(unittest.TestCase):
 
     @staticmethod
     def create_cli_installer_runner(cli_app: click.Group, utility_name: str, is_remote: bool = False):
+        os_arch_pair = Context.create().os_arch.as_pair()
         args = [
             "--dry-run",
             "--verbose",
             "--auto-prompt",
             "--non-interactive",
             "--os-arch",
-            "DARWIN_ARM64",
+            os_arch_pair,
             "install",
             "cli",
         ]
@@ -49,6 +50,7 @@ class UtilityInstallerCliTestShould(unittest.TestCase):
 
     @staticmethod
     def create_k3s_installer_runner(cli_app: click.Group, utility_name: str, is_remote: bool = False):
+        os_arch_pair = Context.create().os_arch.as_pair()
         return TestCliRunner.run(
             cli_app,
             [
@@ -57,7 +59,7 @@ class UtilityInstallerCliTestShould(unittest.TestCase):
                 "--auto-prompt",
                 "--non-interactive",
                 "--os-arch",
-                "DARWIN_ARM64",
+                os_arch_pair,
                 "install",
                 # "--environment=Remote" if is_remote else "",
                 "k3s",
