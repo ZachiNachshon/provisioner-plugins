@@ -67,7 +67,6 @@ def register_node_commands(cli_group: click.Group):
         """
         cli_ctx = CliContextManager.create(modifiers=CliModifiers.from_click_ctx(ctx))
         remote_opts = CliRemoteOpts.from_click_ctx(ctx)
-        print("=== I'm here ===")
         Evaluator.eval_cli_entrypoint_step(
             name="Raspbian Network Configure",
             call=lambda: RPiNetworkConfigureCmd().run(

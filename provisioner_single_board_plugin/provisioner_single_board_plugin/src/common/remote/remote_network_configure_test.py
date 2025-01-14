@@ -33,7 +33,7 @@ from provisioner_shared.components.runtime.utils.os import LINUX, MAC_OS, WINDOW
 from provisioner_shared.components.runtime.utils.prompter import PromptLevel
 
 # To run as a single test target:
-#  poetry run coverage run -m pytest plugins/provisioner_single_board_plugin/src/common/remote/remote_network_configure_test.py
+#  poetry run coverage run -m pytest plugins/provisioner_single_board_plugin/provisioner_single_board_plugin/src/common/remote/remote_network_configure_test.py
 #
 ARG_GW_IP_ADDRESS = "1.1.1.1"
 ARG_DNS_IP_ADDRESS = "2.2.2.2"

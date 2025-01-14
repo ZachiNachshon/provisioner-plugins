@@ -29,7 +29,7 @@ from provisioner_shared.components.runtime.utils.os import LINUX, MAC_OS, WINDOW
 from provisioner_shared.components.runtime.utils.prompter import PromptLevel
 
 # To run as a single test target:
-#  poetry run coverage run -m pytest plugins/provisioner_single_board_plugin/src/common/remote/remote_os_configure_test.py
+#  poetry run coverage run -m pytest plugins/provisioner_single_board_plugin/provisioner_single_board_plugin/src/common/remote/remote_os_configure_test.py
 #
 ARG_NODE_USERNAME = "test-username"
 ARG_NODE_PASSWORD = "test-password"
