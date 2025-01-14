@@ -9,7 +9,7 @@ from provisioner_shared.components.remote.remote_connector import (
     RemoteMachineConnector,
     SSHConnectionInfo,
 )
-from provisioner_shared.components.remote.typer_remote_opts import CliRemoteOpts
+from provisioner_shared.components.remote.remote_opts import CliRemoteOpts
 from provisioner_shared.components.runtime.colors import colors
 from provisioner_shared.components.runtime.infra.context import Context
 from provisioner_shared.components.runtime.infra.evaluator import Evaluator

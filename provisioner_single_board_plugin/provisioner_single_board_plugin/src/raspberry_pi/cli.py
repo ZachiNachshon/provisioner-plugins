@@ -1,29 +1,51 @@
 #!/usr/bin/env python3
 
 
-import typer
-from provisioner_single_board_plugin.src.raspberry_pi.node.cli import register_node_commands, rpi_node_cli_app
-from provisioner_single_board_plugin.src.raspberry_pi.os.cli import rpi_os_cli_app
+from typing import Optional
 
-from provisioner_shared.components.remote.typer_remote_opts import TyperRemoteOpts
+import click
+from components.remote.cli_remote_opts import cli_remote_opts
+from components.remote.domain.config import RemoteConfig
+from components.runtime.cli.cli_modifiers import cli_modifiers
+from components.runtime.cli.menu_format import CustomGroup
 
-typer_remote_opts: TyperRemoteOpts = None
+from plugins.provisioner_single_board_plugin.provisioner_single_board_plugin.src.config.domain.config import (
+    SingleBoardConfig,
+)
+from plugins.provisioner_single_board_plugin.provisioner_single_board_plugin.src.raspberry_pi.node.cli import (
+    register_node_commands,
+)
+from plugins.provisioner_single_board_plugin.provisioner_single_board_plugin.src.raspberry_pi.os.cli import (
+    register_os_commands,
+)
 
 
-def register_raspberry_pi_commands(app: typer.Typer, remote_opts: TyperRemoteOpts):
-    global typer_remote_opts
-    typer_remote_opts = remote_opts
+def register_raspberry_pi_commands(cli_group: click.Group, single_board_cfg: Optional[SingleBoardConfig] = None):
 
-    single_board_cli_app = typer.Typer()
-    app.add_typer(
-        single_board_cli_app,
-        name="raspberry-pi",
-        invoke_without_command=True,
-        no_args_is_help=True,
-        callback=typer_remote_opts.as_typer_callback(),
-    )
+    @cli_group.group(invoke_without_command=True, no_args_is_help=True, cls=CustomGroup)
+    @cli_modifiers
+    @click.pass_context
+    def raspberry_pi(ctx: click.Context):
+        """Static IP address to set as the remote host IP address"""
+        if ctx.invoked_subcommand is None:
+            click.echo(ctx.get_help())
 
-    single_board_cli_app.add_typer(rpi_node_cli_app, name="node", invoke_without_command=True, no_args_is_help=True)
-    register_node_commands(typer_remote_opts)
+    @raspberry_pi.group(invoke_without_command=True, no_args_is_help=True, cls=CustomGroup)
+    @cli_remote_opts(remote_config=single_board_cfg.remote if single_board_cfg is not None else RemoteConfig())
+    @cli_modifiers
+    @click.pass_context
+    def node(ctx: click.Context):
+        """Raspbian node management for Raspberry Pi nodes"""
+        if ctx.invoked_subcommand is None:
+            click.echo(ctx.get_help())
 
-    single_board_cli_app.add_typer(rpi_os_cli_app, name="os", invoke_without_command=True, no_args_is_help=True)
+    @raspberry_pi.group(invoke_without_command=True, no_args_is_help=True, cls=CustomGroup)
+    @cli_modifiers
+    @click.pass_context
+    def os(ctx: click.Context):
+        """Raspbian OS management for Raspberry Pi nodes"""
+        if ctx.invoked_subcommand is None:
+            click.echo(ctx.get_help())
+
+    register_node_commands(cli_group=node)
+    register_os_commands(cli_group=os, single_board_cfg=single_board_cfg)

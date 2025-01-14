@@ -1,27 +1,27 @@
 #!/usr/bin/env python3
 
+from components.vcs.vcs_opts import CliVersionControlOpts
 from loguru import logger
 
 from provisioner_shared.components.anchor.anchor_runner import (
     AnchorCmdRunner,
     AnchorRunnerCmdArgs,
 )
-from provisioner_shared.components.remote.typer_remote_opts import CliRemoteOpts
+from provisioner_shared.components.remote.remote_opts import CliRemoteOpts
 from provisioner_shared.components.runtime.infra.context import Context
 from provisioner_shared.components.runtime.shared.collaborators import CoreCollaborators
-from provisioner_shared.components.vcs.typer_vcs_opts import CliVersionControlOpts
 
 
 class AnchorCmdArgs:
 
     anchor_run_command: str
-    vcs_opts = CliVersionControlOpts
+    vcs_opts: CliVersionControlOpts
     remote_opts: CliRemoteOpts
 
     def __init__(
         self,
         anchor_run_command: str,
-        vcs_opts=CliVersionControlOpts,
+        vcs_opts: CliVersionControlOpts = None,
         remote_opts: CliRemoteOpts = None,
     ) -> None:
 

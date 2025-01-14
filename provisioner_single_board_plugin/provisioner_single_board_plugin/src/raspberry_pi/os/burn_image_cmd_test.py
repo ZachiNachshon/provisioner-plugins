@@ -19,7 +19,7 @@ IMAGE_BURNER_COMMAND_RUNNER_PATH = "provisioner_shared.components.sd_card.image_
 
 #
 # To run these directly from the terminal use:
-#  poetry run coverage run -m pytest provisioner_single_board_plugin/raspberry_pi/os/burn_image_cmd_test.py
+#  poetry run coverage run -m pytest plugins/provisioner_single_board_plugin/provisioner_single_board_plugin/src/raspberry_pi/os/burn_image_cmd_test.py
 #
 class RPiOsInstallTestShould(unittest.TestCase):
 

@@ -3,12 +3,12 @@
 import unittest
 from unittest import mock
 
+from components.remote.remote_opts_fakes import TestDataRemoteOpts
 from provisioner_single_board_plugin.src.raspberry_pi.node.configure_cmd import (
     RPiOsConfigureCmd,
     RPiOsConfigureCmdArgs,
 )
 
-from provisioner_shared.components.remote.typer_remote_opts_fakes import TestDataRemoteOpts
 from provisioner_shared.components.runtime.test_lib.assertions import Assertion
 from provisioner_shared.components.runtime.test_lib.test_env import TestEnv
 
@@ -18,7 +18,7 @@ RPI_REMOTE_OS_CONFIGURE_RUNNER_PATH = (
 
 
 # To run as a single test target:
-#  poetry run coverage run -m pytest provisioner_single_board_plugin/raspberry_pi/node/configure_cmd_test.py
+#  poetry run coverage run -m pytest plugins/provisioner_single_board_plugin/provisioner_single_board_plugin/src/raspberry_pi/node/configure_cmd_test.py
 #
 class RPiOsConfigureCmdTestShould(unittest.TestCase):
 

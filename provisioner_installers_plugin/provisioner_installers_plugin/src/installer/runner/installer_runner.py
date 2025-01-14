@@ -15,7 +15,7 @@ from provisioner_shared.components.remote.remote_connector import (
     RemoteMachineConnector,
     SSHConnectionInfo,
 )
-from provisioner_shared.components.remote.typer_remote_opts import CliRemoteOpts
+from provisioner_shared.components.remote.remote_opts import CliRemoteOpts
 from provisioner_shared.components.runtime.errors.cli_errors import (
     InstallerSourceError,
     InstallerUtilityNotSupported,
@@ -624,9 +624,6 @@ def generate_installer_welcome(
 
 When opting-in for the remote option you will be prompted for additional arguments."""
     else:
-        print("======================")
-        print(environment)
-        print("======================")
         env_indicator = f"Running on [yellow]{environment}[/yellow] environment."
 
     return f"""About to install the following CLI utilities:

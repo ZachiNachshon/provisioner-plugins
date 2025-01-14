@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 
 import yaml
-from provisioner_examples_plugin.src.config.domain.config import ExamplesConfig
-
-from provisioner_shared.components.remote.typer_remote_opts_fakes import (
+from components.remote.remote_opts_fakes import (
     TEST_REMOTE_CFG_YAML_TEXT,
 )
+from provisioner_examples_plugin.src.config.domain.config import ExamplesConfig
 
 TEST_DATA_HELLO_WORLD_USERNAME = "test-username"
 

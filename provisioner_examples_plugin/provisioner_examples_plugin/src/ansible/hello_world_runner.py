@@ -5,7 +5,7 @@ from typing import Callable
 from loguru import logger
 
 from provisioner_shared.components.remote.remote_connector import SSHConnectionInfo
-from provisioner_shared.components.remote.typer_remote_opts import CliRemoteOpts
+from provisioner_shared.components.remote.remote_opts import CliRemoteOpts
 from provisioner_shared.components.runtime.infra.context import Context
 from provisioner_shared.components.runtime.runner.ansible.ansible_runner import AnsibleHost, AnsiblePlaybook
 from provisioner_shared.components.runtime.shared.collaborators import CoreCollaborators

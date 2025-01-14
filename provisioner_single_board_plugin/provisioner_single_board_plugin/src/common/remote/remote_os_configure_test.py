@@ -4,6 +4,7 @@ import unittest
 from typing import Callable, List
 from unittest import mock
 
+from components.remote.remote_opts_fakes import TestDataRemoteOpts
 from provisioner_single_board_plugin.src.common.remote.remote_os_configure import (
     ANSIBLE_PLAYBOOK_RPI_CONFIGURE_NODE,
     RemoteMachineOsConfigureArgs,
@@ -15,7 +16,6 @@ from provisioner_single_board_plugin.src.common.remote.remote_os_configure impor
 from provisioner_shared.components.remote.remote_connector_fakes import (
     TestDataRemoteConnector,
 )
-from provisioner_shared.components.remote.typer_remote_opts_fakes import TestDataRemoteOpts
 from provisioner_shared.components.runtime.infra.context import Context
 from provisioner_shared.components.runtime.infra.remote_context import RemoteContext
 from provisioner_shared.components.runtime.runner.ansible.ansible_fakes import FakeAnsibleRunnerLocal
@@ -29,7 +29,7 @@ from provisioner_shared.components.runtime.utils.os import LINUX, MAC_OS, WINDOW
 from provisioner_shared.components.runtime.utils.prompter import PromptLevel
 
 # To run as a single test target:
-#  poetry run coverage run -m pytest plugins/provisioner_single_board_plugin/src/common/remote/remote_os_configure_test.py
+#  poetry run coverage run -m pytest plugins/provisioner_single_board_plugin/provisioner_single_board_plugin/src/common/remote/remote_os_configure_test.py
 #
 ARG_NODE_USERNAME = "test-username"
 ARG_NODE_PASSWORD = "test-password"

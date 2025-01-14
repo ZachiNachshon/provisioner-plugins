@@ -13,7 +13,7 @@ from provisioner_installers_plugin.src.installer.runner.installer_runner import 
 )
 from provisioner_installers_plugin.src.installer.utilities import SupportedToolings
 
-from provisioner_shared.components.remote.typer_remote_opts import CliRemoteOpts
+from provisioner_shared.components.remote.remote_opts import CliRemoteOpts
 from provisioner_shared.components.runtime.infra.context import Context
 from provisioner_shared.components.runtime.shared.collaborators import CoreCollaborators
 

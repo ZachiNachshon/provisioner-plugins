@@ -7,7 +7,7 @@ from provisioner_examples_plugin.src.ansible.hello_world_runner import (
     HelloWorldRunner,
     HelloWorldRunnerArgs,
 )
-from provisioner_shared.components.remote.typer_remote_opts import CliRemoteOpts
+from provisioner_shared.components.remote.remote_opts import CliRemoteOpts
 from provisioner_shared.components.runtime.infra.context import Context
 from provisioner_shared.components.runtime.shared.collaborators import CoreCollaborators
 

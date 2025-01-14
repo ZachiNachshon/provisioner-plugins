@@ -2,22 +2,18 @@
 
 import traceback
 
+from components.remote.remote_opts_fakes import *
 from provisioner_single_board_plugin.main import append_to_cli
 from provisioner_single_board_plugin.src.config.domain.config import SINGLE_BOARD_PLUGIN_NAME, SingleBoardConfig
-from provisioner_single_board_plugin.src.config.domain.config_fakes import (
-    TestDataSingleBoardConfig,
-)
+from provisioner_single_board_plugin.src.config.domain.config_fakes import TestDataSingleBoardConfig
 
-from provisioner_shared.components.remote.typer_remote_opts_fakes import *
 from provisioner_shared.components.runtime.cli.entrypoint import EntryPoint
 from provisioner_shared.components.runtime.config.manager.config_manager import ConfigManager
 
 FAKE_APP_TITLE = "Fake Single Board Plugin Test App"
 FAKE_CONFIG_USER_PATH = "~/my/config.yaml"
 
-fake_app = EntryPoint.create_typer(
-    title=FAKE_APP_TITLE,
-)
+root_menu = EntryPoint.create_cli_menu()
 
 
 def generate_fake_config():
@@ -32,7 +28,7 @@ def register_fake_config(fake_cfg: SingleBoardConfig):
 
 
 def register_module_cli_args():
-    append_to_cli(fake_app)
+    append_to_cli(root_menu)
 
 
 def get_fake_app():
@@ -43,8 +39,8 @@ def get_fake_app():
     except Exception as ex:
         print(f"Fake provisioner example CLI commands failed to load. ex: {ex}, trace:\n{traceback.format_exc()}")
 
-    return fake_app
+    return root_menu
 
 
 def main():
-    fake_app()
+    root_menu()

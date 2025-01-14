@@ -4,6 +4,7 @@ import unittest
 from typing import Callable, List
 from unittest import mock
 
+from components.remote.remote_opts_fakes import TestDataRemoteOpts
 from provisioner_installers_plugin.src.installer.domain.command import InstallerSubCommandName
 from provisioner_installers_plugin.src.installer.domain.installable import Installable
 from provisioner_installers_plugin.src.installer.domain.source import (
@@ -32,7 +33,6 @@ from provisioner_shared.components.remote.remote_connector import RemoteMachineC
 from provisioner_shared.components.remote.remote_connector_fakes import (
     TestDataRemoteConnector,
 )
-from provisioner_shared.components.remote.typer_remote_opts_fakes import TestDataRemoteOpts
 from provisioner_shared.components.runtime.errors.cli_errors import (
     InstallerSourceError,
     InstallerUtilityNotSupported,
@@ -51,7 +51,7 @@ from provisioner_shared.components.runtime.utils.summary import Summary
 from provisioner_shared.framework.functional.pyfn import Environment, PyFn, PyFnEvaluator
 
 # To run as a single test target:
-#  poetry run coverage run -m pytest plugins/provisioner_installers_plugin/src/installer/runner/installer_runner_test.py
+#  poetry run coverage run -m pytest plugins/provisioner_installers_plugin/provisioner_installers_plugin/src/installer/runner/installer_runner_test.py
 #
 TEST_GITHUB_ACCESS_TOKEN = "top-secret"
 TEST_UTILITY_1_NAME_GITHUB = "test_util_github"
