@@ -2,13 +2,13 @@
 import pathlib
 
 import click
-from components.runtime.cli.cli_modifiers import cli_modifiers
-from components.runtime.cli.menu_format import CustomGroup
-from components.runtime.cli.version import append_version_cmd_to_cli
 
 from provisioner_installers_plugin.src.cli.cli import register_cli_commands
 from provisioner_installers_plugin.src.config.domain.config import PLUGIN_NAME, InstallersConfig
 from provisioner_installers_plugin.src.k3s.cli import register_k3s_commands
+from provisioner_shared.components.runtime.cli.cli_modifiers import cli_modifiers
+from provisioner_shared.components.runtime.cli.menu_format import CustomGroup
+from provisioner_shared.components.runtime.cli.version import append_version_cmd_to_cli
 from provisioner_shared.components.runtime.config.manager.config_manager import ConfigManager
 
 INSTALLERS_PLUGINS_ROOT_PATH = str(pathlib.Path(__file__).parent)

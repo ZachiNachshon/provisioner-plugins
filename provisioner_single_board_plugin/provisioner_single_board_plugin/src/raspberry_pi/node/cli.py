@@ -3,14 +3,14 @@
 from typing import Optional
 
 import click
-from components.remote.remote_opts import CliRemoteOpts
-from components.runtime.cli.modifiers import CliModifiers
 from provisioner_single_board_plugin.src.raspberry_pi.node.configure_cmd import RPiOsConfigureCmd, RPiOsConfigureCmdArgs
 from provisioner_single_board_plugin.src.raspberry_pi.node.network_cmd import (
     RPiNetworkConfigureCmd,
     RPiNetworkConfigureCmdArgs,
 )
 
+from provisioner_shared.components.remote.remote_opts import CliRemoteOpts
+from provisioner_shared.components.runtime.cli.modifiers import CliModifiers
 from provisioner_shared.components.runtime.infra.context import CliContextManager
 from provisioner_shared.components.runtime.infra.evaluator import Evaluator
 

@@ -3,15 +3,15 @@
 from typing import Optional
 
 import click
-from components.remote.cli_remote_opts import cli_remote_opts
-from components.remote.domain.config import RemoteConfig
-from components.remote.remote_opts import CliRemoteOpts
-from components.runtime.cli.cli_modifiers import cli_modifiers
-from components.runtime.cli.menu_format import CustomGroup, get_nested_value
-from components.runtime.cli.modifiers import CliModifiers
 
 from provisioner_examples_plugin.src.ansible.hello_world_cmd import HelloWorldCmd, HelloWorldCmdArgs
 from provisioner_examples_plugin.src.config.domain.config import ExamplesConfig
+from provisioner_shared.components.remote.cli_remote_opts import cli_remote_opts
+from provisioner_shared.components.remote.domain.config import RemoteConfig
+from provisioner_shared.components.remote.remote_opts import CliRemoteOpts
+from provisioner_shared.components.runtime.cli.cli_modifiers import cli_modifiers
+from provisioner_shared.components.runtime.cli.menu_format import CustomGroup, get_nested_value
+from provisioner_shared.components.runtime.cli.modifiers import CliModifiers
 from provisioner_shared.components.runtime.infra.context import CliContextManager
 from provisioner_shared.components.runtime.infra.evaluator import Evaluator
 

@@ -4,12 +4,6 @@
 from typing import Optional
 
 import click
-from components.remote.cli_remote_opts import cli_remote_opts
-from components.remote.domain.config import RemoteConfig
-from components.remote.remote_opts import CliRemoteOpts
-from components.runtime.cli.cli_modifiers import cli_modifiers
-from components.runtime.cli.menu_format import CustomGroup
-from components.runtime.cli.modifiers import CliModifiers
 from provisioner_installers_plugin.src.installer.cmd.installer_cmd import (
     UtilityInstallerCmd,
     UtilityInstallerCmdArgs,
@@ -19,6 +13,12 @@ from provisioner_installers_plugin.src.installer.domain.command import Installer
 from plugins.provisioner_installers_plugin.provisioner_installers_plugin.src.config.domain.config import (
     InstallersConfig,
 )
+from provisioner_shared.components.remote.cli_remote_opts import cli_remote_opts
+from provisioner_shared.components.remote.domain.config import RemoteConfig
+from provisioner_shared.components.remote.remote_opts import CliRemoteOpts
+from provisioner_shared.components.runtime.cli.cli_modifiers import cli_modifiers
+from provisioner_shared.components.runtime.cli.menu_format import CustomGroup
+from provisioner_shared.components.runtime.cli.modifiers import CliModifiers
 from provisioner_shared.components.runtime.infra.context import CliContextManager
 from provisioner_shared.components.runtime.infra.evaluator import Evaluator
 

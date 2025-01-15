@@ -3,10 +3,9 @@
 import unittest
 from unittest import mock
 
-from components.runtime.test_lib.test_cli_runner import TestCliRunner
-
 from provisioner_examples_plugin.main_fake import get_fake_app
 from provisioner_shared.components.runtime.test_lib.assertions import Assertion
+from provisioner_shared.components.runtime.test_lib.test_cli_runner import TestCliRunner
 
 EXPECTED_ANCHOR_RUN_COMMAND = "run --action=test-action"
 EXPECTED_GITHUB_ORGANIZATION = "test-org"

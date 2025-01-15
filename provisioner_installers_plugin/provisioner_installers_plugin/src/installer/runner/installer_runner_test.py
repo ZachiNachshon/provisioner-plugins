@@ -4,7 +4,6 @@ import unittest
 from typing import Callable, List
 from unittest import mock
 
-from components.remote.remote_opts_fakes import TestDataRemoteOpts
 from provisioner_installers_plugin.src.installer.domain.command import InstallerSubCommandName
 from provisioner_installers_plugin.src.installer.domain.installable import Installable
 from provisioner_installers_plugin.src.installer.domain.source import (
@@ -33,6 +32,7 @@ from provisioner_shared.components.remote.remote_connector import RemoteMachineC
 from provisioner_shared.components.remote.remote_connector_fakes import (
     TestDataRemoteConnector,
 )
+from provisioner_shared.components.remote.remote_opts_fakes import TestDataRemoteOpts
 from provisioner_shared.components.runtime.errors.cli_errors import (
     InstallerSourceError,
     InstallerUtilityNotSupported,

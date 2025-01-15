@@ -3,7 +3,6 @@
 import unittest
 from unittest import mock
 
-from components.remote.remote_opts_fakes import TestDataRemoteOpts
 from provisioner_installers_plugin.src.installer.cmd.installer_cmd import (
     UtilityInstallerCmd,
     UtilityInstallerCmdArgs,
@@ -15,6 +14,7 @@ from provisioner_installers_plugin.src.installer.runner.installer_runner import 
 )
 from provisioner_installers_plugin.src.installer.utilities import SupportedToolings
 
+from provisioner_shared.components.remote.remote_opts_fakes import TestDataRemoteOpts
 from provisioner_shared.components.runtime.test_lib.assertions import Assertion
 from provisioner_shared.components.runtime.test_lib.test_env import TestEnv
 

@@ -4,12 +4,12 @@ import importlib
 import os
 import pathlib
 
-from components.runtime.config.domain.config import ProvisionerConfig
-from components.runtime.config.manager.config_manager import ConfigManager
 from loguru import logger
 from provisioner_single_board_plugin import main as single_board_plugin_main
 
 from provisioner_shared.components.runtime.cli.entrypoint import EntryPoint
+from provisioner_shared.components.runtime.config.domain.config import ProvisionerConfig
+from provisioner_shared.components.runtime.config.manager.config_manager import ConfigManager
 
 PLUGIN_IMPORT_PATH = ".main"
 
@@ -20,8 +20,8 @@ CONFIG_USER_PATH = os.path.expanduser("~/.config/provisioner/config.yaml")
 
 """
 The --dry-run and --verbose flags aren't available on the pre-init phase
-since logger is being set-up after Typer is initialized.
-I've added pre Typer run env var to control the visiblity of components debug logs
+since logger is being set-up after Click is initialized.
+I've added pre Click run env var to control the visiblity of components debug logs
 such as config-loader, package-loader etc..
 """
 ENV_VAR_ENABLE_PRE_INIT_DEBUG = "PROVISIONER_PRE_INIT_DEBUG"
