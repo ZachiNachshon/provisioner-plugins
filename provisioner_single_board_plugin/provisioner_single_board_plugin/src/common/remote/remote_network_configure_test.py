@@ -4,7 +4,6 @@ import unittest
 from typing import Callable, List
 from unittest import mock
 
-from components.remote.remote_opts_fakes import TestDataRemoteOpts
 from provisioner_single_board_plugin.src.common.remote.remote_network_configure import (
     ANSIBLE_PLAYBOOK_RPI_CONFIGURE_NETWORK,
     RemoteMachineNetworkConfigureArgs,
@@ -20,6 +19,7 @@ from provisioner_shared.components.remote.remote_connector import (
 from provisioner_shared.components.remote.remote_connector_fakes import (
     TestDataRemoteConnector,
 )
+from provisioner_shared.components.remote.remote_opts_fakes import TestDataRemoteOpts
 from provisioner_shared.components.runtime.infra.context import Context
 from provisioner_shared.components.runtime.infra.remote_context import RemoteContext
 from provisioner_shared.components.runtime.runner.ansible.ansible_fakes import FakeAnsibleRunnerLocal

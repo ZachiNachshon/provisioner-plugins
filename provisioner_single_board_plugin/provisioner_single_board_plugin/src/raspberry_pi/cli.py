@@ -4,10 +4,6 @@
 from typing import Optional
 
 import click
-from components.remote.cli_remote_opts import cli_remote_opts
-from components.remote.domain.config import RemoteConfig
-from components.runtime.cli.cli_modifiers import cli_modifiers
-from components.runtime.cli.menu_format import CustomGroup
 
 from plugins.provisioner_single_board_plugin.provisioner_single_board_plugin.src.config.domain.config import (
     SingleBoardConfig,
@@ -18,6 +14,10 @@ from plugins.provisioner_single_board_plugin.provisioner_single_board_plugin.src
 from plugins.provisioner_single_board_plugin.provisioner_single_board_plugin.src.raspberry_pi.os.cli import (
     register_os_commands,
 )
+from provisioner_shared.components.remote.cli_remote_opts import cli_remote_opts
+from provisioner_shared.components.remote.domain.config import RemoteConfig
+from provisioner_shared.components.runtime.cli.cli_modifiers import cli_modifiers
+from provisioner_shared.components.runtime.cli.menu_format import CustomGroup
 
 
 def register_raspberry_pi_commands(cli_group: click.Group, single_board_cfg: Optional[SingleBoardConfig] = None):

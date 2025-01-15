@@ -3,19 +3,19 @@
 from typing import Optional
 
 import click
-from components.remote.cli_remote_opts import cli_remote_opts
-from components.remote.domain.config import RemoteConfig
-from components.remote.remote_opts import CliRemoteOpts
-from components.runtime.cli.cli_modifiers import cli_modifiers
-from components.runtime.cli.menu_format import CustomGroup
-from components.runtime.cli.modifiers import CliModifiers
-from components.vcs.cli_vcs_opts import cli_vcs_opts
-from components.vcs.domain.config import VersionControlConfig
-from components.vcs.vcs_opts import CliVersionControlOpts
 
 from provisioner_examples_plugin.src.anchor.anchor_cmd import AnchorCmd, AnchorCmdArgs
+from provisioner_shared.components.remote.cli_remote_opts import cli_remote_opts
+from provisioner_shared.components.remote.domain.config import RemoteConfig
+from provisioner_shared.components.remote.remote_opts import CliRemoteOpts
+from provisioner_shared.components.runtime.cli.cli_modifiers import cli_modifiers
+from provisioner_shared.components.runtime.cli.menu_format import CustomGroup
+from provisioner_shared.components.runtime.cli.modifiers import CliModifiers
 from provisioner_shared.components.runtime.infra.context import CliContextManager
 from provisioner_shared.components.runtime.infra.evaluator import Evaluator
+from provisioner_shared.components.vcs.cli_vcs_opts import cli_vcs_opts
+from provisioner_shared.components.vcs.domain.config import VersionControlConfig
+from provisioner_shared.components.vcs.vcs_opts import CliVersionControlOpts
 
 
 def register_anchor_commands(

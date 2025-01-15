@@ -2,13 +2,12 @@
 
 import traceback
 
-from components.remote.remote_opts_fakes import *
-
 from provisioner_examples_plugin.main import append_to_cli
 from provisioner_examples_plugin.src.config.domain.config import PLUGIN_NAME, ExamplesConfig
 from provisioner_examples_plugin.src.config.domain.config_fakes import (
     TestDataExamplesConfig,
 )
+from provisioner_shared.components.remote.remote_opts_fakes import *
 from provisioner_shared.components.runtime.cli.entrypoint import EntryPoint
 from provisioner_shared.components.runtime.config.manager.config_manager import ConfigManager
 
