@@ -9,8 +9,8 @@ from provisioner_single_board_plugin.src.raspberry_pi.node.configure_cmd import 
 )
 
 from provisioner_shared.components.remote.remote_opts_fakes import TestDataRemoteOpts
-from provisioner_shared.components.runtime.test_lib.assertions import Assertion
-from provisioner_shared.components.runtime.test_lib.test_env import TestEnv
+from provisioner_shared.test_lib.assertions import Assertion
+from provisioner_shared.test_lib.test_env import TestEnv
 
 RPI_REMOTE_OS_CONFIGURE_RUNNER_PATH = (
     "provisioner_single_board_plugin.src.common.remote.remote_os_configure.RemoteMachineOsConfigureRunner"

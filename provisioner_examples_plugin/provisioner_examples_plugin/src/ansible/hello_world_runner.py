@@ -5,7 +5,7 @@ from typing import Callable
 from loguru import logger
 
 from provisioner_shared.components.remote.remote_connector import SSHConnectionInfo
-from provisioner_shared.components.remote.remote_opts import CliRemoteOpts
+from provisioner_shared.components.remote.remote_opts import RemoteOpts
 from provisioner_shared.components.runtime.infra.context import Context
 from provisioner_shared.components.runtime.runner.ansible.ansible_runner import AnsibleHost, AnsiblePlaybook
 from provisioner_shared.components.runtime.shared.collaborators import CoreCollaborators
@@ -29,9 +29,9 @@ ANSIBLE_PLAYBOOK_HELLO_WORLD = """
 class HelloWorldRunnerArgs:
 
     username: str
-    remote_opts: CliRemoteOpts
+    remote_opts: RemoteOpts
 
-    def __init__(self, username: str, remote_opts: CliRemoteOpts) -> None:
+    def __init__(self, username: str, remote_opts: RemoteOpts) -> None:
         self.username = username
         self.remote_opts = remote_opts
 

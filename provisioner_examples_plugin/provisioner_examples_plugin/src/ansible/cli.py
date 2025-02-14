@@ -8,7 +8,7 @@ from provisioner_examples_plugin.src.ansible.hello_world_cmd import HelloWorldCm
 from provisioner_examples_plugin.src.config.domain.config import ExamplesConfig
 from provisioner_shared.components.remote.cli_remote_opts import cli_remote_opts
 from provisioner_shared.components.remote.domain.config import RemoteConfig
-from provisioner_shared.components.remote.remote_opts import CliRemoteOpts
+from provisioner_shared.components.remote.remote_opts import RemoteOpts
 from provisioner_shared.components.runtime.cli.cli_modifiers import cli_modifiers
 from provisioner_shared.components.runtime.cli.menu_format import CustomGroup, get_nested_value
 from provisioner_shared.components.runtime.cli.modifiers import CliModifiers
@@ -50,7 +50,7 @@ def register_ansible_commands(
             name="Ansible Hello World",
             call=lambda: HelloWorldCmd().run(
                 ctx=cli_ctx,
-                args=HelloWorldCmdArgs(username=username, remote_opts=CliRemoteOpts.from_click_ctx(ctx)),
+                args=HelloWorldCmdArgs(username=username, remote_opts=RemoteOpts.from_click_ctx(ctx)),
             ),
             error_message="Failed to run hello world command",
             verbose=cli_ctx.is_verbose(),

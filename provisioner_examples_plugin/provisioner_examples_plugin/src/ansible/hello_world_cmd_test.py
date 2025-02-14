@@ -9,8 +9,8 @@ from provisioner_examples_plugin.src.ansible.hello_world_cmd import (
 )
 from provisioner_shared.components.remote.domain.config import RunEnvironment
 from provisioner_shared.components.remote.remote_opts_fakes import TestDataRemoteOpts
-from provisioner_shared.components.runtime.test_lib.assertions import Assertion
-from provisioner_shared.components.runtime.test_lib.test_env import TestEnv
+from provisioner_shared.test_lib.assertions import Assertion
+from provisioner_shared.test_lib.test_env import TestEnv
 
 ANSIBLE_HELLO_WORLD_RUNNER_PATH = "provisioner_examples_plugin.src.ansible.hello_world_runner.HelloWorldRunner"
 
@@ -37,6 +37,6 @@ class HelloWorldCmdTestShould(unittest.TestCase):
 
         def assertion_callback(args):
             self.assertEqual(expected_username, args.username)
-            self.assertEqual(expected_remote_opts.environment, args.remote_opts.environment)
+            self.assertEqual(expected_remote_opts._environment, args.remote_opts.environment)
 
         Assertion.expect_call_arguments(self, run_call, arg_name="args", assertion_callable=assertion_callback)

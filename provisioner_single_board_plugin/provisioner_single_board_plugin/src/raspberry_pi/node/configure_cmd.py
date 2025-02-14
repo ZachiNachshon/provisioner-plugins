@@ -7,16 +7,16 @@ from provisioner_single_board_plugin.src.common.remote.remote_os_configure impor
     RemoteMachineOsConfigureRunner,
 )
 
-from provisioner_shared.components.remote.remote_opts import CliRemoteOpts
+from provisioner_shared.components.remote.remote_opts import RemoteOpts
 from provisioner_shared.components.runtime.infra.context import Context
 from provisioner_shared.components.runtime.shared.collaborators import CoreCollaborators
 
 
 class RPiOsConfigureCmdArgs:
 
-    remote_opts: CliRemoteOpts
+    remote_opts: RemoteOpts
 
-    def __init__(self, remote_opts: CliRemoteOpts = None) -> None:
+    def __init__(self, remote_opts: RemoteOpts = None) -> None:
         self.remote_opts = remote_opts
 
     def print(self) -> None:

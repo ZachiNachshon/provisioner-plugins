@@ -7,7 +7,7 @@ from provisioner_examples_plugin.src.ansible.hello_world_runner import (
     HelloWorldRunner,
     HelloWorldRunnerArgs,
 )
-from provisioner_shared.components.remote.remote_opts import CliRemoteOpts
+from provisioner_shared.components.remote.remote_opts import RemoteOpts
 from provisioner_shared.components.runtime.infra.context import Context
 from provisioner_shared.components.runtime.shared.collaborators import CoreCollaborators
 
@@ -15,9 +15,9 @@ from provisioner_shared.components.runtime.shared.collaborators import CoreColla
 class HelloWorldCmdArgs:
 
     username: str
-    remote_opts: CliRemoteOpts
+    remote_opts: RemoteOpts
 
-    def __init__(self, username: str = None, remote_opts: CliRemoteOpts = None) -> None:
+    def __init__(self, username: str = None, remote_opts: RemoteOpts = None) -> None:
         self.username = username
         self.remote_opts = remote_opts
 

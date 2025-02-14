@@ -8,8 +8,8 @@ from provisioner_examples_plugin.src.ansible.hello_world_runner import (
     HelloWorldRunnerArgs,
 )
 from provisioner_shared.components.remote.remote_opts_fakes import TestDataRemoteOpts
-from provisioner_shared.components.runtime.test_lib.assertions import Assertion
-from provisioner_shared.components.runtime.test_lib.test_env import TestEnv
+from provisioner_shared.test_lib.assertions import Assertion
+from provisioner_shared.test_lib.test_env import TestEnv
 
 ANSIBLE_HELLO_WORLD_RUNNER_PATH = "provisioner_examples_plugin.src.ansible.hello_world_runner.HelloWorldRunner"
 

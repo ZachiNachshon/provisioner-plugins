@@ -11,31 +11,29 @@ from provisioner_installers_plugin.src.installer.runner.installer_runner import 
     UtilityInstallerCmdRunner,
     UtilityInstallerRunnerCmdArgs,
 )
-from provisioner_installers_plugin.src.installer.utilities import SupportedToolings
+from provisioner_installers_plugin.src.utilities.utilities_cli import SupportedToolingsCli
+from provisioner_installers_plugin.src.utilities.utilities_k8s import SupportedToolingsK8s
+from provisioner_installers_plugin.src.utilities.utilities_system import SupportedToolingsSystem
 
-from provisioner_shared.components.remote.remote_opts import CliRemoteOpts
+from provisioner_shared.components.remote.remote_opts import RemoteOpts
+from provisioner_shared.components.runtime.cli.version import NameVersionTuple
+from provisioner_shared.components.runtime.errors.cli_errors import MissingUtilityException
 from provisioner_shared.components.runtime.infra.context import Context
 from provisioner_shared.components.runtime.shared.collaborators import CoreCollaborators
 
 
 class UtilityInstallerCmdArgs:
 
-    utilities: List[str]
-    remote_opts: CliRemoteOpts
-    git_access_token: str
-    sub_command_name: InstallerSubCommandName
-    dynamic_args: dict[str, Any]
-
     def __init__(
         self,
-        utilities: List[str],
-        remote_opts: CliRemoteOpts,
+        utils_to_install: List[NameVersionTuple],
+        remote_opts: RemoteOpts,
         sub_command_name: InstallerSubCommandName,
         git_access_token: str = None,
         dynamic_args: Optional[dict[str, Any]] = None,
     ) -> None:
 
-        self.utilities = utilities
+        self.utils_to_install = utils_to_install
         self.remote_opts = remote_opts
         self.dynamic_args = dynamic_args
         self.sub_command_name = sub_command_name
@@ -49,7 +47,7 @@ class UtilityInstallerCmdArgs:
             self.remote_opts.print()
         logger.debug(
             "InstallerCmdArgs: \n"
-            + f"  utilities: {str(self.utilities)}\n"
+            + f"  utilities: {str(self.utils_to_install)}\n"
             + f"  dynamic_args: {str(self.dynamic_args)}\n"
             + f"  sub_command_name: {str(self.sub_command_name.value)}\n"
             + "  git_access_token: REDACTED\n"
@@ -60,13 +58,14 @@ class UtilityInstallerCmd:
     def run(self, ctx: Context, args: UtilityInstallerCmdArgs) -> bool:
         logger.debug("Inside UtilityInstallerCmd run()")
         args.print()
+        supported_utils = get_supported_tooling_for_sub_command(args.sub_command_name)
         return UtilityInstallerCmdRunner.run(
             env=InstallerEnv(
                 ctx=ctx,
                 collaborators=CoreCollaborators(ctx),
-                supported_utilities=SupportedToolings,
+                supported_utilities=supported_utils,
                 args=UtilityInstallerRunnerCmdArgs(
-                    utilities=args.utilities,
+                    utilities=args.utils_to_install,
                     remote_opts=args.remote_opts,
                     sub_command_name=args.sub_command_name,
                     git_access_token=args.git_access_token,
@@ -74,3 +73,15 @@ class UtilityInstallerCmd:
                 ),
             )
         )
+
+
+def get_supported_tooling_for_sub_command(sub_cmd_namd: InstallerSubCommandName):
+    match (sub_cmd_namd):
+        case InstallerSubCommandName.CLI:
+            return SupportedToolingsCli
+        case InstallerSubCommandName.System:
+            return SupportedToolingsSystem
+        case InstallerSubCommandName.K8S:
+            return SupportedToolingsK8s
+        case _:
+            raise MissingUtilityException(f"Failed to identify a proper toolings category. command: {sub_cmd_namd}")

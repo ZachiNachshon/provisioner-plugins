@@ -16,9 +16,9 @@ from plugins.provisioner_installers_plugin.provisioner_installers_plugin.src.ins
 )
 from provisioner_shared.components.runtime.errors.cli_errors import CliApplicationException
 from provisioner_shared.components.runtime.infra.context import Context
-from provisioner_shared.components.runtime.test_lib.assertions import Assertion
-from provisioner_shared.components.runtime.test_lib.test_cli_runner import TestCliRunner
-from provisioner_shared.components.runtime.test_lib.test_env import TestEnv
+from provisioner_shared.test_lib.assertions import Assertion
+from provisioner_shared.test_lib.test_cli_runner import TestCliRunner
+from provisioner_shared.test_lib.test_env import TestEnv
 
 INSTALLER_CMD_MODULE_PATH = "provisioner_installers_plugin.src.installer.cmd.installer_cmd"
 
@@ -86,7 +86,7 @@ class UtilityInstallerCliTestShould(unittest.TestCase):
         def assert_cli_call(self, name: str):
             def assertion_callback(args):
                 self.assertIn(name, args.utilities)
-                self.assertEqual(InstallerSubCommandName.K3S, args.sub_command_name)
+                self.assertEqual(InstallerSubCommandName.K8S, args.sub_command_name)
                 self.assertIsNotNone(args.remote_opts)
 
             return assertion_callback

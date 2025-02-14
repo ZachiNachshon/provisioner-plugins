@@ -9,7 +9,7 @@ from provisioner_shared.components.remote.remote_connector import (
     RemoteMachineConnector,
     SSHConnectionInfo,
 )
-from provisioner_shared.components.remote.remote_opts import CliRemoteOpts
+from provisioner_shared.components.remote.remote_opts import RemoteOpts
 from provisioner_shared.components.runtime.colors import colors
 from provisioner_shared.components.runtime.infra.context import Context
 from provisioner_shared.components.runtime.infra.evaluator import Evaluator
@@ -43,14 +43,14 @@ class RemoteMachineNetworkConfigureArgs:
     gw_ip_address: str
     dns_ip_address: str
     static_ip_address: str
-    remote_opts: CliRemoteOpts
+    remote_opts: RemoteOpts
 
     def __init__(
         self,
         gw_ip_address: str,
         dns_ip_address: str,
         static_ip_address: str,
-        remote_opts: CliRemoteOpts,
+        remote_opts: RemoteOpts,
     ) -> None:
         self.gw_ip_address = gw_ip_address
         self.dns_ip_address = dns_ip_address
@@ -87,7 +87,7 @@ class RemoteMachineNetworkConfigureRunner:
         self._maybe_add_hosts_file_entry(ctx, tuple_info, collaborators)
 
     def _get_ssh_conn_info(
-        self, ctx: Context, collaborators: CoreCollaborators, remote_opts: Optional[CliRemoteOpts] = None
+        self, ctx: Context, collaborators: CoreCollaborators, remote_opts: Optional[RemoteOpts] = None
     ) -> SSHConnectionInfo:
 
         ssh_conn_info = Evaluator.eval_step_return_value_throw_on_failure(

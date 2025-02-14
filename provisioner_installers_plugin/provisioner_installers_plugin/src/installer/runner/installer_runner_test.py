@@ -43,12 +43,12 @@ from provisioner_shared.components.runtime.infra.context import Context
 from provisioner_shared.components.runtime.infra.remote_context import RemoteContext
 from provisioner_shared.components.runtime.runner.ansible.ansible_fakes import FakeAnsibleRunnerLocal
 from provisioner_shared.components.runtime.runner.ansible.ansible_runner import AnsiblePlaybook
-from provisioner_shared.components.runtime.test_lib import faker
-from provisioner_shared.components.runtime.test_lib.assertions import Assertion
-from provisioner_shared.components.runtime.test_lib.test_env import TestEnv
 from provisioner_shared.components.runtime.utils.os import OsArch
 from provisioner_shared.components.runtime.utils.summary import Summary
 from provisioner_shared.framework.functional.pyfn import Environment, PyFn, PyFnEvaluator
+from provisioner_shared.test_lib import faker
+from provisioner_shared.test_lib.assertions import Assertion
+from provisioner_shared.test_lib.test_env import TestEnv
 
 # To run as a single test target:
 #  poetry run coverage run -m pytest plugins/provisioner_installers_plugin/provisioner_installers_plugin/src/installer/runner/installer_runner_test.py
@@ -66,9 +66,11 @@ TestSupportedToolings = {
     TEST_UTILITY_1_NAME_GITHUB: Installable.Utility(
         display_name=TEST_UTILITY_1_NAME_GITHUB,
         binary_name=TEST_UTILITY_1_NAME_GITHUB,
+        description="test description",
+        version_command="--version",
         version="test_util_github-ver_1",
         active_source=ActiveInstallSource.GitHub,
-        sources=InstallSource(
+        source=InstallSource(
             github=InstallSource.GitHub(
                 owner="TestOwner",
                 repo="TestRepo",
@@ -88,31 +90,39 @@ TestSupportedToolings = {
         display_name=TEST_UTILITY_2_NAME_SCRIPT,
         binary_name=TEST_UTILITY_2_NAME_SCRIPT,
         version="test_util_script-ver_2",
+        description="test description",
+        version_command="--version",
         active_source=ActiveInstallSource.Script,
-        sources=InstallSource(
-            script=InstallSource.Script(install_cmd="curl -sfL https://my.test.install.domain.io | sh - "),
+        source=InstallSource(
+            script=InstallSource.Script(install_script="curl -sfL https://my.test.install.domain.io | sh - "),
         ),
     ),
     "test_util_no_source": Installable.Utility(
         display_name="test_util_no_source",
         binary_name="test_util_no_source",
+        description="test description",
+        version_command="--version",
         version="test_util_no_source-ver_none",
         active_source=None,
-        sources=InstallSource(),
+        source=InstallSource(),
     ),
     "test_util_no_version_no_source": Installable.Utility(
         display_name="test_util_no_version_no_source",
         binary_name="test_util_no_version_no_source",
         version=None,
+        description="test description",
+        version_command="--version",
         active_source=None,
-        sources=InstallSource(),
+        source=InstallSource(),
     ),
     "test_util_github_no_version": Installable.Utility(
         display_name="test_util_github",
         binary_name="test_util_github",
         version=None,
+        description="test description",
+        version_command="--version",
         active_source=ActiveInstallSource.GitHub,
-        sources=InstallSource(
+        source=InstallSource(
             github=InstallSource.GitHub(
                 owner="TestOwner",
                 repo="TestRepo",
@@ -483,7 +493,7 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
         eval = self.create_evaluator(fake_installer_env)
         test_env.get_collaborators().process().on("run_fn", List, faker.Anything, str, bool, bool).side_effect = (
             lambda args, working_dir, fail_msg, fail_on_error, allow_single_shell_command_str: self.assertEqual(
-                args, [utility.source.script.install_cmd]
+                args, [utility.source.script.install_script]
             )
         )
         result = eval << self.get_runner(eval)._install_from_script(fake_installer_env, utility)

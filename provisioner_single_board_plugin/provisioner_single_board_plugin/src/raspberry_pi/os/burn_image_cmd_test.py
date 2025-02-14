@@ -8,8 +8,8 @@ from provisioner_single_board_plugin.src.raspberry_pi.os.burn_image_cmd import (
     RPiOsBurnImageCmdArgs,
 )
 
-from provisioner_shared.components.runtime.test_lib.assertions import Assertion
-from provisioner_shared.components.runtime.test_lib.test_env import TestEnv
+from provisioner_shared.test_lib.assertions import Assertion
+from provisioner_shared.test_lib.test_env import TestEnv
 
 ARG_IMAGE_DOWNLOAD_URL = "https://test-image-download-url.com"
 ARG_IMAGE_DOWNLOAD_PATH = "/test/image/download/path"

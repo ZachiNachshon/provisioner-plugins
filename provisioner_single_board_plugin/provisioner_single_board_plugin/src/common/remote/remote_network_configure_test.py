@@ -26,11 +26,11 @@ from provisioner_shared.components.runtime.runner.ansible.ansible_fakes import F
 from provisioner_shared.components.runtime.runner.ansible.ansible_runner import (
     AnsiblePlaybook,
 )
-from provisioner_shared.components.runtime.test_lib import faker
-from provisioner_shared.components.runtime.test_lib.assertions import Assertion
-from provisioner_shared.components.runtime.test_lib.test_env import TestEnv
 from provisioner_shared.components.runtime.utils.os import LINUX, MAC_OS, WINDOWS, OsArch
 from provisioner_shared.components.runtime.utils.prompter import PromptLevel
+from provisioner_shared.test_lib import faker
+from provisioner_shared.test_lib.assertions import Assertion
+from provisioner_shared.test_lib.test_env import TestEnv
 
 # To run as a single test target:
 #  poetry run coverage run -m pytest plugins/provisioner_single_board_plugin/provisioner_single_board_plugin/src/common/remote/remote_network_configure_test.py
@@ -45,7 +45,7 @@ REMOTE_NETWORK_CONFIGURE_RUNNER_PATH = (
 
 REMOTE_MACHINE_CONNECTOR_PATH = "provisioner_shared.components.remote.remote_connector.RemoteMachineConnector"
 
-REMOTE_CONTEXT = RemoteContext.create(verbose=True, dry_run=False, silent=False, non_interactive=False)
+REMOTE_CONTEXT = RemoteContext.create(verbose=True, dry_run=False, silent=False)
 
 
 class RemoteMachineNetworkConfigureTestShould(unittest.TestCase):

@@ -9,8 +9,8 @@ from provisioner_single_board_plugin.src.raspberry_pi.node.network_cmd import (
 )
 
 from provisioner_shared.components.remote.remote_opts_fakes import TestDataRemoteOpts
-from provisioner_shared.components.runtime.test_lib.assertions import Assertion
-from provisioner_shared.components.runtime.test_lib.test_env import TestEnv
+from provisioner_shared.test_lib.assertions import Assertion
+from provisioner_shared.test_lib.test_env import TestEnv
 
 ARG_GW_IP_ADDRESS = "1.1.1.1"
 ARG_DNS_IP_ADDRESS = "2.2.2.2"

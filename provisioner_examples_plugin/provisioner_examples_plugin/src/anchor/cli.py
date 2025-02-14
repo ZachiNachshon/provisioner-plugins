@@ -7,7 +7,7 @@ import click
 from provisioner_examples_plugin.src.anchor.anchor_cmd import AnchorCmd, AnchorCmdArgs
 from provisioner_shared.components.remote.cli_remote_opts import cli_remote_opts
 from provisioner_shared.components.remote.domain.config import RemoteConfig
-from provisioner_shared.components.remote.remote_opts import CliRemoteOpts
+from provisioner_shared.components.remote.remote_opts import RemoteOpts
 from provisioner_shared.components.runtime.cli.cli_modifiers import cli_modifiers
 from provisioner_shared.components.runtime.cli.menu_format import CustomGroup
 from provisioner_shared.components.runtime.cli.modifiers import CliModifiers
@@ -54,7 +54,7 @@ def register_anchor_commands(
                 args=AnchorCmdArgs(
                     anchor_run_command=run_command,
                     vcs_opts=CliVersionControlOpts.from_click_ctx(ctx),
-                    remote_opts=CliRemoteOpts.from_click_ctx(ctx),
+                    remote_opts=RemoteOpts.from_click_ctx(ctx),
                 ),
             ),
             error_message="Failed to run anchor command",

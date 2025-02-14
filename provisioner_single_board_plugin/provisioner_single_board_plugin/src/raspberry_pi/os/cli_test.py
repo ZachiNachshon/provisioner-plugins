@@ -8,9 +8,9 @@ from provisioner_single_board_plugin.main_fake import get_fake_app
 from provisioner_shared.components.runtime.errors.cli_errors import (
     StepEvaluationFailure,
 )
-from provisioner_shared.components.runtime.test_lib.assertions import Assertion
-from provisioner_shared.components.runtime.test_lib.test_cli_runner import TestCliRunner
-from provisioner_shared.components.runtime.test_lib.test_env import TestEnv
+from provisioner_shared.test_lib.assertions import Assertion
+from provisioner_shared.test_lib.test_cli_runner import TestCliRunner
+from provisioner_shared.test_lib.test_env import TestEnv
 
 ARG_IMAGE_DOWNLOAD_URL = "http://test.image.download.url.com"
 
