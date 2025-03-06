@@ -14,6 +14,9 @@ class ActiveInstallSource(str, Enum):
     Ansible = "Ansible"
     Callback = "Callback"
 
+    def __str__(self):
+        return self.value
+
 
 class InstallSource:
     class Callback:

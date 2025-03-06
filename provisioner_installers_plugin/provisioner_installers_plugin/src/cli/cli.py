@@ -38,7 +38,7 @@ def register_cli_commands(cli_group: click.Group):
 def install_utilities(utils_name_ver: List[NameVersionTuple], modifiers: CliModifiers, remote_opts: RemoteOpts) -> None:
     cli_ctx = CliContextManager.create(modifiers)
     Evaluator.eval_installer_cli_entrypoint_pyfn_step(
-        name="install_utilities",
+        name="Install Utility Command",
         call=lambda: UtilityInstallerCmd().run(
             ctx=cli_ctx,
             args=UtilityInstallerCmdArgs(

@@ -10,6 +10,17 @@ from provisioner_installers_plugin.src.utilities.utilities_versions import Tooli
 SupportedOS = ["linux", "darwin"]
 SupportedArchitectures = ["x86_64", "arm", "amd64", "armv6l", "armv7l", "arm64", "aarch64"]
 
+
+def anchor_binary_version_adjust(version: str, os: str, arch: str) -> str:
+    arch_name = arch
+    match arch:
+        case "aarch64":
+            arch_name = "arm64"
+        case "x86_64":
+            arch_name = "amd64"
+    return f"anchor_{version.removeprefix('v')}_{os}_{arch_name}.tar.gz"
+
+
 SupportedToolingsCli = {
     "anchor": Installable.Utility(
         display_name="anchor",
@@ -22,8 +33,15 @@ SupportedToolingsCli = {
             github=InstallSource.GitHub(
                 owner="ZachiNachshon",
                 repo="anchor",
-                supported_releases=["darwin_amd64", "darwin_arm64", "linux_amd64", "linux_arm", "linux_arm64"],
-                release_name_resolver=lambda version, os, arch: f"anchor_{version.removeprefix('v')}_{os}_{arch}.tar.gz",
+                supported_releases=[
+                    "darwin_amd64",
+                    "darwin_arm64",
+                    "linux_amd64",
+                    "linux_arm",
+                    "linux_arm64",
+                    "linux_aarch64",
+                ],
+                release_name_resolver=lambda version, os, arch: anchor_binary_version_adjust(version, os, arch),
             ),
         ),
     ),

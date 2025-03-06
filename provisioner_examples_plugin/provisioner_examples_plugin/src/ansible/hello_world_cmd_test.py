@@ -24,19 +24,22 @@ class HelloWorldCmdTestShould(unittest.TestCase):
     env = TestEnv.create()
 
     @mock.patch(f"{ANSIBLE_HELLO_WORLD_RUNNER_PATH}.run")
-    def test_ansible_hello_cmd_run_with_expected_arguments(self, run_call: mock.MagicMock) -> None:
+    def test_ansible_hello_cmd_to_runner_arguments(self, run_call: mock.MagicMock) -> None:
         ctx = self.env.get_context()
-
         expected_username = "test-user"
         expected_remote_opts = TestDataRemoteOpts.create_fake_cli_remote_opts(environment=RunEnvironment.Remote)
+
+        def assertion_callback(args):
+            self.assertEqual(expected_username, args.username)
+            self.assertEqual(expected_remote_opts.get_environment(), args.remote_opts.get_environment())
+            self.assertEqual(expected_remote_opts.get_connect_mode(), args.remote_opts.get_connect_mode())
+            self.assertEqual(expected_remote_opts.get_remote_context(), args.remote_opts.get_remote_context())
+            self.assertEqual(expected_remote_opts.get_config(), args.remote_opts.get_config())
+            self.assertEqual(expected_remote_opts.get_conn_flags(), args.remote_opts.get_conn_flags())
+            self.assertEqual(expected_remote_opts.get_scan_flags(), args.remote_opts.get_scan_flags())
 
         HelloWorldCmd().run(
             ctx=ctx,
             args=HelloWorldCmdArgs(username=expected_username, remote_opts=expected_remote_opts),
         )
-
-        def assertion_callback(args):
-            self.assertEqual(expected_username, args.username)
-            self.assertEqual(expected_remote_opts._environment, args.remote_opts.environment)
-
         Assertion.expect_call_arguments(self, run_call, arg_name="args", assertion_callable=assertion_callback)

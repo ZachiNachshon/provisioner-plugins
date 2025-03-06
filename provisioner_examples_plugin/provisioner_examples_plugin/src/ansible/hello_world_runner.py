@@ -1,13 +1,11 @@
 #!/usr/bin/env python3
 
-from typing import Callable
-
 from loguru import logger
 
-from provisioner_shared.components.remote.remote_connector import SSHConnectionInfo
+from provisioner_shared.components.remote.remote_connector import RemoteMachineConnector, SSHConnectionInfo
 from provisioner_shared.components.remote.remote_opts import RemoteOpts
 from provisioner_shared.components.runtime.infra.context import Context
-from provisioner_shared.components.runtime.runner.ansible.ansible_runner import AnsibleHost, AnsiblePlaybook
+from provisioner_shared.components.runtime.runner.ansible.ansible_runner import AnsiblePlaybook
 from provisioner_shared.components.runtime.shared.collaborators import CoreCollaborators
 from provisioner_shared.components.runtime.utils.checks import Checks
 from provisioner_shared.components.runtime.utils.printer import Printer
@@ -42,42 +40,45 @@ class HelloWorldRunner:
 
         self._prerequisites(ctx=ctx, checks=collaborators.checks())
         self._print_pre_run_instructions(collaborators.printer(), collaborators.prompter())
+        ssh_conn_info = self._get_ssh_conn_info(ctx, collaborators, args.remote_opts)
         self._run_ansible_hello_playbook_with_progress_bar(
-            get_ssh_conn_info_fn=self._get_ssh_conn_info,
+            ssh_conn_info=ssh_conn_info,
             collaborators=collaborators,
             args=args,
         )
 
-    def _get_ssh_conn_info(self) -> SSHConnectionInfo:
+    def _get_ssh_conn_info(
+        self, ctx: Context, collaborators: CoreCollaborators, remote_opts: RemoteOpts
+    ) -> SSHConnectionInfo:
+
+        connector = RemoteMachineConnector(collaborators=collaborators)
+        ssh_conn_info = connector.collect_ssh_connection_info(
+            ctx=ctx, cli_remote_opts=remote_opts, force_single_conn_info=True
+        )
+        collaborators.summary().append_result(
+            attribute_name="ssh_conn_info",
+            call=lambda: ssh_conn_info,
+        )
+        return ssh_conn_info
+
         # return SSHConnectionInfo(
         #     ansible_hosts=[
         #         AnsibleHost(
-        #             host="test",
-        #             ip_address="1.1.1.1",
+        #             host="localhost",
+        #             ip_address="ansible_connection=local",
         #             username="pi",
-        #             password="raspbian",
+        #             # password="raspbian",
         #         )
         #     ]
         # )
-        return SSHConnectionInfo(
-            ansible_hosts=[
-                AnsibleHost(
-                    host="localhost",
-                    ip_address="ansible_connection=local",
-                    username="pi",
-                    # password="raspbian",
-                )
-            ]
-        )
 
     def _run_ansible_hello_playbook_with_progress_bar(
         self,
-        get_ssh_conn_info_fn: Callable[..., SSHConnectionInfo],
+        ssh_conn_info: SSHConnectionInfo,
         collaborators: CoreCollaborators,
         args: HelloWorldRunnerArgs,
     ) -> str:
 
-        ssh_conn_info = get_ssh_conn_info_fn()
         output = (
             collaborators.progress_indicator()
             .get_status()

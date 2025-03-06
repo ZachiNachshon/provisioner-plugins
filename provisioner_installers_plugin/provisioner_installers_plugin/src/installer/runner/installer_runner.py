@@ -349,8 +349,8 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
                         + [f"git_access_token={env.args.git_access_token}"],
                         ansible_tags=utility.source.ansible.ansible_tags,
                     ),
-                    desc_run=f"Running Ansible playbook ({utility.source.ansible.playbook.get_name()})).",
-                    desc_end=f"Ansible playbook finished ({utility.source.ansible.playbook.get_name()})).",
+                    desc_run=f"Running Ansible playbook locally ({utility.source.ansible.playbook.get_name()})).",
+                    desc_end=f"Ansible playbook finished locally ({utility.source.ansible.playbook.get_name()})).",
                 )
             )
 
@@ -470,7 +470,12 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
                 predicate=lambda release_filepath: env.collaborators.io_utils().is_archive_fn(release_filepath),
                 if_true=lambda release_filepath: PyFn.effect(
                     lambda: env.collaborators.io_utils().unpack_archive_fn(release_filepath)
-                ),
+                    ).flat_map(
+                        lambda unpacked_release_folderpath: PyFn.of(env.collaborators.printer().print_fn(
+                            f"Unpacked Utility: {releasename_filepath_util_tuple.utility.display_name}, archive: {releasename_filepath_util_tuple.release_filename}, path: {unpacked_release_folderpath}"
+                            )
+                        ).map(lambda _: unpacked_release_folderpath)
+                    ),
                 if_false=lambda release_filepath: PyFn.of(str(pathlib.Path(release_filepath).parent)),
             )
             .map(
@@ -573,11 +578,11 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
                     remote_ctx=env.args.remote_opts.get_remote_context(),
                     ssh_conn_info=sshconninfo_utility_info.ssh_conn_info,
                     sub_command_name=env.args.sub_command_name,
-                    utility_display_name=sshconninfo_utility_info.utility.display_name,
+                    utility=sshconninfo_utility_info.utility,
                     git_access_token=env.args.git_access_token,
                 ),
-                desc_run="Running Ansible playbook (Provisioner Wrapper)",
-                desc_end="Ansible playbook finished (Provisioner Wrapper).",
+                desc_run="Running Ansible playbook remotely (Provisioner Wrapper)",
+                desc_end="Ansible playbook finished remotely (Provisioner Wrapper).",
             ),
         )
 
@@ -587,10 +592,15 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
         remote_ctx: RemoteContext,
         ssh_conn_info: SSHConnectionInfo,
         sub_command_name: InstallerSubCommandName,
-        utility_display_name: str,
+        utility: Installable.Utility,
         git_access_token: str,
     ) -> str:
 
+        utility_maybe_ver = f"{utility.display_name}@{utility.version}" if utility.version else utility.display_name
+        prov_run_cmd = f"install --environment Local {sub_command_name} {utility_maybe_ver} -y {'-v' if remote_ctx.is_verbose() else ''}"
+        print("=============================")
+        print(f"prov_run_cmd: {prov_run_cmd}")
+        print("=============================")
         return runner.run_fn(
             selected_hosts=ssh_conn_info.ansible_hosts,
             playbook=AnsiblePlaybook(
@@ -600,7 +610,8 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
             ),
             ansible_vars=[
                 # f"provisioner_command='-y {'-v ' if remote_ctx.is_verbose() else ''}install {sub_command_name.value} --environment=Local {utility_display_name}'",
-                "provisioner_command=''",
+                f"provisioner_command='{prov_run_cmd}'",
+                # "provisioner_command=''",
                 # "required_plugins=['provisioner_installers_plugin:0.1.0']",
                 "required_plugins=['provisioner_installers_plugin']",
                 f"git_access_token={git_access_token}",

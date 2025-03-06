@@ -8,3 +8,6 @@ class InstallerSubCommandName(str, Enum):
     CLI = "cli"
     K8S = "k8s"
     System = "system"
+
+    def __str__(self):
+        return self.value

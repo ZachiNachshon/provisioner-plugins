@@ -10,6 +10,7 @@ from provisioner_installers_plugin.src.installer.cmd.installer_cmd import (
 from provisioner_installers_plugin.src.installer.domain.command import InstallerSubCommandName
 from provisioner_installers_plugin.src.installer.domain.dynamic_args import DynamicArgs
 from provisioner_installers_plugin.src.installer.runner.installer_runner import (
+    InstallerEnv,
     UtilityInstallerRunnerCmdArgs,
 )
 from provisioner_installers_plugin.src.utilities.utilities_cli import SupportedToolingsCli
@@ -45,12 +46,10 @@ class UtilityInstallerCmdTestShould(unittest.TestCase):
         )
 
     @mock.patch(f"{UTILITY_INSTALLER_CMD_RUNNER_PATH}.run")
-    def test_utility_install_with_expected_arguments(self, run_call: mock.MagicMock) -> None:
+    def test_utility_install_cmd_to_runner_arguments(self, run_call: mock.MagicMock) -> None:
         fake_cmd_args = self.create_fake_utility_installer_args()
 
-        UtilityInstallerCmd().run(ctx=self.env.get_context(), args=fake_cmd_args)
-
-        def assertion_callback(env):
+        def assertion_callback(env: InstallerEnv):
             self.assertEqual(env.ctx, self.env.get_context())
             self.assertEqual(env.supported_utilities, SupportedToolingsCli)
             Assertion.expect_equal_objects(
@@ -65,4 +64,5 @@ class UtilityInstallerCmdTestShould(unittest.TestCase):
                 ),
             )
 
+        UtilityInstallerCmd().run(ctx=self.env.get_context(), args=fake_cmd_args)
         Assertion.expect_call_arguments(self, run_call, arg_name="env", assertion_callable=assertion_callback)
