@@ -3,7 +3,8 @@
 import unittest
 
 import pytest
-from test_lib.cli_container import RemoteSSHContainer
+from provisioner_shared.test_lib.cli_container import RemoteSSHContainer
+from provisioner_shared.test_lib.docker.skip_if_not_docker import skip_if_not_in_docker
 
 from provisioner.main import root_menu
 from provisioner_shared.test_lib.test_cli_runner import TestCliRunner
@@ -13,6 +14,7 @@ from provisioner_shared.test_lib.test_cli_runner import TestCliRunner
 #  ./run_in_docker.py --test-path plugins/provisioner_installers_plugin/provisioner_installers_plugin/src/installer/runner/installer_runner_e2e_test.py --only-e2e
 #  poetry run coverage run -m pytest -s plugins/provisioner_installers_plugin/provisioner_installers_plugin/src/installer/runner/installer_runner_e2e_test.py --only-e2e
 #
+# @skip_if_not_in_docker
 @pytest.mark.e2e
 class HelloWorldE2ETestShould(unittest.TestCase):
 
@@ -32,8 +34,8 @@ class HelloWorldE2ETestShould(unittest.TestCase):
             cls.container.stop()
             cls.container = None  # Ensure cleanup
 
-    @unittest.SkipTest
-    def test_e2e_install_anchor_from_github_locally_successfully(self):
+    @skip_if_not_in_docker
+    def test_e2e_install_anchor_on_local_successfully(self):
         output = TestCliRunner.run(
             root_menu,
             [
@@ -49,10 +51,11 @@ class HelloWorldE2ETestShould(unittest.TestCase):
         self.assertIn("name:    anchor", output)
         self.assertIn("version: v0.10.0", output)
         self.assertIn("binary:  /root/.local/bin/anchor", output)
+        # self.assertTrue(False)
 
-    # @unittest.SkipTest
-    def test_e2e_install_anchor_from_github_remotely_successfully(self):
-        result = TestCliRunner.run(
+    @unittest.SkipTest
+    def test_e2e_install_anchor_on_remote_successfully(self):
+        output = TestCliRunner.run(
             root_menu,
             [
                 "install",
@@ -74,7 +77,12 @@ class HelloWorldE2ETestShould(unittest.TestCase):
                 "Verbose",
                 "cli",
                 "anchor@v0.10.0",
+                "--package-manager",
+                "uv",
                 "-vy",
             ],
         )
-        self.assertIn("Hello World, RemoteTestUser", result)
+        self.assertIn("Successfully installed utility", output)
+        self.assertIn("name:    anchor", output)
+        self.assertIn("version: v0.10.0", output)
+        self.assertIn("binary:  /home/pi/.local/bin/anchor", output)

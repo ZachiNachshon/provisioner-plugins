@@ -470,12 +470,13 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
                 predicate=lambda release_filepath: env.collaborators.io_utils().is_archive_fn(release_filepath),
                 if_true=lambda release_filepath: PyFn.effect(
                     lambda: env.collaborators.io_utils().unpack_archive_fn(release_filepath)
-                    ).flat_map(
-                        lambda unpacked_release_folderpath: PyFn.of(env.collaborators.printer().print_fn(
+                ).flat_map(
+                    lambda unpacked_release_folderpath: PyFn.of(
+                        env.collaborators.printer().print_fn(
                             f"Unpacked Utility: {releasename_filepath_util_tuple.utility.display_name}, archive: {releasename_filepath_util_tuple.release_filename}, path: {unpacked_release_folderpath}"
-                            )
-                        ).map(lambda _: unpacked_release_folderpath)
-                    ),
+                        )
+                    ).map(lambda _: unpacked_release_folderpath)
+                ),
                 if_false=lambda release_filepath: PyFn.of(str(pathlib.Path(release_filepath).parent)),
             )
             .map(
@@ -574,6 +575,7 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
             .get_status()
             .long_running_process_fn(
                 call=lambda: self._run_ansible(
+                    env=env,
                     runner=env.collaborators.ansible_runner(),
                     remote_ctx=env.args.remote_opts.get_remote_context(),
                     ssh_conn_info=sshconninfo_utility_info.ssh_conn_info,
@@ -588,6 +590,7 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
 
     def _run_ansible(
         self,
+        env: InstallerEnv,
         runner: AnsibleRunnerLocal,
         remote_ctx: RemoteContext,
         ssh_conn_info: SSHConnectionInfo,
@@ -596,11 +599,27 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
         git_access_token: str,
     ) -> str:
 
+        install_method = "install_method='pip'"
+        ansible_tags = ["provisioner_wrapper"]
+        maybe_test_args = []
+        print(f"Testing mode enabled: {self._test_only_is_testing_mode_enabled()}")
+        if self._test_only_is_testing_mode_enabled():
+            print("\n=== Running Ansible Provisioner Wrapper in testing mode ===\n")
+            # We must have the tests reference in here since we are controlling the provisioner_wrapper execution by:
+            #   - Running it as non-test code as a direct provisioner CLI install command
+            #   - Running it as test code remotely via provisioner_wrapper Ansible script
+            # This test indicator allows the provisioner runtime / shared / installer-plugin to be bundled and run from sources within the docker container.
+            # Otherwise, the container will download from pip those components and we won't be able to run the tests on local changes before publishing.
+            # Copying the entire project / mount as a volume to the container was tested, added complexity and don't work as expected due to the time it takes to copy
+            # and the fact that we'll have to re-create the virtual environmnet within the containers.
+            temp_folder_path = self._test_only_prepare_test_artifacts(env)
+            install_method = "install_method='testing'"
+            ansible_tags.append("provisioner_testing")
+            maybe_test_args.append(f"provisioner_e2e_tests_archives_host_path='{temp_folder_path}'")
+            maybe_test_args.append("ansible_python_interpreter='/usr/local/bin/python3'")
+
         utility_maybe_ver = f"{utility.display_name}@{utility.version}" if utility.version else utility.display_name
         prov_run_cmd = f"install --environment Local {sub_command_name} {utility_maybe_ver} -y {'-v' if remote_ctx.is_verbose() else ''}"
-        print("=============================")
-        print(f"prov_run_cmd: {prov_run_cmd}")
-        print("=============================")
         return runner.run_fn(
             selected_hosts=ssh_conn_info.ansible_hosts,
             playbook=AnsiblePlaybook(
@@ -609,14 +628,14 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
                 remote_context=remote_ctx,
             ),
             ansible_vars=[
-                # f"provisioner_command='-y {'-v ' if remote_ctx.is_verbose() else ''}install {sub_command_name.value} --environment=Local {utility_display_name}'",
                 f"provisioner_command='{prov_run_cmd}'",
-                # "provisioner_command=''",
                 # "required_plugins=['provisioner_installers_plugin:0.1.0']",
                 "required_plugins=['provisioner_installers_plugin']",
+                install_method,
                 f"git_access_token={git_access_token}",
-            ],
-            ansible_tags=["provisioner_wrapper"],
+            ]
+            + maybe_test_args,
+            ansible_tags=ansible_tags,
         )
 
     def is_hosts_found(self, ssh_conn_info: SSHConnectionInfo) -> bool:
@@ -648,6 +667,21 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
             )
         )
 
+    def _test_only_is_testing_mode_enabled(self) -> bool:
+        return os.environ.get("PROVISIONER_TESTING_MODE_ENABLED", "false").lower() == "true"
+
+    def _test_only_prepare_test_artifacts(self, env: InstallerEnv) -> str:
+        project_git_root = env.collaborators.io_utils().find_git_repo_root_abs_path_fn(clazz=UtilityInstallerCmdRunner)
+        sdist_output_path = f"{project_git_root}/tests-outputs/installers-plugin/dist"
+        env.collaborators.package_loader().build_sdists_fn(
+            [
+                f"{project_git_root}/provisioner",
+                f"{project_git_root}/provisioner_shared",
+                f"{project_git_root}/plugins/provisioner_installers_plugin",
+            ],
+            sdist_output_path,
+        )
+        return sdist_output_path
 
 @staticmethod
 def generate_installer_welcome(

@@ -4,7 +4,6 @@ import unittest
 from typing import Callable, List
 from unittest import mock
 
-from provisioner_shared.components.runtime.utils.printer import Printer
 from provisioner_installers_plugin.src.installer.domain.command import InstallerSubCommandName
 from provisioner_installers_plugin.src.installer.domain.installable import Installable
 from provisioner_installers_plugin.src.installer.domain.source import (
@@ -46,6 +45,7 @@ from provisioner_shared.components.runtime.infra.remote_context import RemoteCon
 from provisioner_shared.components.runtime.runner.ansible.ansible_fakes import FakeAnsibleRunnerLocal
 from provisioner_shared.components.runtime.runner.ansible.ansible_runner import AnsiblePlaybook
 from provisioner_shared.components.runtime.utils.os import OsArch
+from provisioner_shared.components.runtime.utils.printer import Printer
 from provisioner_shared.components.runtime.utils.summary import Summary
 from provisioner_shared.framework.functional.pyfn import Environment, PyFn, PyFnEvaluator
 from provisioner_shared.test_lib import faker
@@ -188,7 +188,9 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
         self.assertIsNone(result)
 
     def test_verify_selected_utilities_fails_unsupported_utility(self) -> None:
-        fake_installer_env = self.create_fake_installer_env(self.env, utilities=[NameVersionTuple("utility-not-supported", "1.0.0")])
+        fake_installer_env = self.create_fake_installer_env(
+            self.env, utilities=[NameVersionTuple("utility-not-supported", "1.0.0")]
+        )
         eval = self.create_evaluator(fake_installer_env)
         Assertion.expect_raised_failure(
             self,
@@ -659,17 +661,21 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
         def is_archive_fn(filepath: str) -> bool:
             self.assertEqual(filepath, release_download_filepath)
             return True
+
         fake_io_utils.on("is_archive_fn", str).side_effect = is_archive_fn
 
         def unpack_archive_fn(filepath: str) -> str:
             self.assertEqual(filepath, release_download_filepath)
             return unpacked_release_folderpath
+
         fake_io_utils.on("unpack_archive_fn", str).side_effect = unpack_archive_fn
 
         fake_printer = test_env.get_collaborators().printer()
+
         def print_fn(message: str) -> Printer:
             self.assertIn(release_filename, message)
             return fake_printer
+
         fake_printer.on("print_fn", str).side_effect = print_fn
 
         expected_input = ReleaseFilename_ReleaseDownloadFilePath_Utility_Tuple(
@@ -872,7 +878,7 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
                     ansible_vars,
                     [
                         f"provisioner_command='install --environment Local {InstallerSubCommandName.CLI} {utility.display_name}@{TEST_UTILITY_1_GITHUB_VER} -y {'-v ' if remote_ctx.is_verbose() else ''}'",
-                        f"required_plugins=['provisioner_installers_plugin']",
+                        "required_plugins=['provisioner_installers_plugin']",
                         f"git_access_token={TEST_GITHUB_ACCESS_TOKEN}",
                     ],
                 ),
