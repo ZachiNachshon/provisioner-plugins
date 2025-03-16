@@ -11,10 +11,8 @@ from provisioner_shared.test_lib.test_cli_runner import TestCliRunner
 
 
 # To run these directly from the terminal use:
-#  ./run_in_docker.py --test-path plugins/provisioner_installers_plugin/provisioner_installers_plugin/src/installer/runner/installer_runner_e2e_test.py --only-e2e
-#  poetry run coverage run -m pytest -s plugins/provisioner_installers_plugin/provisioner_installers_plugin/src/installer/runner/installer_runner_e2e_test.py --only-e2e
+#  ./run-tests.py plugins/provisioner_installers_plugin/provisioner_installers_plugin/src/installer/runner/installer_runner_e2e_test.py --only-e2e
 #
-# @skip_if_not_in_docker
 @pytest.mark.e2e
 class HelloWorldE2ETestShould(unittest.TestCase):
 
@@ -53,7 +51,6 @@ class HelloWorldE2ETestShould(unittest.TestCase):
         self.assertIn("binary:  /root/.local/bin/anchor", output)
         # self.assertTrue(False)
 
-    @unittest.SkipTest
     def test_e2e_install_anchor_on_remote_successfully(self):
         output = TestCliRunner.run(
             root_menu,

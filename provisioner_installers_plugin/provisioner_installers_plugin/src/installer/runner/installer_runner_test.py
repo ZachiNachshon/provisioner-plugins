@@ -861,6 +861,8 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
         env = TestEnv.create()
         remote_ctx = RemoteContext.no_op()
         fake_runner = FakeAnsibleRunnerLocal(env.get_context())
+        fake_installer_env = self.create_fake_installer_env(env)
+        env.get_collaborators().checks().on("is_env_var_equals_fn", str, str).return_value = False
         fake_runner.on("run_fn", List, AnsiblePlaybook, List, List, str).side_effect = (
             lambda selected_hosts, playbook, ansible_vars, ansible_tags, ansible_playbook_package: (
                 self.assertEqual(selected_hosts, TestDataRemoteConnector.TEST_DATA_SSH_ANSIBLE_HOSTS),
@@ -873,20 +875,19 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
                         remote_context=remote_ctx,
                     ),
                 ),
-                Assertion.expect_equal_objects(
-                    self,
-                    ansible_vars,
-                    [
-                        f"provisioner_command='install --environment Local {InstallerSubCommandName.CLI} {utility.display_name}@{TEST_UTILITY_1_GITHUB_VER} -y {'-v ' if remote_ctx.is_verbose() else ''}'",
-                        "required_plugins=['provisioner_installers_plugin']",
-                        f"git_access_token={TEST_GITHUB_ACCESS_TOKEN}",
-                    ],
-                ),
+                self.assertEqual(ansible_vars, [
+                    f"provisioner_command='install --environment Local {InstallerSubCommandName.CLI} {utility.display_name}@{TEST_UTILITY_1_GITHUB_VER} -y {'-v ' if remote_ctx.is_verbose() else ''}'",
+                    "required_plugins=['provisioner_installers_plugin']",
+                    "install_method='pip'",                    
+                    f"git_access_token={TEST_GITHUB_ACCESS_TOKEN}",
+                ]),
+                self.assertEqual(ansible_tags, ["provisioner_wrapper"]),
                 self.assertEqual(ansible_tags, ["provisioner_wrapper"]),
             )
         )
 
         UtilityInstallerCmdRunner(env.get_context())._run_ansible(
+            env=fake_installer_env,
             runner=fake_runner,
             remote_ctx=remote_ctx,
             ssh_conn_info=TestDataRemoteConnector.create_fake_ssh_conn_info_fn()(),

@@ -602,8 +602,7 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
         install_method = "install_method='pip'"
         ansible_tags = ["provisioner_wrapper"]
         maybe_test_args = []
-        print(f"Testing mode enabled: {self._test_only_is_testing_mode_enabled()}")
-        if self._test_only_is_testing_mode_enabled():
+        if self._test_only_is_testing_mode_enabled(env):
             print("\n=== Running Ansible Provisioner Wrapper in testing mode ===\n")
             # We must have the tests reference in here since we are controlling the provisioner_wrapper execution by:
             #   - Running it as non-test code as a direct provisioner CLI install command
@@ -667,8 +666,8 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
             )
         )
 
-    def _test_only_is_testing_mode_enabled(self) -> bool:
-        return os.environ.get("PROVISIONER_TESTING_MODE_ENABLED", "false").lower() == "true"
+    def _test_only_is_testing_mode_enabled(self, env: InstallerEnv) -> bool:
+        return env.collaborators.checks().is_env_var_equals_fn("PROVISIONER_TESTING_MODE_ENABLED", "true")
 
     def _test_only_prepare_test_artifacts(self, env: InstallerEnv) -> str:
         project_git_root = env.collaborators.io_utils().find_git_repo_root_abs_path_fn(clazz=UtilityInstallerCmdRunner)

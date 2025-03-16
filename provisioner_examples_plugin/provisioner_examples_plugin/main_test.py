@@ -7,7 +7,7 @@ from provisioner_shared.test_lib.test_cli_runner import TestCliRunner
 
 
 # To run these directly from the terminal use:
-#  poetry run coverage run -m pytest -s plugins/provisioner_examples_plugin/provisioner_examples_plugin/main_test.py
+#  ./run_tests.py plugins/provisioner_examples_plugin/provisioner_examples_plugin/main_test.py
 #
 class TestCLI(unittest.TestCase):
 
@@ -18,4 +18,5 @@ class TestCLI(unittest.TestCase):
                 "--help",
             ],
         )
-        self.assertIn("examples      Playground for using the CLI framework", result)
+        self.assertIn("examples", result)
+        self.assertIn("Playground for using the CLI framework", result)

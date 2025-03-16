@@ -2,8 +2,6 @@
 
 import unittest
 
-import pytest
-
 from provisioner.main import root_menu
 from provisioner_shared.test_lib.test_cli_runner import TestCliRunner
 
@@ -20,4 +18,5 @@ class TestCLI(unittest.TestCase):
                 "--help",
             ],
         )
-        self.assertIn("install       Install anything anywhere on any OS/Arch", result)
+        self.assertIn("install", result)
+        self.assertIn("Install anything anywhere on any OS/Arch", result)
