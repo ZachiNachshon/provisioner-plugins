@@ -3,10 +3,10 @@
 import unittest
 
 import pytest
-from provisioner_shared.test_lib.cli_container import RemoteSSHContainer
-from provisioner_shared.test_lib.docker.skip_if_not_docker import skip_if_not_in_docker
 
 from provisioner.main import root_menu
+from provisioner_shared.test_lib.cli_container import RemoteSSHContainer
+from provisioner_shared.test_lib.docker.skip_if_not_docker import skip_if_not_in_docker
 from provisioner_shared.test_lib.test_cli_runner import TestCliRunner
 
 
@@ -49,7 +49,6 @@ class HelloWorldE2ETestShould(unittest.TestCase):
         self.assertIn("name:    anchor", output)
         self.assertIn("version: v0.10.0", output)
         self.assertIn("binary:  /root/.local/bin/anchor", output)
-        # self.assertTrue(False)
 
     def test_e2e_install_anchor_on_remote_successfully(self):
         output = TestCliRunner.run(

@@ -3,9 +3,9 @@
 import unittest
 
 import pytest
-from provisioner_shared.test_lib.cli_container import RemoteSSHContainer
 
 from provisioner.main import root_menu
+from provisioner_shared.test_lib.cli_container import RemoteSSHContainer
 from provisioner_shared.test_lib.test_cli_runner import TestCliRunner
 
 

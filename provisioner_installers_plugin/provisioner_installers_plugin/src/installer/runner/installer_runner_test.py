@@ -875,12 +875,15 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
                         remote_context=remote_ctx,
                     ),
                 ),
-                self.assertEqual(ansible_vars, [
-                    f"provisioner_command='install --environment Local {InstallerSubCommandName.CLI} {utility.display_name}@{TEST_UTILITY_1_GITHUB_VER} -y {'-v ' if remote_ctx.is_verbose() else ''}'",
-                    "required_plugins=['provisioner_installers_plugin']",
-                    "install_method='pip'",                    
-                    f"git_access_token={TEST_GITHUB_ACCESS_TOKEN}",
-                ]),
+                self.assertEqual(
+                    ansible_vars,
+                    [
+                        f"provisioner_command='install --environment Local {InstallerSubCommandName.CLI} {utility.display_name}@{TEST_UTILITY_1_GITHUB_VER} -y {'-v ' if remote_ctx.is_verbose() else ''}'",
+                        "required_plugins=['provisioner_installers_plugin']",
+                        "install_method='pip'",
+                        f"git_access_token={TEST_GITHUB_ACCESS_TOKEN}",
+                    ],
+                ),
                 self.assertEqual(ansible_tags, ["provisioner_wrapper"]),
                 self.assertEqual(ansible_tags, ["provisioner_wrapper"]),
             )
