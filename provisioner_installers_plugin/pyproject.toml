@@ -12,7 +12,6 @@ packages = [
 [tool.poetry.scripts]
 # This module is not meant to be used as a standalone CLI, rather used as a plugin/library for a module with a main entry point i.e. provisioner
 test_runner = "main_fake:fake_app"
-installers_plugin = "main_dev:main"
 
 # For production and PyPi publishing
 [tool.poetry.dependencies]
