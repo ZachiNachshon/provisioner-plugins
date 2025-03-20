@@ -3,11 +3,11 @@
 from typing import Optional
 
 import click
-from provisioner_single_board_plugin.src.raspberry_pi.os.burn_image_cmd import RPiOsBurnImageCmd, RPiOsBurnImageCmdArgs
-
-from plugins.provisioner_single_board_plugin.provisioner_single_board_plugin.src.config.domain.config import (
+from provisioner_single_board_plugin.src.config.domain.config import (
     SingleBoardConfig,
 )
+from provisioner_single_board_plugin.src.raspberry_pi.os.burn_image_cmd import RPiOsBurnImageCmd, RPiOsBurnImageCmdArgs
+
 from provisioner_shared.components.runtime.cli.cli_modifiers import cli_modifiers
 from provisioner_shared.components.runtime.cli.modifiers import CliModifiers
 from provisioner_shared.components.runtime.infra.context import CliContextManager

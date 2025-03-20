@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from typing import Callable, Optional
+from typing import Optional
 
 from loguru import logger
 
@@ -76,10 +76,13 @@ class RemoteMachineNetworkConfigureRunner:
 
         self._prerequisites(ctx=ctx, checks=collaborators.checks())
         self._print_pre_run_instructions(collaborators)
+        ssh_conn_info = self._get_ssh_conn_info(ctx, collaborators, args.remote_opts)
+        dhcpcd_configure_info = self._get_dhcpcd_configure_info(ctx, collaborators, args, ssh_conn_info)
+
         tuple_info = self._run_ansible_network_configure_playbook_with_progress_bar(
             ctx=ctx,
-            get_ssh_conn_info_fn=self._get_ssh_conn_info,
-            get_dhcpcd_configure_info_fn=self._get_dhcpcd_configure_info,
+            ssh_conn_info=ssh_conn_info,
+            dhcpcd_configure_info=dhcpcd_configure_info,
             collaborators=collaborators,
             args=args,
         )
@@ -125,20 +128,15 @@ class RemoteMachineNetworkConfigureRunner:
     def _run_ansible_network_configure_playbook_with_progress_bar(
         self,
         ctx: Context,
-        get_ssh_conn_info_fn: Callable[..., SSHConnectionInfo],
-        get_dhcpcd_configure_info_fn: Callable[..., DHCPCDConfigurationInfo],
+        ssh_conn_info: SSHConnectionInfo,
+        dhcpcd_configure_info: DHCPCDConfigurationInfo,
         collaborators: CoreCollaborators,
         args: RemoteMachineNetworkConfigureArgs,
     ) -> tuple[SSHConnectionInfo, DHCPCDConfigurationInfo]:
 
-        ssh_conn_info = get_ssh_conn_info_fn(ctx, collaborators, args.remote_opts)
-        dhcpcd_configure_info = get_dhcpcd_configure_info_fn(ctx, collaborators, args, ssh_conn_info)
-
         tuple_info = (ssh_conn_info, dhcpcd_configure_info)
         network_info = self._bundle_network_information_from_tuple(ctx, tuple_info)
-
         collaborators.summary().show_summary_and_prompt_for_enter("Configure Network")
-
         output = (
             collaborators.progress_indicator()
             .get_status()

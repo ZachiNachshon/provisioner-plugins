@@ -9,6 +9,14 @@ packages = [
     { include = "provisioner_installers_plugin"}
 ]
 
+# Exclude test files from the package
+exclude = [
+    "**/*_test.py",
+    "**/*_test/*",
+    "*_test.py",
+    "*_test/*"
+]
+
 [tool.poetry.scripts]
 # This module is not meant to be used as a standalone CLI, rather used as a plugin/library for a module with a main entry point i.e. provisioner
 test_runner = "main_fake:fake_app"

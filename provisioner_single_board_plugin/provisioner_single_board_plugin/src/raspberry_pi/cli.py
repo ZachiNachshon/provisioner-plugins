@@ -4,16 +4,16 @@
 from typing import Optional
 
 import click
-
-from plugins.provisioner_single_board_plugin.provisioner_single_board_plugin.src.config.domain.config import (
+from provisioner_single_board_plugin.src.config.domain.config import (
     SingleBoardConfig,
 )
-from plugins.provisioner_single_board_plugin.provisioner_single_board_plugin.src.raspberry_pi.node.cli import (
+from provisioner_single_board_plugin.src.raspberry_pi.node.cli import (
     register_node_commands,
 )
-from plugins.provisioner_single_board_plugin.provisioner_single_board_plugin.src.raspberry_pi.os.cli import (
+from provisioner_single_board_plugin.src.raspberry_pi.os.cli import (
     register_os_commands,
 )
+
 from provisioner_shared.components.remote.cli_remote_opts import cli_remote_opts
 from provisioner_shared.components.remote.domain.config import RemoteConfig
 from provisioner_shared.components.runtime.cli.cli_modifiers import cli_modifiers

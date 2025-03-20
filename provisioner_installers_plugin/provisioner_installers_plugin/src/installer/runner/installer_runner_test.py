@@ -816,7 +816,7 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
 
     @mock.patch(
         f"{REMOTE_MACHINE_CONNECTOR_PATH}.collect_ssh_connection_info",
-        return_value=TestDataRemoteConnector.create_fake_ssh_conn_info_fn()(),
+        return_value=TestDataRemoteConnector.create_fake_ssh_conn_info(),
     )
     def test_collect_ssh_connection_info(self, run_call: mock.MagicMock) -> None:
         test_env = TestEnv.create()
@@ -851,7 +851,7 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
         eval << self.get_runner(eval)._install_on_remote_machine(
             fake_installer_env,
             SSHConnInfo_Utility_Tuple(
-                TestDataRemoteConnector.create_fake_ssh_conn_info_fn()(),
+                TestDataRemoteConnector.create_fake_ssh_conn_info(),
                 TestSupportedToolings[TEST_UTILITY_1_GITHUB_NAME],
             ),
         )
@@ -893,7 +893,7 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
             env=fake_installer_env,
             runner=fake_runner,
             remote_ctx=remote_ctx,
-            ssh_conn_info=TestDataRemoteConnector.create_fake_ssh_conn_info_fn()(),
+            ssh_conn_info=TestDataRemoteConnector.create_fake_ssh_conn_info(),
             sub_command_name=InstallerSubCommandName.CLI,
             utility=utility,
             git_access_token=TEST_GITHUB_ACCESS_TOKEN,
@@ -915,7 +915,7 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
     )
     @mock.patch(
         f"{UTILITY_INSTALLER_CMD_RUNNER_PATH}._collect_ssh_connection_info",
-        return_value=PyFn.of(TestDataRemoteConnector.create_fake_ssh_conn_info_fn()()),
+        return_value=PyFn.of(TestDataRemoteConnector.create_fake_ssh_conn_info()),
     )
     def test_run_remote_installation_success(
         self, collect_call: mock.MagicMock, pre_print_call: mock.MagicMock, install_call: mock.MagicMock
