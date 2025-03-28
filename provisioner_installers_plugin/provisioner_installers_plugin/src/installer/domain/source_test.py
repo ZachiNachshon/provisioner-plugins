@@ -4,8 +4,8 @@ import unittest
 
 from provisioner_installers_plugin.src.installer.domain.source import InstallSource
 
-from provisioner_shared.components.runtime.test_lib.test_env import TestEnv
 from provisioner_shared.components.runtime.utils.os import MAC_OS, OsArch
+from provisioner_shared.test_lib.test_env import TestEnv
 
 TEST_GITHUB_OWNER = "test-owner"
 TEST_GITHUB_REPO = "test-repo"

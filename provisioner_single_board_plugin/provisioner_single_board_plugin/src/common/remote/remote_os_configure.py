@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from typing import Callable, Optional
+from typing import Optional
 
 from loguru import logger
 
@@ -8,7 +8,7 @@ from provisioner_shared.components.remote.remote_connector import (
     RemoteMachineConnector,
     SSHConnectionInfo,
 )
-from provisioner_shared.components.remote.remote_opts import CliRemoteOpts
+from provisioner_shared.components.remote.remote_opts import RemoteOpts
 from provisioner_shared.components.runtime.infra.context import Context
 from provisioner_shared.components.runtime.infra.evaluator import Evaluator
 from provisioner_shared.components.runtime.infra.remote_context import RemoteContext
@@ -40,35 +40,50 @@ ANSIBLE_PLAYBOOK_RPI_CONFIGURE_NODE = """
 
 class RemoteMachineOsConfigureArgs:
 
-    remote_opts: CliRemoteOpts
+    remote_opts: RemoteOpts
 
-    def __init__(self, remote_opts: CliRemoteOpts) -> None:
+    def __init__(self, remote_opts: RemoteOpts) -> None:
         self.remote_opts = remote_opts
 
 
 class RemoteMachineOsConfigureRunner:
+
     def run(self, ctx: Context, args: RemoteMachineOsConfigureArgs, collaborators: CoreCollaborators) -> None:
         logger.debug("Inside RemoteMachineOsConfigureRunner run()")
 
         self._prerequisites(ctx=ctx, checks=collaborators.checks())
-        self._print_pre_run_instructions(collaborators),
+        self._print_pre_run_instructions(collaborators)
+        ssh_conn_info = self._get_ssh_conn_info(ctx, collaborators, args.remote_opts)
         ansible_host = self._run_ansible_configure_os_playbook_with_progress_bar(
             ctx=ctx,
-            get_ssh_conn_info_fn=self._get_ssh_conn_info,
+            ssh_conn_info=ssh_conn_info,
             collaborators=collaborators,
             args=args,
         )
         self._print_post_run_instructions(ansible_host, collaborators)
 
+    def _get_ssh_conn_info(
+        self, ctx: Context, collaborators: CoreCollaborators, remote_opts: Optional[RemoteOpts] = None
+    ) -> SSHConnectionInfo:
+
+        ssh_conn_info = Evaluator.eval_step_return_value_throw_on_failure(
+            call=lambda: RemoteMachineConnector(collaborators=collaborators).collect_ssh_connection_info(
+                ctx, remote_opts, force_single_conn_info=True
+            ),
+            ctx=ctx,
+            err_msg="Could not resolve SSH connection info",
+        )
+        collaborators.summary().append("ssh_conn_info", ssh_conn_info)
+        return ssh_conn_info
+
     def _run_ansible_configure_os_playbook_with_progress_bar(
         self,
         ctx: Context,
-        get_ssh_conn_info_fn: Callable[..., SSHConnectionInfo],
+        ssh_conn_info: SSHConnectionInfo,
         collaborators: CoreCollaborators,
         args: RemoteMachineOsConfigureArgs,
     ) -> AnsibleHost:
 
-        ssh_conn_info = get_ssh_conn_info_fn(ctx, collaborators, args.remote_opts)
         ansible_host = ssh_conn_info.ansible_hosts[0]
 
         collaborators.summary().show_summary_and_prompt_for_enter("Configure OS")
@@ -113,7 +128,7 @@ class RemoteMachineOsConfigureRunner:
         )
 
     def _get_ssh_conn_info(
-        self, ctx: Context, collaborators: CoreCollaborators, remote_opts: Optional[CliRemoteOpts] = None
+        self, ctx: Context, collaborators: CoreCollaborators, remote_opts: Optional[RemoteOpts] = None
     ) -> SSHConnectionInfo:
 
         ssh_conn_info = Evaluator.eval_step_return_value_throw_on_failure(

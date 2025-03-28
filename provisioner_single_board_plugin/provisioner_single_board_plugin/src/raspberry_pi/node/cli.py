@@ -9,7 +9,8 @@ from provisioner_single_board_plugin.src.raspberry_pi.node.network_cmd import (
     RPiNetworkConfigureCmdArgs,
 )
 
-from provisioner_shared.components.remote.remote_opts import CliRemoteOpts
+from provisioner_shared.components.remote.remote_opts import RemoteOpts
+from provisioner_shared.components.runtime.cli.cli_modifiers import cli_modifiers
 from provisioner_shared.components.runtime.cli.modifiers import CliModifiers
 from provisioner_shared.components.runtime.infra.context import CliContextManager
 from provisioner_shared.components.runtime.infra.evaluator import Evaluator
@@ -18,6 +19,7 @@ from provisioner_shared.components.runtime.infra.evaluator import Evaluator
 def register_node_commands(cli_group: click.Group):
 
     @cli_group.command()
+    @cli_modifiers
     @click.pass_context
     def configure(ctx: click.Context) -> None:
         """
@@ -25,7 +27,7 @@ def register_node_commands(cli_group: click.Group):
         Configuration is aimed for an optimal headless Raspberry Pi used as a Kubernetes cluster node.
         """
         cli_ctx = CliContextManager.create(modifiers=CliModifiers.from_click_ctx(ctx))
-        remote_opts = CliRemoteOpts.from_click_ctx(ctx)
+        remote_opts = RemoteOpts.from_click_ctx(ctx)
         Evaluator.eval_cli_entrypoint_step(
             name="Raspbian OS Configure",
             call=lambda: RPiOsConfigureCmd().run(ctx=cli_ctx, args=RPiOsConfigureCmdArgs(remote_opts=remote_opts)),
@@ -55,18 +57,26 @@ def register_node_commands(cli_group: click.Group):
         show_default=False,
         envvar="PROV_DNS_ADDRESS",
     )
+    @click.option(
+        "--update-hosts-file",
+        is_flag=True,
+        default=False,
+        show_default=True,
+        help="Update /etc/hosts file with the node's hostname and IP address",
+    )
+    @cli_modifiers
     @click.pass_context
     def network(
         ctx: click.Context,
         static_ip_address: Optional[str],
         gw_ip_address: Optional[str],
         dns_ip_address: Optional[str],
+        update_hosts_file: bool,
     ) -> None:
         """
         Select a remote Raspberry Pi node on the ethernet network to configure a static IP address.
         """
         cli_ctx = CliContextManager.create(modifiers=CliModifiers.from_click_ctx(ctx))
-        remote_opts = CliRemoteOpts.from_click_ctx(ctx)
         Evaluator.eval_cli_entrypoint_step(
             name="Raspbian Network Configure",
             call=lambda: RPiNetworkConfigureCmd().run(
@@ -75,7 +85,8 @@ def register_node_commands(cli_group: click.Group):
                     gw_ip_address=gw_ip_address,
                     dns_ip_address=dns_ip_address,
                     static_ip_address=static_ip_address,
-                    remote_opts=remote_opts,
+                    remote_opts=RemoteOpts.from_click_ctx(ctx),
+                    update_hosts_file=update_hosts_file,
                 ),
             ),
             error_message="Failed to configure RPi network",

@@ -12,7 +12,7 @@ from provisioner_shared.components.runtime.utils.yaml_util import YamlUtil
 
 
 # To run as a single test target:
-#  poetry run coverage run -m pytest plugins/provisioner_single_board_plugin/src/config/domain/config_test.py
+#  ./run.sh provisioner_single_board_plugin/src/config/domain/config_test.py
 #
 class SingleBoardConfigTestShould(unittest.TestCase):
 
@@ -39,12 +39,13 @@ os:
       url_32bit: http://download-url-32-bit.com
 """
         internal_config_obj = yaml_util.read_string_fn(yaml_str=internal_yaml_str, cls=SingleBoardConfig)
-
+        print("--- INTERNAL ---")
+        print(internal_config_obj.remote.hosts[0].__dict__)
         user_yaml_str = """
 remote:
   hosts:
     - name: test-node
-      address: 1.1.1.1
+      address: 2.2.2.2
       auth:
         username: test-user
         ssh_private_key_file_path: /test/path
@@ -56,11 +57,15 @@ os:
       url_32bit: http://download-url-32-bit-test-path.com
 """
         user_config_obj = yaml_util.read_string_fn(yaml_str=user_yaml_str, cls=SingleBoardConfig)
+        print("--- USER ---")
+        print(user_config_obj.remote.hosts[0].__dict__)
         merged_config_obj = internal_config_obj.merge(user_config_obj)
+        print("--- MERGED ---")
+        print(merged_config_obj.remote.hosts[0].__dict__)
 
         self.assertEqual(len(merged_config_obj.remote.hosts), 1)
         self.assertEqual(merged_config_obj.remote.hosts[0].name, "test-node")
-        self.assertEqual(merged_config_obj.remote.hosts[0].address, "1.1.1.1")
+        self.assertEqual(merged_config_obj.remote.hosts[0].address, "2.2.2.2")
         self.assertEqual(merged_config_obj.remote.hosts[0].auth.username, "test-user")
         self.assertIsNotNone(merged_config_obj.remote.hosts[0].auth.password)
         self.assertEqual(merged_config_obj.remote.hosts[0].auth.ssh_private_key_file_path, "/test/path")

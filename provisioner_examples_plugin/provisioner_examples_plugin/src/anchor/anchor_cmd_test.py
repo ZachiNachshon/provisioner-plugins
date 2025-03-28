@@ -5,9 +5,9 @@ from unittest import mock
 
 from provisioner_examples_plugin.src.anchor.anchor_cmd import AnchorCmd, AnchorCmdArgs
 from provisioner_shared.components.remote.remote_opts_fakes import TestDataRemoteOpts
-from provisioner_shared.components.runtime.test_lib.assertions import Assertion
-from provisioner_shared.components.runtime.test_lib.test_env import TestEnv
 from provisioner_shared.components.vcs.vcs_opts_fakes import TestDataVersionControlOpts
+from provisioner_shared.test_lib.assertions import Assertion
+from provisioner_shared.test_lib.test_env import TestEnv
 
 ANCHOR_RUN_COMMAND_RUNNER_PATH = "provisioner_shared.components.anchor.anchor_runner.AnchorCmdRunner"
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from typing import Callable, Optional
+from typing import Optional
 
 from loguru import logger
 
@@ -9,8 +9,7 @@ from provisioner_shared.components.remote.remote_connector import (
     RemoteMachineConnector,
     SSHConnectionInfo,
 )
-from provisioner_shared.components.remote.remote_opts import CliRemoteOpts
-from provisioner_shared.components.runtime.colors import colors
+from provisioner_shared.components.remote.remote_opts import RemoteOpts
 from provisioner_shared.components.runtime.infra.context import Context
 from provisioner_shared.components.runtime.infra.evaluator import Evaluator
 from provisioner_shared.components.runtime.infra.remote_context import RemoteContext
@@ -43,19 +42,22 @@ class RemoteMachineNetworkConfigureArgs:
     gw_ip_address: str
     dns_ip_address: str
     static_ip_address: str
-    remote_opts: CliRemoteOpts
+    remote_opts: RemoteOpts
+    update_hosts_file: bool
 
     def __init__(
         self,
         gw_ip_address: str,
         dns_ip_address: str,
         static_ip_address: str,
-        remote_opts: CliRemoteOpts,
+        remote_opts: RemoteOpts,
+        update_hosts_file: bool = False,
     ) -> None:
         self.gw_ip_address = gw_ip_address
         self.dns_ip_address = dns_ip_address
         self.static_ip_address = static_ip_address
         self.remote_opts = remote_opts
+        self.update_hosts_file = update_hosts_file
 
 
 class RemoteMachineNetworkConfigureRunner:
@@ -76,18 +78,21 @@ class RemoteMachineNetworkConfigureRunner:
 
         self._prerequisites(ctx=ctx, checks=collaborators.checks())
         self._print_pre_run_instructions(collaborators)
+        ssh_conn_info = self._get_ssh_conn_info(ctx, collaborators, args.remote_opts)
+        dhcpcd_configure_info = self._get_dhcpcd_configure_info(ctx, collaborators, args, ssh_conn_info)
+
         tuple_info = self._run_ansible_network_configure_playbook_with_progress_bar(
             ctx=ctx,
-            get_ssh_conn_info_fn=self._get_ssh_conn_info,
-            get_dhcpcd_configure_info_fn=self._get_dhcpcd_configure_info,
+            ssh_conn_info=ssh_conn_info,
+            dhcpcd_configure_info=dhcpcd_configure_info,
             collaborators=collaborators,
             args=args,
         )
         self._print_post_run_instructions(ctx, tuple_info, collaborators)
-        self._maybe_add_hosts_file_entry(ctx, tuple_info, collaborators)
+        self._maybe_add_hosts_file_entry(ctx, tuple_info, collaborators, args.update_hosts_file)
 
     def _get_ssh_conn_info(
-        self, ctx: Context, collaborators: CoreCollaborators, remote_opts: Optional[CliRemoteOpts] = None
+        self, ctx: Context, collaborators: CoreCollaborators, remote_opts: Optional[RemoteOpts] = None
     ) -> SSHConnectionInfo:
 
         ssh_conn_info = Evaluator.eval_step_return_value_throw_on_failure(
@@ -125,20 +130,15 @@ class RemoteMachineNetworkConfigureRunner:
     def _run_ansible_network_configure_playbook_with_progress_bar(
         self,
         ctx: Context,
-        get_ssh_conn_info_fn: Callable[..., SSHConnectionInfo],
-        get_dhcpcd_configure_info_fn: Callable[..., DHCPCDConfigurationInfo],
+        ssh_conn_info: SSHConnectionInfo,
+        dhcpcd_configure_info: DHCPCDConfigurationInfo,
         collaborators: CoreCollaborators,
         args: RemoteMachineNetworkConfigureArgs,
     ) -> tuple[SSHConnectionInfo, DHCPCDConfigurationInfo]:
 
-        ssh_conn_info = get_ssh_conn_info_fn(ctx, collaborators, args.remote_opts)
-        dhcpcd_configure_info = get_dhcpcd_configure_info_fn(ctx, collaborators, args, ssh_conn_info)
-
         tuple_info = (ssh_conn_info, dhcpcd_configure_info)
         network_info = self._bundle_network_information_from_tuple(ctx, tuple_info)
-
         collaborators.summary().show_summary_and_prompt_for_enter("Configure Network")
-
         output = (
             collaborators.progress_indicator()
             .get_status()
@@ -215,19 +215,19 @@ class RemoteMachineNetworkConfigureRunner:
         ctx: Context,
         tuple_info: tuple[SSHConnectionInfo, DHCPCDConfigurationInfo],
         collaborators: CoreCollaborators,
+        update_hosts_file: bool,
     ):
-        network_info = self._bundle_network_information_from_tuple(ctx, tuple_info)
+        """Add entry to hosts file if needed."""
+        if not update_hosts_file:
+            logger.debug("Skipping hosts file update as --update-hosts-file flag was not specified")
+            return
 
-        if collaborators.prompter().prompt_yes_no_fn(
-            message=f"Add entry '{network_info.ssh_hostname} {network_info.static_ip_address}' to /etc/hosts file ({colors.RED}password required{colors.NONE})",
-            post_no_message="Skipped adding new entry to /etc/hosts",
-            post_yes_message="Selected to update /etc/hosts file",
-        ):
-            collaborators.hosts_file().add_entry_fn(
-                ip_address=network_info.static_ip_address,
-                dns_names=[network_info.ssh_hostname],
-                comment="Added by provisioner",
-            )
+        network_info = self._bundle_network_information_from_tuple(ctx, tuple_info)
+        collaborators.hosts_file().add_entry_fn(
+            ip_address=network_info.static_ip_address,
+            dns_names=[network_info.ssh_hostname],
+            comment=f"Added by provisioner for {network_info.ssh_hostname}",
+        )
 
     def _print_pre_run_instructions(self, collaborators: CoreCollaborators):
         collaborators.printer().print_fn(generate_logo_network())

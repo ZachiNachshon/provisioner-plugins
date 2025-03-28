@@ -4,6 +4,7 @@ from enum import Enum
 from typing import Callable, List, Optional
 
 from provisioner_shared.components.runtime.runner.ansible.ansible_runner import AnsiblePlaybook
+from provisioner_shared.components.runtime.shared.collaborators import CoreCollaborators
 from provisioner_shared.components.runtime.utils.os import OsArch
 
 
@@ -11,23 +12,29 @@ class ActiveInstallSource(str, Enum):
     GitHub = "GitHub"
     Script = "Script"
     Ansible = "Ansible"
+    Callback = "Callback"
+
+    def __str__(self):
+        return self.value
 
 
 class InstallSource:
-    class Script:
-        install_cmd: str
+    class Callback:
+        # Callback(version, collaborators)
+        def __init__(self, install_fn: Callable[[str, CoreCollaborators], str]):
+            self.install_fn = install_fn
 
-        def __init__(self, install_cmd: str):
-            self.install_cmd = install_cmd
+        def as_summary_object(self, verbose: Optional[bool] = False) -> "InstallSource.Callback":
+            return self if verbose else None
+
+    class Script:
+        def __init__(self, install_script: str):
+            self.install_script = install_script
 
         def as_summary_object(self, verbose: Optional[bool] = False) -> "InstallSource.Script":
             return self if verbose else None
 
     class Ansible:
-        playbook: AnsiblePlaybook
-        ansible_tags: Optional[List[str]] = None
-        ansible_vars: Optional[List[str]] = None
-
         def __init__(
             self,
             playbook: AnsiblePlaybook,
@@ -43,12 +50,6 @@ class InstallSource:
             return self if verbose else None
 
     class GitHub:
-        owner: str
-        repo: str
-        supported_releases: dict[str, str]
-        git_access_token: str
-        release_name_resolver: Callable[[str, str, str], str]
-
         def __init__(
             self,
             owner: str,
@@ -90,6 +91,8 @@ class InstallSource:
             result.script = self.script.as_summary_object(verbose)
         if self.ansible:
             result.ansible = self.ansible.as_summary_object(verbose)
+        if self.callback:
+            result.callback = self.callback.as_summary_object(verbose)
         return result
 
     def __init__(
@@ -97,12 +100,10 @@ class InstallSource:
         github: "InstallSource.GitHub" = None,
         script: "InstallSource.Script" = None,
         ansible: "InstallSource.Ansible" = None,
+        callback: "InstallSource.Callback" = None,
     ) -> None:
 
         self.github = github
         self.script = script
         self.ansible = ansible
-
-    github: "InstallSource.GitHub"
-    script: "InstallSource.Script"
-    ansible: "InstallSource.Ansible"
+        self.callback = callback

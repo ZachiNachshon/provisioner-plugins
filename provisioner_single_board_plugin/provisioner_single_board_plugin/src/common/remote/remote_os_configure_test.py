@@ -12,6 +12,7 @@ from provisioner_single_board_plugin.src.common.remote.remote_os_configure impor
     generate_instructions_pre_configure,
 )
 
+from provisioner_shared.components.remote.remote_connector import SSHConnectionInfo
 from provisioner_shared.components.remote.remote_connector_fakes import (
     TestDataRemoteConnector,
 )
@@ -22,14 +23,13 @@ from provisioner_shared.components.runtime.runner.ansible.ansible_fakes import F
 from provisioner_shared.components.runtime.runner.ansible.ansible_runner import (
     AnsiblePlaybook,
 )
-from provisioner_shared.components.runtime.test_lib import faker
-from provisioner_shared.components.runtime.test_lib.assertions import Assertion
-from provisioner_shared.components.runtime.test_lib.test_env import TestEnv
 from provisioner_shared.components.runtime.utils.os import LINUX, MAC_OS, WINDOWS, OsArch
 from provisioner_shared.components.runtime.utils.prompter import PromptLevel
+from provisioner_shared.test_lib.assertions import Assertion
+from provisioner_shared.test_lib.test_env import TestEnv
 
 # To run as a single test target:
-#  poetry run coverage run -m pytest plugins/provisioner_single_board_plugin/provisioner_single_board_plugin/src/common/remote/remote_os_configure_test.py
+#  ./run_tests.py plugins/provisioner_single_board_plugin/provisioner_single_board_plugin/src/common/remote/remote_os_configure_test.py
 #
 ARG_NODE_USERNAME = "test-username"
 ARG_NODE_PASSWORD = "test-password"
@@ -39,7 +39,7 @@ REMOTE_NETWORK_CONFIGURE_RUNNER_PATH = (
     "provisioner_single_board_plugin.src.common.remote.remote_os_configure.RemoteMachineOsConfigureRunner"
 )
 
-REMOTE_CONTEXT = RemoteContext.create(verbose=True, dry_run=False, silent=False, non_interactive=False)
+REMOTE_CONTEXT = RemoteContext.create(verbose=True, dry_run=False, silent=False)
 
 
 class RemoteMachineConfigureTestShould(unittest.TestCase):
@@ -105,12 +105,14 @@ class RemoteMachineConfigureTestShould(unittest.TestCase):
 
     @mock.patch(f"{REMOTE_NETWORK_CONFIGURE_RUNNER_PATH}._prerequisites")
     @mock.patch(f"{REMOTE_NETWORK_CONFIGURE_RUNNER_PATH}._print_pre_run_instructions")
+    @mock.patch(f"{REMOTE_NETWORK_CONFIGURE_RUNNER_PATH}._get_ssh_conn_info")
     @mock.patch(f"{REMOTE_NETWORK_CONFIGURE_RUNNER_PATH}._run_ansible_configure_os_playbook_with_progress_bar")
     @mock.patch(f"{REMOTE_NETWORK_CONFIGURE_RUNNER_PATH}._print_post_run_instructions")
     def test_main_flow_run_actions_have_expected_order(
         self,
         post_run_call: mock.MagicMock,
         run_ansible_call: mock.MagicMock,
+        get_ssh_conn_info_call: mock.MagicMock,
         pre_run_call: mock.MagicMock,
         prerequisites_call: mock.MagicMock,
     ) -> None:
@@ -120,16 +122,17 @@ class RemoteMachineConfigureTestShould(unittest.TestCase):
         )
         prerequisites_call.assert_called_once()
         pre_run_call.assert_called_once()
+        get_ssh_conn_info_call.assert_called_once()
         run_ansible_call.assert_called_once()
         post_run_call.assert_called_once()
 
     @mock.patch(
         target="provisioner_shared.components.remote.remote_connector.RemoteMachineConnector.collect_ssh_connection_info",
-        spec=TestDataRemoteConnector.create_fake_ssh_conn_info_fn(),
+        return_value=TestDataRemoteConnector.create_fake_ssh_conn_info(),
     )
     def test_get_ssh_conn_info_with_summary(self, run_call: mock.MagicMock) -> None:
         env = TestEnv.create()
-        env.get_collaborators().summary().on("append", str, faker.Anything).side_effect = (
+        env.get_collaborators().summary().on("append", str, SSHConnectionInfo).side_effect = (
             lambda attribute_name, value: self.assertEqual(attribute_name, "ssh_conn_info")
         )
 
@@ -154,7 +157,7 @@ class RemoteMachineConfigureTestShould(unittest.TestCase):
             ctx=env.get_context(),
             collaborators=env.get_collaborators(),
             args=self.create_fake_configure_args(),
-            get_ssh_conn_info_fn=TestDataRemoteConnector.create_fake_ssh_conn_info_fn(),
+            ssh_conn_info=TestDataRemoteConnector.create_fake_ssh_conn_info(),
         )
 
     def test_run_ansible(self) -> None:
