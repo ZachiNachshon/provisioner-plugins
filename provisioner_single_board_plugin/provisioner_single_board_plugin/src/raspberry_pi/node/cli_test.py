@@ -1,12 +1,9 @@
 #!/usr/bin/env python3
 
-import os
 import unittest
 from unittest import mock
 
 from provisioner.main import root_menu
-from provisioner_single_board_plugin.main_fake import get_fake_app
-
 from provisioner_shared.components.runtime.errors.cli_errors import (
     CliApplicationException,
     StepEvaluationFailure,
@@ -14,8 +11,6 @@ from provisioner_shared.components.runtime.errors.cli_errors import (
 from provisioner_shared.test_lib.assertions import Assertion
 from provisioner_shared.test_lib.test_cli_runner import TestCliRunner
 from provisioner_shared.test_lib.test_env import TestEnv
-
-
 
 RPI_NODE_MODULE_PATH = "provisioner_single_board_plugin.src.raspberry_pi.node"
 
@@ -41,7 +36,7 @@ class RaspberryPiNodeCliTestShould(unittest.TestCase):
     #             "raspberry-pi",
     #             "node",
     #             "network",
-    
+
     #         ],
     #     )
 
@@ -59,10 +54,10 @@ class RaspberryPiNodeCliTestShould(unittest.TestCase):
                     "configure",
                     "--verbose",
                     "--auto-prompt",
-                ]
-            )
+                ],
+            ),
         )
-    
+
     @mock.patch(
         f"{RPI_NODE_MODULE_PATH}.configure_cmd.RPiOsConfigureCmd.run",
         side_effect=StepEvaluationFailure(STEP_ERROR_OUTPUT),
@@ -80,8 +75,8 @@ class RaspberryPiNodeCliTestShould(unittest.TestCase):
                     "configure",
                     "--verbose",
                     "--auto-prompt",
-                ]
-            )
+                ],
+            ),
         )
 
     @mock.patch(
@@ -101,8 +96,8 @@ class RaspberryPiNodeCliTestShould(unittest.TestCase):
                     "network",
                     "--verbose",
                     "--auto-prompt",
-                ]
-            )
+                ],
+            ),
         )
 
     @mock.patch(f"{RPI_NODE_MODULE_PATH}.network_cmd.RPiNetworkConfigureCmd.run", side_effect=Exception())
@@ -119,6 +114,6 @@ class RaspberryPiNodeCliTestShould(unittest.TestCase):
                     "network",
                     "--verbose",
                     "--auto-prompt",
-                ]
-            )
+                ],
+            ),
         )

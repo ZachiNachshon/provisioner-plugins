@@ -10,7 +10,6 @@ from provisioner_shared.components.remote.remote_connector import (
     SSHConnectionInfo,
 )
 from provisioner_shared.components.remote.remote_opts import RemoteOpts
-from provisioner_shared.components.runtime.colors import colors
 from provisioner_shared.components.runtime.infra.context import Context
 from provisioner_shared.components.runtime.infra.evaluator import Evaluator
 from provisioner_shared.components.runtime.infra.remote_context import RemoteContext
@@ -44,6 +43,7 @@ class RemoteMachineNetworkConfigureArgs:
     dns_ip_address: str
     static_ip_address: str
     remote_opts: RemoteOpts
+    update_hosts_file: bool
 
     def __init__(
         self,
@@ -51,11 +51,13 @@ class RemoteMachineNetworkConfigureArgs:
         dns_ip_address: str,
         static_ip_address: str,
         remote_opts: RemoteOpts,
+        update_hosts_file: bool = False,
     ) -> None:
         self.gw_ip_address = gw_ip_address
         self.dns_ip_address = dns_ip_address
         self.static_ip_address = static_ip_address
         self.remote_opts = remote_opts
+        self.update_hosts_file = update_hosts_file
 
 
 class RemoteMachineNetworkConfigureRunner:
@@ -87,7 +89,7 @@ class RemoteMachineNetworkConfigureRunner:
             args=args,
         )
         self._print_post_run_instructions(ctx, tuple_info, collaborators)
-        self._maybe_add_hosts_file_entry(ctx, tuple_info, collaborators)
+        self._maybe_add_hosts_file_entry(ctx, tuple_info, collaborators, args.update_hosts_file)
 
     def _get_ssh_conn_info(
         self, ctx: Context, collaborators: CoreCollaborators, remote_opts: Optional[RemoteOpts] = None
@@ -213,19 +215,19 @@ class RemoteMachineNetworkConfigureRunner:
         ctx: Context,
         tuple_info: tuple[SSHConnectionInfo, DHCPCDConfigurationInfo],
         collaborators: CoreCollaborators,
+        update_hosts_file: bool,
     ):
-        network_info = self._bundle_network_information_from_tuple(ctx, tuple_info)
+        """Add entry to hosts file if needed."""
+        if not update_hosts_file:
+            logger.debug("Skipping hosts file update as --update-hosts-file flag was not specified")
+            return
 
-        if collaborators.prompter().prompt_yes_no_fn(
-            message=f"Add entry '{network_info.ssh_hostname} {network_info.static_ip_address}' to /etc/hosts file ({colors.RED}password required{colors.NONE})",
-            post_no_message="Skipped adding new entry to /etc/hosts",
-            post_yes_message="Selected to update /etc/hosts file",
-        ):
-            collaborators.hosts_file().add_entry_fn(
-                ip_address=network_info.static_ip_address,
-                dns_names=[network_info.ssh_hostname],
-                comment="Added by provisioner",
-            )
+        network_info = self._bundle_network_information_from_tuple(ctx, tuple_info)
+        collaborators.hosts_file().add_entry_fn(
+            ip_address=network_info.static_ip_address,
+            dns_names=[network_info.ssh_hostname],
+            comment=f"Added by provisioner for {network_info.ssh_hostname}",
+        )
 
     def _print_pre_run_instructions(self, collaborators: CoreCollaborators):
         collaborators.printer().print_fn(generate_logo_network())

@@ -7,7 +7,7 @@ import pytest
 from provisioner.main import root_menu
 from provisioner_shared.test_lib.cli_container import RemoteSSHContainer
 from provisioner_shared.test_lib.docker.skip_if_not_docker import skip_if_not_in_docker
-from provisioner_shared.test_lib.test_cli_runner import TestCliRunner
+from provisioner_shared.test_lib.test_cli_runner import CliTestRunnerConfig, TestCliRunner
 
 
 # To run these directly from the terminal use:
@@ -20,7 +20,6 @@ class HelloWorldE2ETestShould(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """Start the container once before any tests in this class."""
-        # cls.container = RemoteSSHContainer(CoreCollaborators(Context.create_empty()), allow_logging=True)
         cls.container = RemoteSSHContainer()
         cls.container.start()
 
@@ -77,6 +76,7 @@ class HelloWorldE2ETestShould(unittest.TestCase):
                 "uv",
                 "-vy",
             ],
+            test_cfg=CliTestRunnerConfig(is_installer_plugin_test=True),
         )
         self.assertIn("Successfully installed utility", output)
         self.assertIn("name:    anchor", output)

@@ -10,8 +10,7 @@ from provisioner_shared.test_lib.test_cli_runner import TestCliRunner
 
 
 # To run these directly from the terminal use:
-#  ./run_in_docker.py --test-path plugins/provisioner_examples_plugin/provisioner_examples_plugin/src/ansible/hello_world_runner_e2e_test.py --only-e2e
-#  poetry run coverage run -m pytest plugins/provisioner_examples_plugin/provisioner_examples_plugin/src/ansible/hello_world_runner_e2e_test.py --only-e2e
+#  ./run_tests.py plugins/provisioner_examples_plugin/provisioner_examples_plugin/src/ansible/hello_world_runner_e2e_test.py
 #
 @pytest.mark.e2e
 class HelloWorldE2ETestShould(unittest.TestCase):

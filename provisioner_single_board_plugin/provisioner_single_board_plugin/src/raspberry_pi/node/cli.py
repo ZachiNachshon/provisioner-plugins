@@ -57,6 +57,13 @@ def register_node_commands(cli_group: click.Group):
         show_default=False,
         envvar="PROV_DNS_ADDRESS",
     )
+    @click.option(
+        "--update-hosts-file",
+        is_flag=True,
+        default=False,
+        show_default=True,
+        help="Update /etc/hosts file with the node's hostname and IP address",
+    )
     @cli_modifiers
     @click.pass_context
     def network(
@@ -64,6 +71,7 @@ def register_node_commands(cli_group: click.Group):
         static_ip_address: Optional[str],
         gw_ip_address: Optional[str],
         dns_ip_address: Optional[str],
+        update_hosts_file: bool,
     ) -> None:
         """
         Select a remote Raspberry Pi node on the ethernet network to configure a static IP address.
@@ -78,6 +86,7 @@ def register_node_commands(cli_group: click.Group):
                     dns_ip_address=dns_ip_address,
                     static_ip_address=static_ip_address,
                     remote_opts=RemoteOpts.from_click_ctx(ctx),
+                    update_hosts_file=update_hosts_file,
                 ),
             ),
             error_message="Failed to configure RPi network",

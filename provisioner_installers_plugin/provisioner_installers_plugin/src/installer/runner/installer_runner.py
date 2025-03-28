@@ -602,12 +602,11 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
         install_method = "install_method='pip'"
         ansible_tags = ["provisioner_wrapper"]
         maybe_test_args = []
-        if self._test_only_is_testing_mode_enabled(env):
+        if self._test_only_is_installer_run_from_local_sdists(env):
             print("\n=== Running Ansible Provisioner Wrapper in testing mode ===\n")
-            # We must have the tests reference in here since we are controlling the provisioner_wrapper execution by:
-            #   - Running it as non-test code as a direct provisioner CLI install command
-            #   - Running it as test code remotely via provisioner_wrapper Ansible script
-            # This test indicator allows the provisioner runtime / shared / installer-plugin to be bundled and run from sources within the docker container.
+            # We must have the tests reference in here since we need to mimik the installer wrapper logic to run on actual source changes
+            # by overriding the pip installed pacakges with sdist built from sources
+            # This test ENV VAR allows to control if the installer run will be in testing mode and use the provisioner from locally built sdists.
             # Otherwise, the container will download from pip those components and we won't be able to run the tests on local changes before publishing.
             # Copying the entire project / mount as a volume to the container was tested, added complexity and don't work as expected due to the time it takes to copy
             # and the fact that we'll have to re-create the virtual environmnet within the containers.
@@ -666,7 +665,7 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
             )
         )
 
-    def _test_only_is_testing_mode_enabled(self, env: InstallerEnv) -> bool:
+    def _test_only_is_installer_run_from_local_sdists(self, env: InstallerEnv) -> bool:
         return env.collaborators.checks().is_env_var_equals_fn("PROVISIONER_TESTING_MODE_ENABLED", "true")
 
     def _test_only_prepare_test_artifacts(self, env: InstallerEnv) -> str:

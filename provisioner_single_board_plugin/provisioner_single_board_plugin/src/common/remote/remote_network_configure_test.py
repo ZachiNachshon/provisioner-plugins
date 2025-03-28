@@ -29,6 +29,7 @@ from provisioner_shared.components.runtime.runner.ansible.ansible_runner import 
 from provisioner_shared.components.runtime.utils.os import LINUX, MAC_OS, WINDOWS, OsArch
 from provisioner_shared.components.runtime.utils.prompter import PromptLevel
 from provisioner_shared.test_lib.assertions import Assertion
+from provisioner_shared.test_lib.docker.skip_if_not_docker import skip_if_not_in_docker
 from provisioner_shared.test_lib.test_env import TestEnv
 
 # To run as a single test target:
@@ -249,6 +250,7 @@ class RemoteMachineNetworkConfigureTestShould(unittest.TestCase):
             dhcpcd_configure_info=TestDataRemoteConnector.create_fake_get_dhcpcd_configure_info(),
         )
 
+    @skip_if_not_in_docker
     def test_add_hosts_file_entry_upon_prompt(self) -> None:
         env = TestEnv.create()
         env.get_collaborators().prompter().on("prompt_yes_no_fn", str, PromptLevel, str, str).side_effect = (
@@ -263,7 +265,9 @@ class RemoteMachineNetworkConfigureTestShould(unittest.TestCase):
             lambda ip_address, dns_names, comment=None, entry_type="ipv4": (
                 self.assertEqual(ip_address, TestDataRemoteConnector.TEST_DATA_DHCP_STATIC_IP_ADDRESS),
                 self.assertEqual(dns_names, [TestDataRemoteConnector.TEST_DATA_SSH_HOSTNAME_1]),
-                self.assertEqual(comment, "Added by provisioner"),
+                self.assertEqual(
+                    comment, "Added by provisioner for " + TestDataRemoteConnector.TEST_DATA_SSH_HOSTNAME_1
+                ),
                 None,
             )
         )
@@ -274,6 +278,7 @@ class RemoteMachineNetworkConfigureTestShould(unittest.TestCase):
                 TestDataRemoteConnector.create_fake_get_dhcpcd_configure_info(),
             ),
             env.get_collaborators(),
+            update_hosts_file=True,
         )
 
     def test_pre_run_instructions_printed_successfully(self) -> None:
