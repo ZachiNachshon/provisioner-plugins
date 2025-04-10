@@ -6,11 +6,11 @@ import click
 from provisioner_installers_plugin.src.installer.cmd.installer_cmd import UtilityInstallerCmd, UtilityInstallerCmdArgs
 from provisioner_installers_plugin.src.installer.cmd.list_cmd import UtilityListCmd
 from provisioner_installers_plugin.src.installer.domain.command import InstallerSubCommandName
+from provisioner_installers_plugin.src.installer.domain.version import NameVersionArgsTuple, try_extract_name_version_tuple
 
 from provisioner_shared.components.remote.remote_opts import RemoteOpts
 from provisioner_shared.components.runtime.cli.cli_modifiers import cli_modifiers
 from provisioner_shared.components.runtime.cli.modifiers import CliModifiers
-from provisioner_shared.components.runtime.cli.version import NameVersionTuple, try_extract_name_version_tuple
 from provisioner_shared.components.runtime.infra.context import CliContextManager
 from provisioner_shared.components.runtime.infra.evaluator import Evaluator
 
@@ -24,7 +24,7 @@ def register_cli_commands(cli_group: click.Group):
     def cli(ctx: click.Context, args: str):
         """Select a CLI utility to install on any OS/Architecture"""
         if args:
-            to_install: List[NameVersionTuple] = []
+            to_install: List[NameVersionArgsTuple] = []
             for name in args:
                 name_ver = try_extract_name_version_tuple(name)
                 to_install.append(name_ver)
@@ -35,7 +35,7 @@ def register_cli_commands(cli_group: click.Group):
             list_utilities(modifiers=CliModifiers.from_click_ctx(ctx))
 
 
-def install_utilities(utils_name_ver: List[NameVersionTuple], modifiers: CliModifiers, remote_opts: RemoteOpts) -> None:
+def install_utilities(utils_name_ver: List[NameVersionArgsTuple], modifiers: CliModifiers, remote_opts: RemoteOpts) -> None:
     cli_ctx = CliContextManager.create(modifiers)
     Evaluator.eval_installer_cli_entrypoint_pyfn_step(
         name="Install Utility Command",

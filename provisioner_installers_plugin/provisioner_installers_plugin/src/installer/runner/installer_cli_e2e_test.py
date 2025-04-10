@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import os
 import unittest
 
 import pytest
@@ -11,15 +12,16 @@ from provisioner_shared.test_lib.test_cli_runner import CliTestRunnerConfig, Tes
 
 
 # To run these directly from the terminal use:
-#  ./run-tests.py plugins/provisioner_installers_plugin/provisioner_installers_plugin/src/installer/runner/installer_runner_e2e_test.py --only-e2e
+#  ./run_tests.py plugins/provisioner_installers_plugin/provisioner_installers_plugin/src/installer/runner/installer_cli_e2e_test.py --only-e2e
 #
 @pytest.mark.e2e
-class HelloWorldE2ETestShould(unittest.TestCase):
+class InstallerCliE2ETestShould(unittest.TestCase):
 
     # Run before each test
     @classmethod
     def setUpClass(cls):
         """Start the container once before any tests in this class."""
+        os.environ["PROVISIONER_INSTALLER_PLUGIN_TEST"] = "true"
         cls.container = RemoteSSHContainer()
         cls.container.start()
 

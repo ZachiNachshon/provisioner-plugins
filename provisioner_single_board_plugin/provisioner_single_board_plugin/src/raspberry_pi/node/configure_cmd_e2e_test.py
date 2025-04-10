@@ -11,7 +11,7 @@ from provisioner_shared.test_lib.test_env import TestEnv
 
 
 # To run as a single test target:
-#  ./run_tests.py plugins/provisioner_single_board_plugin/provisioner_single_board_plugin/src/raspberry_pi/node/cli_e2e_test.py
+#  ./run_tests.py plugins/provisioner_single_board_plugin/provisioner_single_board_plugin/src/raspberry_pi/node/configure_cmd_e2e_test.py
 #
 @pytest.mark.e2e
 class RaspberryPiNodeCliE2ETestShould(unittest.TestCase):

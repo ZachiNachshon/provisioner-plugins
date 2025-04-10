@@ -7,12 +7,13 @@ from provisioner_installers_plugin.src.installer.cmd.installer_cmd import (
     UtilityInstallerCmdArgs,
 )
 from provisioner_installers_plugin.src.installer.domain.command import InstallerSubCommandName
+from provisioner_installers_plugin.src.installer.domain.dynamic_args import DynamicArgs
 
 from provisioner_shared.components.remote.remote_opts import RemoteOpts
 from provisioner_shared.components.runtime.cli.cli_modifiers import cli_modifiers
 from provisioner_shared.components.runtime.cli.menu_format import CustomGroup
 from provisioner_shared.components.runtime.cli.modifiers import CliModifiers
-from provisioner_shared.components.runtime.cli.version import NameVersionTuple
+from provisioner_installers_plugin.src.installer.domain.version import NameVersionArgsTuple
 from provisioner_shared.components.runtime.infra.context import CliContextManager
 from provisioner_shared.components.runtime.infra.evaluator import Evaluator
 
@@ -41,13 +42,13 @@ def register_system_commands(cli_group: click.Group):
         Install Python / pip package manager
         """
         python_install(
-            name_ver=NameVersionTuple("python", version),
+            name_ver=NameVersionArgsTuple("python", version, DynamicArgs({})),
             modifiers=CliModifiers.from_click_ctx(ctx),
             remote_opts=RemoteOpts.from_click_ctx(ctx),
         )
 
 
-def python_install(name_ver: NameVersionTuple, modifiers: CliModifiers, remote_opts: RemoteOpts) -> None:
+def python_install(name_ver: NameVersionArgsTuple, modifiers: CliModifiers, remote_opts: RemoteOpts) -> None:
     cli_ctx = CliContextManager.create(modifiers)
     Evaluator.eval_installer_cli_entrypoint_pyfn_step(
         name="python",

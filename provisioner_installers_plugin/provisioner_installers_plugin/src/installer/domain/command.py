@@ -6,7 +6,7 @@ from enum import Enum
 
 class InstallerSubCommandName(str, Enum):
     CLI = "cli"
-    K8S = "k8s"
+    K8S = "k8s distro"
     System = "system"
 
     def __str__(self):

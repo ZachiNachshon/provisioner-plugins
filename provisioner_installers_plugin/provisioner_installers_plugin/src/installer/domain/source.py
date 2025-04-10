@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 
 from enum import Enum
-from typing import Callable, List, Optional
+from typing import Any, Callable, List, Optional
+
+from provisioner_installers_plugin.src.installer.domain.dynamic_args import DynamicArgs
 
 from provisioner_shared.components.runtime.runner.ansible.ansible_runner import AnsiblePlaybook
 from provisioner_shared.components.runtime.shared.collaborators import CoreCollaborators
@@ -20,8 +22,7 @@ class ActiveInstallSource(str, Enum):
 
 class InstallSource:
     class Callback:
-        # Callback(version, collaborators)
-        def __init__(self, install_fn: Callable[[str, CoreCollaborators], str]):
+        def __init__(self, install_fn: Callable[[str, CoreCollaborators, DynamicArgs], str]):
             self.install_fn = install_fn
 
         def as_summary_object(self, verbose: Optional[bool] = False) -> "InstallSource.Callback":

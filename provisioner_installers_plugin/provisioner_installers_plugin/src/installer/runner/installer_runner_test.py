@@ -33,7 +33,7 @@ from provisioner_shared.components.remote.remote_connector_fakes import (
     TestDataRemoteConnector,
 )
 from provisioner_shared.components.remote.remote_opts_fakes import TestDataRemoteOpts
-from provisioner_shared.components.runtime.cli.version import NameVersionTuple
+from provisioner_installers_plugin.src.installer.domain.version import NameVersionArgsTuple
 from provisioner_shared.components.runtime.errors.cli_errors import (
     InstallerSourceError,
     InstallerUtilityNotSupported,
@@ -61,10 +61,10 @@ TEST_UTILITY_1_GITHUB_VER = "1.0.0"
 TEST_UTILITY_2_SCRIPT_NAME = "test_util_script"
 TEST_UTILITY_2_SCRIPT_VER = "2.0.0"
 
-TEST_UTILITY_1_GITHUB: NameVersionTuple = NameVersionTuple(
+TEST_UTILITY_1_GITHUB: NameVersionArgsTuple = NameVersionArgsTuple(
     name=TEST_UTILITY_1_GITHUB_NAME, version=TEST_UTILITY_1_GITHUB_VER
 )
-TEST_UTILITY_2_SCRIPT: NameVersionTuple = NameVersionTuple(
+TEST_UTILITY_2_SCRIPT: NameVersionArgsTuple = NameVersionArgsTuple(
     name=TEST_UTILITY_2_SCRIPT_NAME, version=TEST_UTILITY_2_SCRIPT_VER
 )
 
@@ -159,7 +159,7 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
     def create_fake_installer_env(
         self,
         test_env: TestEnv,
-        utilities: List[NameVersionTuple] = [TEST_UTILITY_1_GITHUB, TEST_UTILITY_2_SCRIPT],
+        utilities: List[NameVersionArgsTuple] = [TEST_UTILITY_1_GITHUB, TEST_UTILITY_2_SCRIPT],
         environment: RunEnvironment = RunEnvironment.Local,
         remote_context: RemoteContext = RemoteContext.no_op(),
     ) -> InstallerEnv:
@@ -189,7 +189,7 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
 
     def test_verify_selected_utilities_fails_unsupported_utility(self) -> None:
         fake_installer_env = self.create_fake_installer_env(
-            self.env, utilities=[NameVersionTuple("utility-not-supported", "1.0.0")]
+            self.env, utilities=[NameVersionArgsTuple("utility-not-supported", "1.0.0")]
         )
         eval = self.create_evaluator(fake_installer_env)
         Assertion.expect_raised_failure(

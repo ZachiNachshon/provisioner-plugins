@@ -6,14 +6,13 @@ from typing import List, NamedTuple, Optional
 
 from loguru import logger
 from provisioner_installers_plugin.src.installer.domain.command import InstallerSubCommandName
-from provisioner_installers_plugin.src.installer.domain.dynamic_args import DynamicArgs
 from provisioner_installers_plugin.src.installer.domain.installable import Installable
 from provisioner_installers_plugin.src.installer.domain.source import ActiveInstallSource
 
 from provisioner_shared.components.remote.domain.config import RunEnvironment
 from provisioner_shared.components.remote.remote_connector import RemoteMachineConnector, SSHConnectionInfo
 from provisioner_shared.components.remote.remote_opts import RemoteOpts
-from provisioner_shared.components.runtime.cli.version import NameVersionTuple
+from provisioner_installers_plugin.src.installer.domain.version import NameVersionArgsTuple
 from provisioner_shared.components.runtime.errors.cli_errors import (
     InstallerSourceError,
     InstallerUtilityNotSupported,
@@ -93,16 +92,14 @@ class UtilityInstallerRunnerCmdArgs:
 
     def __init__(
         self,
-        utilities: List[NameVersionTuple],
+        utilities: List[NameVersionArgsTuple],
         remote_opts: RemoteOpts,
         sub_command_name: InstallerSubCommandName,
         git_access_token: str = None,
-        dynamic_args: Optional[DynamicArgs] = None,
     ) -> None:
         self.utilities = utilities
         self.remote_opts = remote_opts
         self.sub_command_name = sub_command_name
-        self.dynamic_args = dynamic_args
         self.git_access_token = git_access_token
 
 
@@ -150,16 +147,28 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
                 env.supported_utilities[name_ver_tuple.name].version = name_ver_tuple.version
         return PyFn.empty()
 
-    def _map_to_utilities_list(
+    def _map_to_utilities_list_with_dynamic_args(
         self, env: InstallerEnv
     ) -> PyFn["UtilityInstallerCmdRunner", Exception, List[Installable.Utility]]:
         return PyFn.effect(
             lambda: [
-                env.supported_utilities[name_ver_tuple.name]
-                for name_ver_tuple in env.args.utilities
+                Installable.Utility(
+                    **{
+                        **env.supported_utilities[name_ver_tuple.name].__dict__,
+                        "maybe_args": name_ver_tuple.maybe_args
+                    }
+                ) for name_ver_tuple in env.args.utilities
                 if name_ver_tuple.name in env.supported_utilities
             ]
         )
+    
+        # return PyFn.effect(
+        #     lambda: [
+        #         env.supported_utilities[name_ver_tuple.name]
+        #         for name_ver_tuple in env.args.utilities
+        #         if name_ver_tuple.name in env.supported_utilities
+        #     ]
+        # )
 
     def _create_utils_summary(
         self, env: InstallerEnv, utilities: List[Installable.Utility]
@@ -259,12 +268,25 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
             .flat_map(lambda maybe_utility: self._print_pre_install_summary(env, maybe_utility))
             .if_then_else(
                 predicate=lambda maybe_utility: maybe_utility is not None,
-                if_true=lambda maybe_utility: self._install_utility_locally(env, maybe_utility).flat_map(
+                if_true=lambda maybe_utility: self._install_utility_locally(env, maybe_utility)
+                .flat_map(lambda maybe_utility: self._trigger_utility_version_command(env, maybe_utility))
+                .flat_map(
                     lambda maybe_utility: self._print_post_install_summary(env, maybe_utility)
                 ),
                 if_false=lambda _: PyFn.empty(),
             )
         )
+    
+    def _trigger_utility_version_command(
+        self, env: InstallerEnv, utility: Installable.Utility
+    ) -> PyFn["UtilityInstallerCmdRunner", Exception, Installable.Utility]:
+        return PyFn.effect(
+            lambda: (
+                env.collaborators.process().run_fn(args=[utility.binary_name, utility.version_command])
+                if utility.version_command
+                else env.collaborators.printer().print_fn(f"Warning: No version command defined for {utility.display_name}")
+            )
+        ).flat_map(lambda output: PyFn.effect(lambda: env.collaborators.printer().print_fn(output))).map(lambda _: utility)
 
     def _check_if_utility_already_installed(
         self, env: InstallerEnv, utility: Installable.Utility
@@ -374,7 +396,7 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
             return PyFn.fail(error=InstallerSourceError("Missing installation source. name: Callback"))
         else:
             return PyFn.effect(
-                lambda: utility.source.callback.install_fn(utility.version, env.collaborators),
+                lambda: utility.source.callback.install_fn(utility.version, env.collaborators, utility.maybe_args)
             ).map(lambda _: utility)
 
     def _try_resolve_utility_version(
@@ -541,14 +563,14 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
         run_env_utils_tuple = eval << (
             chain._verify_selected_utilities(env)
             .flat_map(lambda _: chain._maybe_set_custom_versions(env))
-            .flat_map(lambda _: chain._map_to_utilities_list(env))
+            .flat_map(lambda _: chain._map_to_utilities_list_with_dynamic_args(env))
             .flat_map(lambda utilities: chain._create_utils_summary(env, utilities))
             .flat_map(lambda utilities: chain._print_installer_welcome(env, utilities))
             .flat_map(lambda utilities: chain._resolve_run_environment(env, utilities))
         )
         result = eval << chain._run_installation(env, run_env_utils_tuple)
         return result is not None
-
+    
     def _genreate_binary_folder_path(self, binary_name: str, version: str) -> str:
         return f"{ProvisionerInstallableBinariesPath}/{binary_name}/{version}"
 
@@ -603,7 +625,9 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
         ansible_tags = ["provisioner_wrapper"]
         maybe_test_args = []
         if self._test_only_is_installer_run_from_local_sdists(env):
-            print("\n=== Running Ansible Provisioner Wrapper in testing mode ===\n")
+            print("\n\n================================================================")
+            print("\n===== Running Ansible Provisioner Wrapper in testing mode ======")
+            print("\n================================================================\n")
             # We must have the tests reference in here since we need to mimik the installer wrapper logic to run on actual source changes
             # by overriding the pip installed pacakges with sdist built from sources
             # This test ENV VAR allows to control if the installer run will be in testing mode and use the provisioner from locally built sdists.
@@ -616,8 +640,16 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
             maybe_test_args.append(f"provisioner_e2e_tests_archives_host_path='{temp_folder_path}'")
             maybe_test_args.append("ansible_python_interpreter='/usr/local/bin/python3'")
 
-        utility_maybe_ver = f"{utility.display_name}@{utility.version}" if utility.version else utility.display_name
-        prov_run_cmd = f"install --environment Local {sub_command_name} {utility_maybe_ver} -y {'-v' if remote_ctx.is_verbose() else ''}"
+        if env.args.sub_command_name == InstallerSubCommandName.CLI:
+            utility_maybe_ver = f"{utility.display_name}@{utility.version}" if utility.version else utility.display_name
+        else:
+            utility_maybe_ver = utility.display_name
+
+        utility_maybe_args = ""
+        if utility.maybe_args:
+            utility_maybe_args = utility.maybe_args.as_cli_args()
+
+        prov_run_cmd = f"install --environment Local {sub_command_name} {utility_maybe_ver} {utility_maybe_args} -y {'-v' if remote_ctx.is_verbose() else ''}"
         return runner.run_fn(
             selected_hosts=ssh_conn_info.ansible_hosts,
             playbook=AnsiblePlaybook(
@@ -666,7 +698,7 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
         )
 
     def _test_only_is_installer_run_from_local_sdists(self, env: InstallerEnv) -> bool:
-        return env.collaborators.checks().is_env_var_equals_fn("PROVISIONER_TESTING_MODE_ENABLED", "true")
+        return env.collaborators.checks().is_env_var_equals_fn("PROVISIONER_INSTALLER_PLUGIN_TEST", "true")
 
     def _test_only_prepare_test_artifacts(self, env: InstallerEnv) -> str:
         project_git_root = env.collaborators.io_utils().find_git_repo_root_abs_path_fn(clazz=UtilityInstallerCmdRunner)

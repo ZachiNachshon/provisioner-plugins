@@ -2,6 +2,7 @@
 
 from typing import List, Optional
 
+from provisioner_installers_plugin.src.installer.domain.dynamic_args import DynamicArgs
 from provisioner_installers_plugin.src.installer.domain.source import (
     ActiveInstallSource,
     InstallSource,
@@ -23,7 +24,7 @@ class Installable:
             source: InstallSource = None,
             active_source: ActiveInstallSource = None,
             version_command: str = None,
-            maybe_arguments: Optional[List[str]] = None,
+            maybe_args: Optional[DynamicArgs] = None,
         ) -> None:
 
             self.display_name = display_name
@@ -33,7 +34,7 @@ class Installable:
             self.source = source
             self.active_source = active_source
             self.version_command = version_command
-            self.maybe_arguments = maybe_arguments
+            self.maybe_args = maybe_args
 
         def has_script_active_source(self) -> bool:
             if self.active_source != ActiveInstallSource.Script:
@@ -64,5 +65,5 @@ class Installable:
                 active_source=self.active_source,
                 source=self.source.as_summary_object(verbose),
                 version_command=self.version_command,
-                maybe_arguments=self.maybe_arguments,
+                maybe_args=self.maybe_args,
             )

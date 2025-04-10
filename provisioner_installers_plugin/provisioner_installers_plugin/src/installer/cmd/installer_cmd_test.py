@@ -39,7 +39,7 @@ class UtilityInstallerCmdTestShould(unittest.TestCase):
     def create_fake_utility_installer_args(self) -> UtilityInstallerCmdArgs:
         return UtilityInstallerCmdArgs(
             utils_to_install=["anchor", "k3s-agent"],
-            dynamic_args=DYNAMIC_ARGS_DICT,
+            maybe_args=DYNAMIC_ARGS_DICT,
             sub_command_name=InstallerSubCommandName.CLI,
             git_access_token="test-git-access-token",
             remote_opts=TestDataRemoteOpts.create_fake_cli_remote_opts(),

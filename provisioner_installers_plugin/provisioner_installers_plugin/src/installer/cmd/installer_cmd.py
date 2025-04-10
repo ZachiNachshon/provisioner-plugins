@@ -5,7 +5,6 @@ from typing import Any, List, Optional
 
 from loguru import logger
 from provisioner_installers_plugin.src.installer.domain.command import InstallerSubCommandName
-from provisioner_installers_plugin.src.installer.domain.dynamic_args import DynamicArgs
 from provisioner_installers_plugin.src.installer.runner.installer_runner import (
     InstallerEnv,
     UtilityInstallerCmdRunner,
@@ -16,7 +15,7 @@ from provisioner_installers_plugin.src.utilities.utilities_k8s import SupportedT
 from provisioner_installers_plugin.src.utilities.utilities_system import SupportedToolingsSystem
 
 from provisioner_shared.components.remote.remote_opts import RemoteOpts
-from provisioner_shared.components.runtime.cli.version import NameVersionTuple
+from provisioner_installers_plugin.src.installer.domain.version import NameVersionArgsTuple
 from provisioner_shared.components.runtime.errors.cli_errors import MissingUtilityException
 from provisioner_shared.components.runtime.infra.context import Context
 from provisioner_shared.components.runtime.shared.collaborators import CoreCollaborators
@@ -26,16 +25,16 @@ class UtilityInstallerCmdArgs:
 
     def __init__(
         self,
-        utils_to_install: List[NameVersionTuple],
+        utils_to_install: List[NameVersionArgsTuple],
         remote_opts: RemoteOpts,
         sub_command_name: InstallerSubCommandName,
         git_access_token: str = None,
-        dynamic_args: Optional[dict[str, Any]] = None,
+        maybe_args: Optional[dict[str, Any]] = None,
     ) -> None:
 
         self.utils_to_install = utils_to_install
         self.remote_opts = remote_opts
-        self.dynamic_args = dynamic_args
+        self.maybe_args = maybe_args
         self.sub_command_name = sub_command_name
         if git_access_token:
             self.git_access_token = git_access_token
@@ -48,7 +47,7 @@ class UtilityInstallerCmdArgs:
         logger.debug(
             "InstallerCmdArgs: \n"
             + f"  utilities: {str(self.utils_to_install)}\n"
-            + f"  dynamic_args: {str(self.dynamic_args)}\n"
+            + f"  maybe_args: {str(self.maybe_args)}\n"
             + f"  sub_command_name: {str(self.sub_command_name.value)}\n"
             + "  git_access_token: REDACTED\n"
         )
@@ -69,7 +68,6 @@ class UtilityInstallerCmd:
                     remote_opts=args.remote_opts,
                     sub_command_name=args.sub_command_name,
                     git_access_token=args.git_access_token,
-                    dynamic_args=DynamicArgs(args.dynamic_args),
                 ),
             )
         )
