@@ -20,8 +20,9 @@ def register_cli_commands(cli_group: click.Group):
     @cli_group.command()
     @cli_modifiers
     @click.argument("args", nargs=-1)
+    @click.option("--force", is_flag=True, help="Force installation even if utility is already installed")
     @click.pass_context
-    def cli(ctx: click.Context, args: str):
+    def cli(ctx: click.Context, args: str, force: bool):
         """Select a CLI utility to install on any OS/Architecture"""
         if args:
             to_install: List[NameVersionArgsTuple] = []
@@ -29,13 +30,13 @@ def register_cli_commands(cli_group: click.Group):
                 name_ver = try_extract_name_version_tuple(name)
                 to_install.append(name_ver)
             install_utilities(
-                to_install, modifiers=CliModifiers.from_click_ctx(ctx), remote_opts=RemoteOpts.from_click_ctx(ctx)
+                to_install, modifiers=CliModifiers.from_click_ctx(ctx), remote_opts=RemoteOpts.from_click_ctx(ctx), force=force
             )
         else:
             list_utilities(modifiers=CliModifiers.from_click_ctx(ctx))
 
 
-def install_utilities(utils_name_ver: List[NameVersionArgsTuple], modifiers: CliModifiers, remote_opts: RemoteOpts) -> None:
+def install_utilities(utils_name_ver: List[NameVersionArgsTuple], modifiers: CliModifiers, remote_opts: RemoteOpts, force: bool) -> None:
     cli_ctx = CliContextManager.create(modifiers)
     Evaluator.eval_installer_cli_entrypoint_pyfn_step(
         name="Install Utility Command",
@@ -45,6 +46,7 @@ def install_utilities(utils_name_ver: List[NameVersionArgsTuple], modifiers: Cli
                 utils_to_install=utils_name_ver,
                 sub_command_name=InstallerSubCommandName.CLI,
                 remote_opts=remote_opts,
+                force=force,
             ),
         ),
         verbose=cli_ctx.is_verbose(),

@@ -15,12 +15,12 @@ from provisioner_installers_plugin.src.installer.runner.installer_runner import 
     InstallerEnv,
     ProvisionerInstallableBinariesPath,
     ProvisionerInstallableSymlinksPath,
-    ReleaseFilename_ReleaseDownloadFilePath_Utility_Tuple,
+    ReleaseFilename_ReleaseDownloadFilePath_Utility_OsArch_Tuple,
     RunEnv_Utilities_Tuple,
     SSHConnInfo_Utility_Tuple,
-    UnpackedReleaseFolderPath_Utility_Tuple,
+    UnpackedReleaseFolderPath_Utility_OsArch_Tuple,
     Utility_InstallStatus_Tuple,
-    Utility_Version_ReleaseFileName_Tuple,
+    Utility_Version_ReleaseFileName_OsArch_Tuple,
     Utility_Version_Tuple,
     UtilityInstallerCmdRunner,
     UtilityInstallerRunnerCmdArgs,
@@ -582,7 +582,7 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
             fake_installer_env, Utility_Version_Tuple(utility, version=version_from_github)
         )
         Assertion.expect_equal_objects(
-            self, result, Utility_Version_ReleaseFileName_Tuple(utility, version_from_github, release_filename)
+            self, result, Utility_Version_ReleaseFileName_OsArch_Tuple(utility, version_from_github, release_filename)
         )
 
     def test_try_get_github_release_name_by_os_arch_fail(self) -> None:
@@ -601,7 +601,7 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
 
     @mock.patch(
         f"{UTILITY_INSTALLER_CMD_RUNNER_PATH}._print_github_binary_info",
-        return_value=Utility_Version_ReleaseFileName_Tuple(
+        return_value=Utility_Version_ReleaseFileName_OsArch_Tuple(
             TestSupportedToolings[TEST_UTILITY_1_GITHUB_NAME],
             TestSupportedToolings[TEST_UTILITY_1_GITHUB_NAME].version,
             "http://download-url.com",
@@ -611,7 +611,7 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
         utility = TestSupportedToolings[TEST_UTILITY_1_GITHUB_NAME]
         fake_installer_env = self.create_fake_installer_env(self.env)
         eval = self.create_evaluator(fake_installer_env)
-        expected_tuple = Utility_Version_ReleaseFileName_Tuple(utility, utility.version, "http://download-url.com")
+        expected_tuple = Utility_Version_ReleaseFileName_OsArch_Tuple(utility, utility.version, "http://download-url.com")
         result = eval << self.get_runner(eval)._print_before_downloading(fake_installer_env, expected_tuple)
         Assertion.expect_call_argument(self, run_call, "util_ver_name_tuple", expected_tuple)
         Assertion.expect_equal_objects(self, result, expected_tuple)
@@ -627,7 +627,7 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
             self.assertIn(message, "http://download-url.com"),
         )
         fake_installer_env = self.create_fake_installer_env(test_env)
-        expected_tuple = Utility_Version_ReleaseFileName_Tuple(utility, utility.version, "http://download-url.com")
+        expected_tuple = Utility_Version_ReleaseFileName_OsArch_Tuple(utility, utility.version, "http://download-url.com")
         UtilityInstallerCmdRunner(test_env.get_context())._print_github_binary_info(fake_installer_env, expected_tuple)
 
     def test_download_binary_by_version(self) -> None:
@@ -636,8 +636,8 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
         release_filename = utility.source.github.release_name_resolver(utility.version, "test-os", "test-arch")
         dl_folderpath = f"{ProvisionerInstallableBinariesPath}/{utility.binary_name}/{utility.version}"
         dl_filepath = f"{dl_folderpath}/{release_filename}"
-        expected_input = Utility_Version_ReleaseFileName_Tuple(utility, utility.version, release_filename)
-        expected_output = ReleaseFilename_ReleaseDownloadFilePath_Utility_Tuple(release_filename, dl_filepath, utility)
+        expected_input = Utility_Version_ReleaseFileName_OsArch_Tuple(utility, utility.version, release_filename)
+        expected_output = ReleaseFilename_ReleaseDownloadFilePath_Utility_OsArch_Tuple(release_filename, dl_filepath, utility)
         fake_installer_env = self.create_fake_installer_env(test_env)
         eval = self.create_evaluator(fake_installer_env)
         result = eval << self.get_runner(eval)._download_binary_by_version(fake_installer_env, expected_input)
@@ -678,14 +678,14 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
 
         fake_printer.on("print_fn", str).side_effect = print_fn
 
-        expected_input = ReleaseFilename_ReleaseDownloadFilePath_Utility_Tuple(
+        expected_input = ReleaseFilename_ReleaseDownloadFilePath_Utility_OsArch_Tuple(
             release_filename, release_download_filepath, utility
         )
         fake_installer_env = self.create_fake_installer_env(test_env)
         eval = self.create_evaluator(fake_installer_env)
         result = eval << self.get_runner(eval)._maybe_extract_downloaded_binary(fake_installer_env, expected_input)
         Assertion.expect_equal_objects(
-            self, result, UnpackedReleaseFolderPath_Utility_Tuple(unpacked_release_folderpath, utility)
+            self, result, UnpackedReleaseFolderPath_Utility_OsArch_Tuple(unpacked_release_folderpath, utility)
         )
 
     def test_maybe_extract_downloaded_binary_success_with_regular_file(self) -> None:
@@ -711,14 +711,14 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
 
         fake_io_utils.on("unpack_archive_fn", str).side_effect = unpack_archive_fn
 
-        expected_input = ReleaseFilename_ReleaseDownloadFilePath_Utility_Tuple(
+        expected_input = ReleaseFilename_ReleaseDownloadFilePath_Utility_OsArch_Tuple(
             release_filename, release_download_filepath, utility
         )
         fake_installer_env = self.create_fake_installer_env(test_env)
         eval = self.create_evaluator(fake_installer_env)
         result = eval << self.get_runner(eval)._maybe_extract_downloaded_binary(fake_installer_env, expected_input)
         Assertion.expect_equal_objects(
-            self, result, UnpackedReleaseFolderPath_Utility_Tuple(unpacked_release_folderpath, utility)
+            self, result, UnpackedReleaseFolderPath_Utility_OsArch_Tuple(unpacked_release_folderpath, utility)
         )
 
     def test_elevate_permission_and_symlink(self) -> None:
@@ -743,7 +743,7 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
 
         fake_io_utils.on("write_symlink_fn", str, str).side_effect = write_symlink_fn
 
-        expected_input = UnpackedReleaseFolderPath_Utility_Tuple(unpacked_release_folderpath, utility)
+        expected_input = UnpackedReleaseFolderPath_Utility_OsArch_Tuple(unpacked_release_folderpath, utility)
         fake_installer_env = self.create_fake_installer_env(test_env)
         eval = self.create_evaluator(fake_installer_env)
         result = eval << self.get_runner(eval)._elevate_permission_and_symlink(fake_installer_env, expected_input)

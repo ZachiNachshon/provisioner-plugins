@@ -34,7 +34,6 @@ class InstallerK3sE2ETestShould(unittest.TestCase):
             network_name=cls.NETWORK_NAME,
             custom_flags=[
                 f"--name={cls.SERVER_CONTAINER_NAME}",
-                "--cap-add=NET_ADMIN"
             ],
             ports={6443: 6443}
         )

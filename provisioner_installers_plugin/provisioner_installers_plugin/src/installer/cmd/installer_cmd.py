@@ -29,13 +29,13 @@ class UtilityInstallerCmdArgs:
         remote_opts: RemoteOpts,
         sub_command_name: InstallerSubCommandName,
         git_access_token: str = None,
-        maybe_args: Optional[dict[str, Any]] = None,
+        force: bool = False,
     ) -> None:
 
         self.utils_to_install = utils_to_install
         self.remote_opts = remote_opts
-        self.maybe_args = maybe_args
         self.sub_command_name = sub_command_name
+        self.force = force
         if git_access_token:
             self.git_access_token = git_access_token
         else:
@@ -47,8 +47,8 @@ class UtilityInstallerCmdArgs:
         logger.debug(
             "InstallerCmdArgs: \n"
             + f"  utilities: {str(self.utils_to_install)}\n"
-            + f"  maybe_args: {str(self.maybe_args)}\n"
             + f"  sub_command_name: {str(self.sub_command_name.value)}\n"
+            + f"  force: {str(self.force)}\n"
             + "  git_access_token: REDACTED\n"
         )
 
@@ -68,6 +68,7 @@ class UtilityInstallerCmd:
                     remote_opts=args.remote_opts,
                     sub_command_name=args.sub_command_name,
                     git_access_token=args.git_access_token,
+                    force=args.force,
                 ),
             )
         )

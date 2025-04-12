@@ -4,42 +4,189 @@ import os
 import platform
 import subprocess
 from loguru import logger
-from typing import Optional
+from typing import Optional, Dict, Tuple, Any
 
 from provisioner_installers_plugin.src.installer.domain.dynamic_args import DynamicArgs
-
 from provisioner_shared.components.runtime.shared.collaborators import CoreCollaborators
 
 
-def install_k3s_server(version: str, collaborators: CoreCollaborators, maybe_args: Optional[DynamicArgs]) -> str:
-    # Extract parameters from dynamic args
-    dynamic_args_dict = maybe_args.as_dict()
-    k3s_token = dynamic_args_dict.get("k3s-token")
-    k3s_additional_cli_args: str = dynamic_args_dict.get("k3s-args", "")
-    install_as_binary = dynamic_args_dict.get("install-as-binary", False)
-    
-    # Validate mandatory parameters
-    if not k3s_token:
-        raise ValueError("Missing mandatory parameter: k3s_token")
-    
-    # Set up local bin folder path
+def extract_common_args(dynamic_args: Optional[DynamicArgs]) -> Dict[str, Any]:
+    """Extract common arguments from dynamic args."""
+    dynamic_args_dict = dynamic_args.as_dict() if dynamic_args else {}
+    return {
+        "k3s_token": dynamic_args_dict.get("k3s-token"),
+        "k3s_additional_cli_args": dynamic_args_dict.get("k3s-args", ""),
+        "install_as_binary": dynamic_args_dict.get("install-as-binary", False),
+        "k3s_url": dynamic_args_dict.get("k3s-url")
+    }
+
+
+def setup_environment() -> Tuple[str, str]:
+    """Set up environment and return local_bin_folder and current_os."""
     local_bin_folder = os.path.expanduser("~/.local/bin")
     os.makedirs(local_bin_folder, exist_ok=True)
     
-    # Detect OS
     current_os = platform.system().lower()
-    if current_os not in ["linux", "darwin"]:
+    if current_os == "darwin":
+        raise ValueError("macOS is not supported for K3s installation")
+    if current_os != "linux":
         raise ValueError(f"Unsupported OS: {current_os}")
-    
-    # Check for binary installation if on macOS
-    if current_os == "darwin" and not install_as_binary:
-        raise ValueError("Installing K3s as a system service on macOS is not supported (use --install-as-binary)")
-    
-    logger.info(f"Installing K3s server, version: {version}, OS: {current_os}")
-    
-    # Check if binary is already installed
+        
+    return local_bin_folder, current_os
+
+
+def check_binary_exists(local_bin_folder: str) -> Tuple[str, bool]:
+    """Check if K3s binary already exists and return path and existence status."""
     binary_path = os.path.join(local_bin_folder, "k3s")
     binary_exists = os.path.exists(binary_path)
+    return binary_path, binary_exists
+
+
+def check_service_exists(collaborators: CoreCollaborators, service_name: str, current_os: str) -> bool:
+    """Check if K3s service is already installed."""
+    if current_os != "linux":
+        return False
+        
+    try:
+        if service_name == "server":
+            check_cmd = "systemctl list-units --full -all | grep -Fq k3s.service"
+            result = collaborators.process().run_fn(
+                args=check_cmd,
+                working_dir=os.getcwd(),
+                fail_msg=f"Failed to check for existing K3s {service_name} service",
+                fail_on_error=True,
+                allow_single_shell_command_str=True
+            )
+            return bool(result)
+        else:  # agent
+            result = subprocess.run(
+                f"systemctl list-units --full -all | grep -Fq k3s-{service_name}.service", 
+                shell=True, 
+                capture_output=True
+            )
+            return result.returncode == 0
+    except Exception as e:
+        logger.warning(f"Failed to check for existing K3s {service_name} service: {e}")
+        return False
+
+
+def install_binary(
+    collaborators: CoreCollaborators, 
+    version: str, 
+    local_bin_folder: str
+) -> None:
+    """Install K3s binary."""
+    install_cmd = (
+        f"curl -sfL https://get.k3s.io | "
+        f"INSTALL_K3S_SKIP_ENABLE=true "
+        f"INSTALL_K3S_SKIP_START=true "
+        f"INSTALL_K3S_VERSION=\"{version}\" "
+        f"INSTALL_K3S_BIN_DIR=\"{local_bin_folder}\" "
+        f"sh -s -"
+    )
+    result = collaborators.process().run_fn(
+        args=install_cmd,
+        working_dir=os.getcwd(),
+        fail_msg="Failed to install K3s binary",
+        fail_on_error=True,
+        allow_single_shell_command_str=True
+    )
+    logger.info(result)
+
+
+def prepare_log_file(collaborators: CoreCollaborators) -> None:
+    """Create log directory and file with proper permissions."""
+    collaborators.process().run_fn(
+        args="sudo mkdir -p /var/log && sudo touch /var/log/k3s.log && sudo chmod 666 /var/log/k3s.log",
+        working_dir=os.getcwd(),
+        fail_msg="Failed to create k3s log file",
+        fail_on_error=True,
+        allow_single_shell_command_str=True
+    )
+
+
+def start_k3s_binary(
+    collaborators: CoreCollaborators,
+    local_bin_folder: str, 
+    node_type: str,
+    k3s_token: str,
+    k3s_url: Optional[str],
+    k3s_additional_cli_args: str
+) -> None:
+    """Start K3s as a binary process."""
+    clean_args = k3s_additional_cli_args.replace("\"", "")
+    
+    if node_type == "server":
+        run_command = f"nohup sudo {local_bin_folder}/k3s server --token {k3s_token} {clean_args} > /var/log/k3s.log 2>&1 &"
+    else:  # agent
+        if not k3s_url:
+            raise ValueError("Missing mandatory parameter: k3s-url for agent")
+        run_command = f"nohup sudo {local_bin_folder}/k3s agent --token {k3s_token} --server {k3s_url} {clean_args} > /var/log/k3s.log 2>&1 &"
+    
+    logger.info(f"run_command: {run_command}")
+    result = collaborators.process().run_fn(
+        args=run_command,
+        working_dir=os.getcwd(),
+        fail_msg=f"Failed to start K3s {node_type}",
+        fail_on_error=True,
+        allow_single_shell_command_str=True
+    )
+    logger.info(result)
+    logger.info(f"K3s {node_type} started successfully")
+
+
+def install_service(
+    collaborators: CoreCollaborators,
+    version: str,
+    local_bin_folder: str,
+    node_type: str,
+    k3s_token: str,
+    k3s_url: Optional[str],
+    k3s_additional_cli_args: str
+) -> None:
+    """Install K3s as a system service."""
+    if node_type == "server":
+        install_cmd = (
+            f"curl -sfL https://get.k3s.io | "
+            f"INSTALL_K3S_VERSION=\"{version}\" "
+            f"INSTALL_K3S_BIN_DIR=\"{local_bin_folder}\" "
+            f"sh -s - {k3s_additional_cli_args} --token {k3s_token}"
+        )
+    else:  # agent
+        if not k3s_url:
+            raise ValueError("Missing mandatory parameter: k3s-url for agent")
+        install_cmd = (
+            f"curl -sfL https://get.k3s.io | "
+            f"INSTALL_K3S_VERSION=\"{version}\" "
+            f"INSTALL_K3S_BIN_DIR=\"{local_bin_folder}\" "
+            f"sh -s - {k3s_additional_cli_args} --token {k3s_token} --server {k3s_url}"
+        )
+    
+    result = collaborators.process().run_fn(
+        args=install_cmd,
+        working_dir=os.getcwd(),
+        fail_msg=f"Failed to install K3s {node_type} service",
+        fail_on_error=True,
+        allow_single_shell_command_str=True
+    )
+    logger.info(f"K3s {node_type} service installed successfully")
+
+
+def install_k3s_server(version: str, collaborators: CoreCollaborators, maybe_args: Optional[DynamicArgs]) -> str:
+    """Install K3s server node."""
+    # Extract and validate parameters
+    args = extract_common_args(maybe_args)
+    k3s_token = args["k3s_token"]
+    k3s_additional_cli_args = args["k3s_additional_cli_args"]
+    install_as_binary = args["install_as_binary"]
+    
+    if not k3s_token:
+        raise ValueError("Missing mandatory parameter: k3s_token")
+    
+    # Setup environment
+    local_bin_folder, current_os = setup_environment()
+    logger.info(f"Installing K3s server, version: {version}, OS: {current_os}")
+    binary_path, binary_exists = check_binary_exists(local_bin_folder)
     
     # Install based on mode (binary or service)
     if install_as_binary:
@@ -47,119 +194,58 @@ def install_k3s_server(version: str, collaborators: CoreCollaborators, maybe_arg
             logger.warning("K3s server binary is already installed.")
             return "K3s server binary is already installed."
         
-        install_cmd = (
-            f"curl -sfL https://get.k3s.io | "
-            f"INSTALL_K3S_SKIP_ENABLE=true "
-            f"INSTALL_K3S_SKIP_START=true "
-            f"INSTALL_K3S_VERSION=\"{version}\" "
-            f"INSTALL_K3S_BIN_DIR=\"{local_bin_folder}\" "
-            f"sh -s -"
-        )
-        result = collaborators.process().run_fn(
-            args=install_cmd,
-            working_dir=os.getcwd(),
-            fail_msg="Failed to install K3s server binary",
-            fail_on_error=True,
-            allow_single_shell_command_str=True
-        )
-        logger.info(result)
+        install_binary(collaborators, version, local_bin_folder)
         logger.info("K3s server binary installed successfully")
-
-        k3s_additional_cli_args = k3s_additional_cli_args.replace("\"", "")
-        # Allow 'pi' user to use sudo without password
-        # RUN usermod -aG sudo pi && echo 'pi ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/pi
-        # Create log directory and file with proper permissions first
-        collaborators.process().run_fn(
-            args="sudo mkdir -p /var/log && sudo touch /var/log/k3s.log && sudo chmod 666 /var/log/k3s.log",
-            working_dir=os.getcwd(),
-            fail_msg="Failed to create k3s log file",
-            fail_on_error=True,
-            allow_single_shell_command_str=True
+        
+        prepare_log_file(collaborators)
+        start_k3s_binary(
+            collaborators, 
+            local_bin_folder, 
+            "server", 
+            k3s_token, 
+            None, 
+            k3s_additional_cli_args
         )
-        run_command = f"nohup sudo {local_bin_folder}/k3s server --token {k3s_token} {k3s_additional_cli_args} > /var/log/k3s.log 2>&1 &"
-        logger.info("run_command:")
-        logger.info(run_command)
-        result = collaborators.process().run_fn(
-            args=run_command,
-            working_dir=os.getcwd(),
-            fail_msg="Failed to start K3s server",
-            fail_on_error=True,
-            allow_single_shell_command_str=True
-        )
-        logger.info(result)
-        logger.info("K3s server started successfully")
-
+        
         return f"K3s server binary installed and started successfully at {binary_path}"
     else:
-        # Check if service is already installed (Linux only)
-        if current_os == "linux":
-            try:
-                result = collaborators.process().run_fn(
-                    args="systemctl list-units --full -all | grep -Fq k3s.service",
-                    working_dir=os.getcwd(),
-                    fail_msg="Failed to check for existing K3s service",
-                    fail_on_error=True,
-                    allow_single_shell_command_str=True
-                )
-                
-                if result:
-                    logger.warning("K3s server system service is already installed and running.")
-                    return "K3s server system service is already installed and running."
-            except Exception as e:
-                logger.warning(f"Failed to check for existing K3s service: {e}")
+        # Check if service is already installed
+        if check_service_exists(collaborators, "server", current_os):
+            logger.warning("K3s server system service is already installed and running.")
+            return "K3s server system service is already installed and running."
         
         # Install as service
-        install_cmd = (
-            f"curl -sfL https://get.k3s.io | "
-            f"INSTALL_K3S_VERSION=\"{version}\" "
-            f"INSTALL_K3S_BIN_DIR=\"{local_bin_folder}\" "
-            f"sh -s - {k3s_additional_cli_args} --token {k3s_token}"
+        install_service(
+            collaborators, 
+            version, 
+            local_bin_folder, 
+            "server", 
+            k3s_token, 
+            None, 
+            k3s_additional_cli_args
         )
         
-        result = collaborators.process().run_fn(
-            args=install_cmd,
-            working_dir=os.getcwd(),
-            fail_msg="Failed to install K3s server service",
-            fail_on_error=True,
-            allow_single_shell_command_str=True
-        )
-        
-        logger.info("K3s server service installed successfully")
         return "K3s server service installed successfully"
 
 
 def install_k3s_agent(version: str, collaborators: CoreCollaborators, maybe_args: Optional[DynamicArgs]) -> str:
-    # Extract parameters from dynamic args
-    dynamic_args_dict = maybe_args.as_dict()
-    k3s_token = dynamic_args_dict.get("k3s-token")
-    k3s_url = dynamic_args_dict.get("k3s-url")
-    k3s_additional_cli_args = dynamic_args_dict.get("k3s-args", "")
-    install_as_binary = dynamic_args_dict.get("install-as-binary", False)
+    """Install K3s agent node."""
+    # Extract and validate parameters
+    args = extract_common_args(maybe_args)
+    k3s_token = args["k3s_token"]
+    k3s_url = args["k3s_url"]
+    k3s_additional_cli_args = args["k3s_additional_cli_args"]
+    install_as_binary = args["install_as_binary"]
     
-    # Validate mandatory parameters
     if not k3s_token:
         raise ValueError("Missing mandatory parameter: k3s-token")
     if not k3s_url:
         raise ValueError("Missing mandatory parameter: k3s-url")
     
-    # Set up local bin folder path
-    local_bin_folder = os.path.expanduser("~/.local/bin")
-    os.makedirs(local_bin_folder, exist_ok=True)
-    
-    # Detect OS
-    current_os = platform.system().lower()
-    if current_os not in ["linux", "darwin"]:
-        raise ValueError(f"Unsupported OS: {current_os}")
-    
-    # Check for binary installation if on macOS
-    if current_os == "darwin" and not install_as_binary:
-        raise ValueError("Installing K3s as a system service on macOS is not supported (use --install-as-binary)")
-    
+    # Setup environment
+    local_bin_folder, current_os = setup_environment()
     logger.info(f"Installing K3s agent, version: {version}, OS: {current_os}")
-    
-    # Check if binary is already installed
-    binary_path = os.path.join(local_bin_folder, "k3s")
-    binary_exists = os.path.exists(binary_path)
+    binary_path, binary_exists = check_binary_exists(local_bin_folder)
     
     # Install based on mode (binary or service)
     if install_as_binary:
@@ -167,85 +253,39 @@ def install_k3s_agent(version: str, collaborators: CoreCollaborators, maybe_args
             logger.warning("K3s agent binary is already installed.")
             return "K3s agent binary is already installed."
         
-        # Install as binary
-        install_cmd = (
-            f"curl -sfL https://get.k3s.io | "
-            f"INSTALL_K3S_SKIP_ENABLE=true "
-            f"INSTALL_K3S_SKIP_START=true "
-            f"INSTALL_K3S_VERSION=\"{version}\" "
-            f"INSTALL_K3S_BIN_DIR=\"{local_bin_folder}\" "
-            f"sh -s -"
-        )
-        result = collaborators.process().run_fn(
-            args=install_cmd,
-            working_dir=os.getcwd(),
-            fail_msg="Failed to install K3s agent binary",
-            fail_on_error=True,
-            allow_single_shell_command_str=True
-        )
-        logger.info(result)
+        install_binary(collaborators, version, local_bin_folder)
         logger.info("K3s agent binary installed successfully")
-
-        k3s_additional_cli_args = k3s_additional_cli_args.replace("\"", "")
-        # Allow 'pi' user to use sudo without password
-        # RUN usermod -aG sudo pi && echo 'pi ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/pi
-        # Create log directory and file with proper permissions first
-        collaborators.process().run_fn(
-            args="sudo mkdir -p /var/log && sudo touch /var/log/k3s.log && sudo chmod 666 /var/log/k3s.log",
-            working_dir=os.getcwd(),
-            fail_msg="Failed to create k3s log file",
-            fail_on_error=True,
-            allow_single_shell_command_str=True
+        
+        prepare_log_file(collaborators)
+        start_k3s_binary(
+            collaborators, 
+            local_bin_folder, 
+            "agent", 
+            k3s_token, 
+            k3s_url, 
+            k3s_additional_cli_args
         )
-        run_command = f"nohup sudo {local_bin_folder}/k3s agent --token {k3s_token} --server {k3s_url} {k3s_additional_cli_args} > /var/log/k3s.log 2>&1 &"
-        logger.info("run_command:")
-        logger.info(run_command)
-        result = collaborators.process().run_fn(
-            args=run_command,
-            working_dir=os.getcwd(),
-            fail_msg="Failed to start K3s agent",
-            fail_on_error=True,
-            allow_single_shell_command_str=True
-        )
-        logger.info(result)
-        logger.info("K3s agent started successfully")
         
         return f"K3s agent binary installed successfully at {binary_path}"
     else:
-        # Check if service is already installed (Linux only)
-        if current_os == "linux":
-            try:
-                result = subprocess.run(
-                    "systemctl list-units --full -all | grep -Fq k3s-agent.service", 
-                    shell=True, 
-                    capture_output=True
-                )
-                service_exists = result.returncode == 0
-                
-                if service_exists:
-                    logger.warning("K3s agent system service is already installed and running.")
-                    return "K3s agent system service is already installed and running."
-            except Exception as e:
-                logger.warning(f"Failed to check for existing K3s agent service: {e}")
+        # Check if service is already installed
+        if check_service_exists(collaborators, "agent", current_os):
+            logger.warning("K3s agent system service is already installed and running.")
+            return "K3s agent system service is already installed and running."
         
         # Install as service
-        install_cmd = (
-            f"curl -sfL https://get.k3s.io | "
-            f"INSTALL_K3S_VERSION=\"{version}\" "
-            f"INSTALL_K3S_BIN_DIR=\"{local_bin_folder}\" "
-            f"sh -s - {k3s_additional_cli_args} --token {k3s_token} --server {k3s_url}"
+        install_service(
+            collaborators, 
+            version, 
+            local_bin_folder, 
+            "agent", 
+            k3s_token, 
+            k3s_url, 
+            k3s_additional_cli_args
         )
         
-        result = collaborators.process().run_fn(
-            args=install_cmd,
-            working_dir=os.getcwd(),
-            fail_msg="Failed to install K3s agent service",
-            fail_on_error=True,
-            allow_single_shell_command_str=True
-        )
-        
-        logger.info("K3s agent service installed successfully")
         return "K3s agent service installed successfully"
+
 
 # def wait_for_k3s_api(
 #     ip_address: str,

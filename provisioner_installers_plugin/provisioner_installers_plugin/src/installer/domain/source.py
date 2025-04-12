@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 
 from enum import Enum
-from typing import Any, Callable, List, Optional
+from typing import Any, Callable, Dict, List, Optional
 
 from provisioner_installers_plugin.src.installer.domain.dynamic_args import DynamicArgs
 
+from provisioner_shared.components.runtime.utils.io_utils import IOUtils
 from provisioner_shared.components.runtime.runner.ansible.ansible_runner import AnsiblePlaybook
 from provisioner_shared.components.runtime.shared.collaborators import CoreCollaborators
 from provisioner_shared.components.runtime.utils.os import OsArch
@@ -57,7 +58,10 @@ class InstallSource:
             repo: str,
             supported_releases: List[str],
             git_access_token: str = None,
+            arch_map: Dict[str, str] = {},
             release_name_resolver: Callable[[str, str, str], str] = None,
+            alternative_base_url: str = None,
+            archive_nested_binary_path: Optional[Callable[..., str]] = None,
         ) -> None:
 
             self.owner = owner
@@ -65,6 +69,9 @@ class InstallSource:
             self.supported_releases = supported_releases
             self.git_access_token = git_access_token
             self.release_name_resolver = release_name_resolver
+            self.arch_map = arch_map
+            self.alternative_base_url = alternative_base_url 
+            self.archive_nested_binary_path = archive_nested_binary_path
 
         def as_summary_object(self, verbose: Optional[bool] = False) -> "InstallSource.GitHub":
             return (
@@ -73,14 +80,20 @@ class InstallSource:
                 else None
             )
 
-        def _is_binary_supported_by_os_arch(self, os_arch: OsArch) -> bool:
-            os_arch_pair = os_arch.as_pair(mapping={"x86_64": "amd64"})
+        def _is_binary_supported_by_os_arch(self, os_arch_pair: OsArch) -> bool:
             return self.supported_releases and os_arch_pair in self.supported_releases
 
-        def resolve_binary_release_name(self, os_arch: OsArch, version: str) -> str:
-            if not self._is_binary_supported_by_os_arch(os_arch):
+        def get_adjusted_os_arch(self, os_arch: OsArch) -> Optional[OsArch]:
+            os_arch_pair = os_arch.as_pair(mapping=self.arch_map)
+            if not self._is_binary_supported_by_os_arch(os_arch_pair):
                 return None
-            return self.release_name_resolver(version, os_arch.os, os_arch.arch)
+            return OsArch.from_string(os_arch_pair)
+
+        def resolve_binary_release_name(self, os_arch: OsArch, version: str) -> Optional[str]:
+            adjusted_os_arch = self.get_adjusted_os_arch(os_arch)
+            if not adjusted_os_arch:
+                return None
+            return self.release_name_resolver(version, adjusted_os_arch.os, adjusted_os_arch.arch)
 
     def as_summary_object(self, verbose: Optional[bool] = False) -> "InstallSource":
         if not verbose:

@@ -2,7 +2,9 @@
 
 import typing
 
-from provisioner_installers_plugin.src.installer.domain.dynamic_args import DynamicArgs
+from provisioner_installers_plugin.src.installer.domain.dynamic_args import \
+    DynamicArgs
+
 
 class NameVersionArgsTuple(typing.NamedTuple):
     name: str = None
