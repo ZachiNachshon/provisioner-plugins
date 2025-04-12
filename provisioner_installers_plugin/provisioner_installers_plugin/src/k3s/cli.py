@@ -2,24 +2,17 @@
 
 
 import click
-from provisioner_installers_plugin.src.installer.cmd.installer_cmd import (
-    UtilityInstallerCmd, UtilityInstallerCmdArgs)
-from provisioner_installers_plugin.src.installer.domain.command import \
-    InstallerSubCommandName
-from provisioner_installers_plugin.src.installer.domain.dynamic_args import \
-    DynamicArgs
-from provisioner_installers_plugin.src.installer.domain.version import \
-    NameVersionArgsTuple
-from provisioner_installers_plugin.src.utilities.utilities_versions import \
-    ToolingVersions
+from provisioner_installers_plugin.src.installer.cmd.installer_cmd import UtilityInstallerCmd, UtilityInstallerCmdArgs
+from provisioner_installers_plugin.src.installer.domain.command import InstallerSubCommandName
+from provisioner_installers_plugin.src.installer.domain.dynamic_args import DynamicArgs
+from provisioner_installers_plugin.src.installer.domain.version import NameVersionArgsTuple
+from provisioner_installers_plugin.src.utilities.utilities_versions import ToolingVersions
 
 from provisioner_shared.components.remote.remote_opts import RemoteOpts
-from provisioner_shared.components.runtime.cli.cli_modifiers import \
-    cli_modifiers
+from provisioner_shared.components.runtime.cli.cli_modifiers import cli_modifiers
 from provisioner_shared.components.runtime.cli.menu_format import CustomGroup
 from provisioner_shared.components.runtime.cli.modifiers import CliModifiers
-from provisioner_shared.components.runtime.infra.context import \
-    CliContextManager
+from provisioner_shared.components.runtime.infra.context import CliContextManager
 from provisioner_shared.components.runtime.infra.evaluator import Evaluator
 
 # Fully compliant lightweight Kubernetes distribution (https://k3s.io)
@@ -80,11 +73,17 @@ def register_k3s_commands(cli_group: click.Group):
         Install a Rancher K3s Server as a service on systemd and openrc based systems
         """
         k3s_server_install(
-            NameVersionArgsTuple("k3s-server", version, DynamicArgs({
-                "k3s-token": k3s_token,
-                "k3s-args": f"\"{k3s_args}\"" if k3s_args else "",
-                "install-as-binary": install_as_binary,
-            })),
+            NameVersionArgsTuple(
+                "k3s-server",
+                version,
+                DynamicArgs(
+                    {
+                        "k3s-token": k3s_token,
+                        "k3s-args": f'"{k3s_args}"' if k3s_args else "",
+                        "install-as-binary": install_as_binary,
+                    }
+                ),
+            ),
             CliModifiers.from_click_ctx(ctx),
             RemoteOpts.from_click_ctx(ctx),
         )
@@ -133,15 +132,17 @@ def register_k3s_commands(cli_group: click.Group):
         """
         k3s_agent_install(
             NameVersionArgsTuple(
-                "k3s-agent", 
-                version, 
-                DynamicArgs({
-                    "k3s-url": k3s_url,
-                    "k3s-token": k3s_token,
-                    "k3s-args": f"\"{k3s_args}\"" if k3s_args else "",
-                    "install-as-binary": install_as_binary,
-                    })
+                "k3s-agent",
+                version,
+                DynamicArgs(
+                    {
+                        "k3s-url": k3s_url,
+                        "k3s-token": k3s_token,
+                        "k3s-args": f'"{k3s_args}"' if k3s_args else "",
+                        "install-as-binary": install_as_binary,
+                    }
                 ),
+            ),
             CliModifiers.from_click_ctx(ctx),
             RemoteOpts.from_click_ctx(ctx),
         )

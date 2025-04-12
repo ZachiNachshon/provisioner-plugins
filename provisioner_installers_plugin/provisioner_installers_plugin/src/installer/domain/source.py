@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional
+from typing import Callable, Dict, List, Optional
 
 from provisioner_installers_plugin.src.installer.domain.dynamic_args import DynamicArgs
 
-from provisioner_shared.components.runtime.utils.io_utils import IOUtils
 from provisioner_shared.components.runtime.runner.ansible.ansible_runner import AnsiblePlaybook
 from provisioner_shared.components.runtime.shared.collaborators import CoreCollaborators
 from provisioner_shared.components.runtime.utils.os import OsArch
@@ -70,7 +69,7 @@ class InstallSource:
             self.git_access_token = git_access_token
             self.release_name_resolver = release_name_resolver
             self.arch_map = arch_map
-            self.alternative_base_url = alternative_base_url 
+            self.alternative_base_url = alternative_base_url
             self.archive_nested_binary_path = archive_nested_binary_path
 
         def as_summary_object(self, verbose: Optional[bool] = False) -> "InstallSource.GitHub":

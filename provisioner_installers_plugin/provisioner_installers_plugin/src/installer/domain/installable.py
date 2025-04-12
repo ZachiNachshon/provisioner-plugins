@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from typing import List, Optional
+from typing import Optional
 
 from provisioner_installers_plugin.src.installer.domain.dynamic_args import DynamicArgs
 from provisioner_installers_plugin.src.installer.domain.source import (

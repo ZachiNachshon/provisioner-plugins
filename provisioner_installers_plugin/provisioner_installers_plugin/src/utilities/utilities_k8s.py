@@ -5,10 +5,8 @@ from provisioner_installers_plugin.src.installer.domain.source import (
     ActiveInstallSource,
     InstallSource,
 )
+from provisioner_installers_plugin.src.k3s.installer import install_k3s_agent, install_k3s_server
 from provisioner_installers_plugin.src.utilities.utilities_versions import ToolingVersions
-from provisioner_installers_plugin.src.k3s.installer import install_k3s_server, install_k3s_agent
-
-from provisioner_shared.components.runtime.runner.ansible.ansible_runner import AnsiblePlaybook
 
 SupportedOS = ["linux", "darwin"]
 SupportedArchitectures = ["x86_64", "arm", "amd64", "armv6l", "armv7l", "arm64", "aarch64"]
@@ -23,7 +21,9 @@ SupportedToolingsK8s = {
         active_source=ActiveInstallSource.Callback,
         source=InstallSource(
             callback=InstallSource.Callback(
-                install_fn=lambda version, collaborators, maybe_args: install_k3s_server(version, collaborators, maybe_args),
+                install_fn=lambda version, collaborators, maybe_args: install_k3s_server(
+                    version, collaborators, maybe_args
+                ),
             ),
         ),
     ),
@@ -36,7 +36,9 @@ SupportedToolingsK8s = {
         active_source=ActiveInstallSource.Callback,
         source=InstallSource(
             callback=InstallSource.Callback(
-                install_fn=lambda version, collaborators, maybe_args: install_k3s_agent(version, collaborators, maybe_args),
+                install_fn=lambda version, collaborators, maybe_args: install_k3s_agent(
+                    version, collaborators, maybe_args
+                ),
             ),
         ),
     ),

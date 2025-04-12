@@ -6,7 +6,10 @@ import click
 from provisioner_installers_plugin.src.installer.cmd.installer_cmd import UtilityInstallerCmd, UtilityInstallerCmdArgs
 from provisioner_installers_plugin.src.installer.cmd.list_cmd import UtilityListCmd
 from provisioner_installers_plugin.src.installer.domain.command import InstallerSubCommandName
-from provisioner_installers_plugin.src.installer.domain.version import NameVersionArgsTuple, try_extract_name_version_tuple
+from provisioner_installers_plugin.src.installer.domain.version import (
+    NameVersionArgsTuple,
+    try_extract_name_version_tuple,
+)
 
 from provisioner_shared.components.remote.remote_opts import RemoteOpts
 from provisioner_shared.components.runtime.cli.cli_modifiers import cli_modifiers
@@ -30,13 +33,18 @@ def register_cli_commands(cli_group: click.Group):
                 name_ver = try_extract_name_version_tuple(name)
                 to_install.append(name_ver)
             install_utilities(
-                to_install, modifiers=CliModifiers.from_click_ctx(ctx), remote_opts=RemoteOpts.from_click_ctx(ctx), force=force
+                to_install,
+                modifiers=CliModifiers.from_click_ctx(ctx),
+                remote_opts=RemoteOpts.from_click_ctx(ctx),
+                force=force,
             )
         else:
             list_utilities(modifiers=CliModifiers.from_click_ctx(ctx))
 
 
-def install_utilities(utils_name_ver: List[NameVersionArgsTuple], modifiers: CliModifiers, remote_opts: RemoteOpts, force: bool) -> None:
+def install_utilities(
+    utils_name_ver: List[NameVersionArgsTuple], modifiers: CliModifiers, remote_opts: RemoteOpts, force: bool
+) -> None:
     cli_ctx = CliContextManager.create(modifiers)
     Evaluator.eval_installer_cli_entrypoint_pyfn_step(
         name="Install Utility Command",

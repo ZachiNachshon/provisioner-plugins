@@ -5,11 +5,13 @@ from typing import Callable, List
 from unittest import mock
 
 from provisioner_installers_plugin.src.installer.domain.command import InstallerSubCommandName
+from provisioner_installers_plugin.src.installer.domain.dynamic_args import DynamicArgs
 from provisioner_installers_plugin.src.installer.domain.installable import Installable
 from provisioner_installers_plugin.src.installer.domain.source import (
     ActiveInstallSource,
     InstallSource,
 )
+from provisioner_installers_plugin.src.installer.domain.version import NameVersionArgsTuple
 from provisioner_installers_plugin.src.installer.runner.installer_runner import (
     ANSIBLE_PLAYBOOK_REMOTE_PROVISIONER_WRAPPER,
     InstallerEnv,
@@ -33,7 +35,6 @@ from provisioner_shared.components.remote.remote_connector_fakes import (
     TestDataRemoteConnector,
 )
 from provisioner_shared.components.remote.remote_opts_fakes import TestDataRemoteOpts
-from provisioner_installers_plugin.src.installer.domain.version import NameVersionArgsTuple
 from provisioner_shared.components.runtime.errors.cli_errors import (
     InstallerSourceError,
     InstallerUtilityNotSupported,
@@ -81,6 +82,11 @@ TestSupportedToolings = {
         version_command="--version",
         version=TEST_UTILITY_1_GITHUB_VER,
         active_source=ActiveInstallSource.GitHub,
+        maybe_args=DynamicArgs(
+            {
+                "test_arg_1": "test_arg_1_value",
+            }
+        ),
         source=InstallSource(
             github=InstallSource.GitHub(
                 owner="TestOwner",
@@ -162,6 +168,7 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
         utilities: List[NameVersionArgsTuple] = [TEST_UTILITY_1_GITHUB, TEST_UTILITY_2_SCRIPT],
         environment: RunEnvironment = RunEnvironment.Local,
         remote_context: RemoteContext = RemoteContext.no_op(),
+        is_force_install: bool = False,
     ) -> InstallerEnv:
         return InstallerEnv(
             ctx=test_env.get_context(),
@@ -171,6 +178,7 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
                 sub_command_name=InstallerSubCommandName.CLI,
                 remote_opts=TestDataRemoteOpts.create_fake_cli_remote_opts(remote_context, environment),
                 git_access_token=TEST_GITHUB_ACCESS_TOKEN,
+                force=is_force_install,
             ),
             supported_utilities=TestSupportedToolings,
         )
@@ -202,7 +210,7 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
         test_env = TestEnv.create()
         fake_installer_env = self.create_fake_installer_env(test_env)
         eval = self.create_evaluator(fake_installer_env)
-        result = eval << self.get_runner(eval)._map_to_utilities_list(fake_installer_env)
+        result = eval << self.get_runner(eval)._map_to_utilities_list_with_dynamic_args(fake_installer_env)
         self.assertEqual(2, len(result))
 
     def test_create_utils_summary_success(self) -> None:
@@ -333,6 +341,13 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
         ],
     )
     @mock.patch(
+        f"{UTILITY_INSTALLER_CMD_RUNNER_PATH}._trigger_utility_version_command",
+        side_effect=[
+            PyFn.of(TestSupportedToolings[TEST_UTILITY_1_GITHUB_NAME]),
+            PyFn.of(TestSupportedToolings[TEST_UTILITY_2_SCRIPT_NAME]),
+        ],
+    )
+    @mock.patch(
         f"{UTILITY_INSTALLER_CMD_RUNNER_PATH}._install_utility_locally",
         side_effect=[
             PyFn.of(TestSupportedToolings[TEST_UTILITY_1_GITHUB_NAME]),
@@ -366,6 +381,7 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
         notify_call: mock.MagicMock,
         pre_print_call: mock.MagicMock,
         install_call: mock.MagicMock,
+        trigger_version_call: mock.MagicMock,
         post_print_call: mock.MagicMock,
     ) -> None:
         utility_github = TestSupportedToolings[TEST_UTILITY_1_GITHUB_NAME]
@@ -401,6 +417,14 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
         )
         self.assertEqual(2, install_call.call_count)
         install_call.assert_has_calls(
+            any_order=False,
+            calls=[
+                mock.call(fake_installer_env, utility_github),
+                mock.call(fake_installer_env, utility_script),
+            ],
+        )
+        self.assertEqual(2, trigger_version_call.call_count)
+        trigger_version_call.assert_has_calls(
             any_order=False,
             calls=[
                 mock.call(fake_installer_env, utility_github),
@@ -582,7 +606,11 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
             fake_installer_env, Utility_Version_Tuple(utility, version=version_from_github)
         )
         Assertion.expect_equal_objects(
-            self, result, Utility_Version_ReleaseFileName_OsArch_Tuple(utility, version_from_github, release_filename)
+            self,
+            result,
+            Utility_Version_ReleaseFileName_OsArch_Tuple(
+                utility, version_from_github, release_filename, test_env.get_context().os_arch
+            ),
         )
 
     def test_try_get_github_release_name_by_os_arch_fail(self) -> None:
@@ -605,13 +633,16 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
             TestSupportedToolings[TEST_UTILITY_1_GITHUB_NAME],
             TestSupportedToolings[TEST_UTILITY_1_GITHUB_NAME].version,
             "http://download-url.com",
+            OsArch.from_string("linux_amd64"),
         ),
     )
     def test_print_before_downloading(self, run_call: mock.MagicMock) -> None:
         utility = TestSupportedToolings[TEST_UTILITY_1_GITHUB_NAME]
         fake_installer_env = self.create_fake_installer_env(self.env)
         eval = self.create_evaluator(fake_installer_env)
-        expected_tuple = Utility_Version_ReleaseFileName_OsArch_Tuple(utility, utility.version, "http://download-url.com")
+        expected_tuple = Utility_Version_ReleaseFileName_OsArch_Tuple(
+            utility, utility.version, "http://download-url.com", OsArch.from_string("linux_amd64")
+        )
         result = eval << self.get_runner(eval)._print_before_downloading(fake_installer_env, expected_tuple)
         Assertion.expect_call_argument(self, run_call, "util_ver_name_tuple", expected_tuple)
         Assertion.expect_equal_objects(self, result, expected_tuple)
@@ -627,17 +658,24 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
             self.assertIn(message, "http://download-url.com"),
         )
         fake_installer_env = self.create_fake_installer_env(test_env)
-        expected_tuple = Utility_Version_ReleaseFileName_OsArch_Tuple(utility, utility.version, "http://download-url.com")
+        expected_tuple = Utility_Version_ReleaseFileName_OsArch_Tuple(
+            utility, utility.version, "http://download-url.com", test_env.get_context().os_arch
+        )
         UtilityInstallerCmdRunner(test_env.get_context())._print_github_binary_info(fake_installer_env, expected_tuple)
 
     def test_download_binary_by_version(self) -> None:
         test_env = TestEnv.create()
         utility = TestSupportedToolings[TEST_UTILITY_1_GITHUB_NAME]
-        release_filename = utility.source.github.release_name_resolver(utility.version, "test-os", "test-arch")
+        os_arch = OsArch.from_string("linux_TestArch")
+        release_filename = utility.source.github.release_name_resolver(utility.version, os_arch.os, os_arch.arch)
         dl_folderpath = f"{ProvisionerInstallableBinariesPath}/{utility.binary_name}/{utility.version}"
         dl_filepath = f"{dl_folderpath}/{release_filename}"
-        expected_input = Utility_Version_ReleaseFileName_OsArch_Tuple(utility, utility.version, release_filename)
-        expected_output = ReleaseFilename_ReleaseDownloadFilePath_Utility_OsArch_Tuple(release_filename, dl_filepath, utility)
+        expected_input = Utility_Version_ReleaseFileName_OsArch_Tuple(
+            utility, utility.version, release_filename, os_arch
+        )
+        expected_output = ReleaseFilename_ReleaseDownloadFilePath_Utility_OsArch_Tuple(
+            release_filename, dl_filepath, utility, os_arch
+        )
         fake_installer_env = self.create_fake_installer_env(test_env)
         eval = self.create_evaluator(fake_installer_env)
         result = eval << self.get_runner(eval)._download_binary_by_version(fake_installer_env, expected_input)
@@ -679,13 +717,17 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
         fake_printer.on("print_fn", str).side_effect = print_fn
 
         expected_input = ReleaseFilename_ReleaseDownloadFilePath_Utility_OsArch_Tuple(
-            release_filename, release_download_filepath, utility
+            release_filename, release_download_filepath, utility, test_env.get_context().os_arch
         )
         fake_installer_env = self.create_fake_installer_env(test_env)
         eval = self.create_evaluator(fake_installer_env)
         result = eval << self.get_runner(eval)._maybe_extract_downloaded_binary(fake_installer_env, expected_input)
         Assertion.expect_equal_objects(
-            self, result, UnpackedReleaseFolderPath_Utility_OsArch_Tuple(unpacked_release_folderpath, utility)
+            self,
+            result,
+            UnpackedReleaseFolderPath_Utility_OsArch_Tuple(
+                unpacked_release_folderpath, utility, test_env.get_context().os_arch
+            ),
         )
 
     def test_maybe_extract_downloaded_binary_success_with_regular_file(self) -> None:
@@ -712,13 +754,17 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
         fake_io_utils.on("unpack_archive_fn", str).side_effect = unpack_archive_fn
 
         expected_input = ReleaseFilename_ReleaseDownloadFilePath_Utility_OsArch_Tuple(
-            release_filename, release_download_filepath, utility
+            release_filename, release_download_filepath, utility, test_env.get_context().os_arch
         )
         fake_installer_env = self.create_fake_installer_env(test_env)
         eval = self.create_evaluator(fake_installer_env)
         result = eval << self.get_runner(eval)._maybe_extract_downloaded_binary(fake_installer_env, expected_input)
         Assertion.expect_equal_objects(
-            self, result, UnpackedReleaseFolderPath_Utility_OsArch_Tuple(unpacked_release_folderpath, utility)
+            self,
+            result,
+            UnpackedReleaseFolderPath_Utility_OsArch_Tuple(
+                unpacked_release_folderpath, utility, test_env.get_context().os_arch
+            ),
         )
 
     def test_elevate_permission_and_symlink(self) -> None:
@@ -743,13 +789,16 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
 
         fake_io_utils.on("write_symlink_fn", str, str).side_effect = write_symlink_fn
 
-        expected_input = UnpackedReleaseFolderPath_Utility_OsArch_Tuple(unpacked_release_folderpath, utility)
+        expected_input = UnpackedReleaseFolderPath_Utility_OsArch_Tuple(
+            unpacked_release_folderpath, utility, test_env.get_context().os_arch
+        )
         fake_installer_env = self.create_fake_installer_env(test_env)
         eval = self.create_evaluator(fake_installer_env)
         result = eval << self.get_runner(eval)._elevate_permission_and_symlink(fake_installer_env, expected_input)
         Assertion.expect_equal_objects(self, result, symlink_path)
 
     @mock.patch(f"{UTILITY_INSTALLER_CMD_RUNNER_PATH}._elevate_permission_and_symlink", return_value=PyFn.empty())
+    @mock.patch(f"{UTILITY_INSTALLER_CMD_RUNNER_PATH}._force_binary_at_download_path_root", return_value=PyFn.empty())
     @mock.patch(f"{UTILITY_INSTALLER_CMD_RUNNER_PATH}._maybe_extract_downloaded_binary", return_value=PyFn.empty())
     @mock.patch(f"{UTILITY_INSTALLER_CMD_RUNNER_PATH}._download_binary_by_version", return_value=PyFn.empty())
     @mock.patch(f"{UTILITY_INSTALLER_CMD_RUNNER_PATH}._print_before_downloading", return_value=PyFn.empty())
@@ -764,6 +813,7 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
         print_release_call: mock.MagicMock,
         download_binary_call: mock.MagicMock,
         extract_binary_archive_call: mock.MagicMock,
+        force_binary_call: mock.MagicMock,
         elevate_binary_permissions_call: mock.MagicMock,
     ) -> None:
         utility = TestSupportedToolings[TEST_UTILITY_1_GITHUB_NAME]
@@ -775,6 +825,7 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
         print_release_call.assert_called_once()
         download_binary_call.assert_called_once()
         extract_binary_archive_call.assert_called_once()
+        force_binary_call.assert_called_once()
         elevate_binary_permissions_call.assert_called_once()
 
     def test_install_from_github_failed(
@@ -793,7 +844,9 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
     @mock.patch(f"{UTILITY_INSTALLER_CMD_RUNNER_PATH}._resolve_run_environment", return_value=PyFn.empty())
     @mock.patch(f"{UTILITY_INSTALLER_CMD_RUNNER_PATH}._print_installer_welcome", return_value=PyFn.empty())
     @mock.patch(f"{UTILITY_INSTALLER_CMD_RUNNER_PATH}._create_utils_summary", return_value=PyFn.empty())
-    @mock.patch(f"{UTILITY_INSTALLER_CMD_RUNNER_PATH}._map_to_utilities_list", return_value=PyFn.empty())
+    @mock.patch(
+        f"{UTILITY_INSTALLER_CMD_RUNNER_PATH}._map_to_utilities_list_with_dynamic_args", return_value=PyFn.empty()
+    )
     @mock.patch(f"{UTILITY_INSTALLER_CMD_RUNNER_PATH}._verify_selected_utilities", return_value=PyFn.empty())
     def test_run_success(
         self,
@@ -861,7 +914,7 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
         env = TestEnv.create()
         remote_ctx = RemoteContext.no_op()
         fake_runner = FakeAnsibleRunnerLocal(env.get_context())
-        fake_installer_env = self.create_fake_installer_env(env)
+        fake_installer_env = self.create_fake_installer_env(env, is_force_install=True)
         env.get_collaborators().checks().on("is_env_var_equals_fn", str, str).return_value = False
         fake_runner.on("run_fn", List, AnsiblePlaybook, List, List, str).side_effect = (
             lambda selected_hosts, playbook, ansible_vars, ansible_tags, ansible_playbook_package: (
@@ -878,13 +931,12 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
                 self.assertEqual(
                     ansible_vars,
                     [
-                        f"provisioner_command='install --environment Local {InstallerSubCommandName.CLI} {utility.display_name}@{TEST_UTILITY_1_GITHUB_VER} -y {'-v ' if remote_ctx.is_verbose() else ''}'",
+                        f"provisioner_command='install --environment Local {InstallerSubCommandName.CLI} {utility.display_name}@{TEST_UTILITY_1_GITHUB_VER} --test_arg_1=test_arg_1_value --force -y {'-v ' if remote_ctx.is_verbose() else ''}'",
                         "required_plugins=['provisioner_installers_plugin']",
                         "install_method='pip'",
                         f"git_access_token={TEST_GITHUB_ACCESS_TOKEN}",
                     ],
                 ),
-                self.assertEqual(ansible_tags, ["provisioner_wrapper"]),
                 self.assertEqual(ansible_tags, ["provisioner_wrapper"]),
             )
         )
