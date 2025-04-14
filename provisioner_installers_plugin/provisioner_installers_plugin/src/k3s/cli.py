@@ -40,6 +40,7 @@ def register_k3s_commands(cli_group: click.Group):
     @click.option(
         "--k3s-token",
         show_default=False,
+        required=False,
         help="K3s server token",
         envvar="PROV_K3S_SERVER_TOKEN",
     )
@@ -59,6 +60,20 @@ def register_k3s_commands(cli_group: click.Group):
         envvar="PROV_K3S_SERVER_INSTALL_AS_BINARY",
     )
     @click.option(
+        "--use-kube-config",
+        default=False,
+        is_flag=True,
+        help="Write kubeconfig to ~/.kube/config instead of the default /etc/rancher/k3s/k3s.yaml",
+        envvar="PROV_K3S_SERVER_USE_KUBE_CONFIG",
+    )
+    @click.option(
+        "--uninstall",
+        default=False,
+        is_flag=True,
+        help="Uninstall K3s server instead of installing it",
+        envvar="PROV_K3S_SERVER_UNINSTALL",
+    )
+    @click.option(
         "--version",
         show_default=True,
         required=False,
@@ -68,10 +83,13 @@ def register_k3s_commands(cli_group: click.Group):
     )
     @cli_modifiers
     @click.pass_context
-    def k3s_server(ctx: click.Context, k3s_token: str, k3s_args: str, install_as_binary: bool, version: str):
+    def k3s_server(ctx: click.Context, k3s_token: str, k3s_args: str, install_as_binary: bool, use_kube_config: bool, uninstall: bool, version: str):
         """
-        Install a Rancher K3s Server as a service on systemd and openrc based systems
+        Install or uninstall a Rancher K3s Server on systemd and openrc based systems
         """
+        if not uninstall and not k3s_token:
+            raise click.UsageError("--k3s-token is required for installation")
+            
         k3s_server_install(
             NameVersionArgsTuple(
                 "k3s-server",
@@ -81,6 +99,8 @@ def register_k3s_commands(cli_group: click.Group):
                         "k3s-token": k3s_token,
                         "k3s-args": f'"{k3s_args}"' if k3s_args else "",
                         "install-as-binary": install_as_binary,
+                        "use-kube-config": use_kube_config,
+                        "uninstall": uninstall,
                     }
                 ),
             ),
@@ -92,12 +112,14 @@ def register_k3s_commands(cli_group: click.Group):
     @click.option(
         "--k3s-url",
         show_default=False,
+        required=False,
         help="K3s server address",
         envvar="PROV_K3S_AGENT_SERVER_URL",
     )
     @click.option(
         "--k3s-token",
         show_default=False,
+        required=False,
         help="k3s server token",
         envvar="PROV_K3S_AGENT_TOKEN",
     )
@@ -115,6 +137,13 @@ def register_k3s_commands(cli_group: click.Group):
         envvar="PROV_K3S_AGENT_INSTALL_AS_BINARY",
     )
     @click.option(
+        "--uninstall",
+        default=False,
+        is_flag=True,
+        help="Uninstall K3s agent instead of installing it",
+        envvar="PROV_K3S_AGENT_UNINSTALL",
+    )
+    @click.option(
         "--version",
         show_default=True,
         required=False,
@@ -125,11 +154,17 @@ def register_k3s_commands(cli_group: click.Group):
     @cli_modifiers
     @click.pass_context
     def k3s_agent(
-        ctx: click.Context, k3s_token: str, k3s_url: str, k3s_args: str, install_as_binary: bool, version: str
+        ctx: click.Context, k3s_token: str, k3s_url: str, k3s_args: str, install_as_binary: bool, uninstall: bool, version: str
     ):
         """
-        Install a Rancher K3s Agent as a service on systemd and openrc based systems
+        Install or uninstall a Rancher K3s Agent on systemd and openrc based systems
         """
+        if not uninstall:
+            if not k3s_token:
+                raise click.UsageError("--k3s-token is required for installation")
+            if not k3s_url:
+                raise click.UsageError("--k3s-url is required for installation")
+                
         k3s_agent_install(
             NameVersionArgsTuple(
                 "k3s-agent",
@@ -140,6 +175,7 @@ def register_k3s_commands(cli_group: click.Group):
                         "k3s-token": k3s_token,
                         "k3s-args": f'"{k3s_args}"' if k3s_args else "",
                         "install-as-binary": install_as_binary,
+                        "uninstall": uninstall,
                     }
                 ),
             ),

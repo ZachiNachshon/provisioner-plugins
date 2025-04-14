@@ -18,6 +18,7 @@ from provisioner_shared.components.runtime.errors.cli_errors import (
     InstallerSourceError,
     InstallerUtilityNotSupported,
     OsArchNotSupported,
+    StepEvaluationFailure,
     VersionResolverError,
 )
 from provisioner_shared.components.runtime.infra.context import Context
@@ -137,25 +138,20 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
     @staticmethod
     def run(env: InstallerEnv) -> bool:
         logger.debug("Inside UtilityInstallerCmdRunner run()")
-        try:
-            eval: PyFnEvaluator = PyFnEvaluator[UtilityInstallerCmdRunner, Exception].new(
-                UtilityInstallerCmdRunner(ctx=env.ctx)
-            )
-            chain: UtilityInstallerCmdRunner = eval << Environment[UtilityInstallerCmdRunner]()
-            run_env_utils_tuple = eval << (
-                chain._verify_selected_utilities(env)
-                .flat_map(lambda _: chain._maybe_set_custom_versions(env))
-                .flat_map(lambda _: chain._map_to_utilities_list_with_dynamic_args(env))
-                .flat_map(lambda utilities: chain._create_utils_summary(env, utilities))
-                .flat_map(lambda utilities: chain._print_installer_welcome(env, utilities))
-                .flat_map(lambda utilities: chain._resolve_run_environment(env, utilities))
-            )
-            result = eval << chain._run_installation(env, run_env_utils_tuple)
-            return result is not None
-        except Exception as ex:
-            logger.critical(f"Unexpected error in installer runner: {ex.__class__.__name__}, message: {str(ex)}")
-            traceback.print_exc()
-            raise
+        eval: PyFnEvaluator = PyFnEvaluator[UtilityInstallerCmdRunner, Exception].new(
+            UtilityInstallerCmdRunner(ctx=env.ctx)
+        )
+        chain: UtilityInstallerCmdRunner = eval << Environment[UtilityInstallerCmdRunner]()
+        run_env_utils_tuple = eval << (
+            chain._verify_selected_utilities(env)
+            .flat_map(lambda _: chain._maybe_set_custom_versions(env))
+            .flat_map(lambda _: chain._map_to_utilities_list_with_dynamic_args(env))
+            .flat_map(lambda utilities: chain._create_utils_summary(env, utilities))
+            .flat_map(lambda utilities: chain._print_installer_welcome(env, utilities))
+            .flat_map(lambda utilities: chain._resolve_run_environment(env, utilities))
+        )
+        result = eval << chain._run_installation(env, run_env_utils_tuple)
+        return result is not None
 
     def _verify_selected_utilities(
         self, env: InstallerEnv
@@ -254,8 +250,8 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
                     lambda utilities: self._run_remote_installation(env=env, utilities=utilities)
                 )
             case _:
-                logger.critical(f"Unsupported run environment: {run_env_utils_tuple.run_env}")
-                return PyFn.fail(error=Exception(f"Unsupported run environment: {run_env_utils_tuple.run_env}"))
+                logger.error(f"Unsupported run environment: {run_env_utils_tuple.run_env}")
+                return PyFn.fail(error=StepEvaluationFailure(f"Unsupported run environment: {run_env_utils_tuple.run_env}"))
 
     def _print_pre_install_summary(
         self, env: InstallerEnv, maybe_utility: Optional[Installable.Utility]
@@ -725,65 +721,61 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
             f"Running remote installation for utilities: {[u.display_name for u in utilities] if utilities else 'None'}"
         )
 
-        try:
-            # Create a list to track successfully installed utilities
-            installed_utilities = []
+        # Create a list to track successfully installed utilities
+        installed_utilities = []
 
-            def collect_result(utility):
-                if utility is not None:
-                    installed_utilities.append(utility)
-                return utility
+        def collect_result(utility):
+            if utility is not None:
+                installed_utilities.append(utility)
+            return utility
 
-            result = (
-                PyFn.of(RemoteMachineConnector(collaborators=env.collaborators))
-                .flat_map(lambda connector: self._collect_ssh_connection_info(env, connector))
-                .if_then_else(
-                    predicate=lambda ssh_conn_info: self.is_hosts_found(ssh_conn_info),
-                    if_false=lambda _: PyFn.effect(
-                        lambda: logger.warning(
-                            "No remote hosts found to install utilities on. Returning without installation."
-                        )
-                    ).map(lambda _: utilities),
-                    if_true=lambda ssh_conn_info: PyFn.effect(
-                        lambda: logger.debug(f"Found SSH connection info with {len(ssh_conn_info.ansible_hosts)} hosts")
+        result = (
+            PyFn.of(RemoteMachineConnector(collaborators=env.collaborators))
+            .flat_map(lambda connector: self._collect_ssh_connection_info(env, connector))
+            .if_then_else(
+                predicate=lambda ssh_conn_info: self.is_hosts_found(ssh_conn_info),
+                if_false=lambda _: PyFn.effect(
+                    lambda: logger.warning(
+                        "No remote hosts found to install utilities on. Returning without installation."
                     )
-                    .flat_map(
-                        lambda _: PyFn.of(utilities).for_each(
-                            lambda utility: PyFn.of(SSHConnInfo_Utility_Tuple(ssh_conn_info, utility))
-                            .flat_map(
-                                lambda sshconninfo_utility_tuple: self._print_pre_install_summary(
-                                    env, sshconninfo_utility_tuple.utility
-                                ).map(lambda _: sshconninfo_utility_tuple)
-                            )
-                            .flat_map(
-                                lambda sshconninfo_utility_tuple: self._install_on_remote_machine(
-                                    env, sshconninfo_utility_tuple
-                                ).map(lambda output: (output, sshconninfo_utility_tuple.utility))
-                            )
-                            .map(
-                                lambda output_utility_tuple: env.collaborators.printer()
-                                .new_line_fn()
-                                .print_fn(output_utility_tuple[0])
-                                and collect_result(output_utility_tuple[1])
-                            )
-                        )
-                    )
-                    .map(lambda _: installed_utilities if installed_utilities else utilities),
+                ).map(lambda _: utilities),
+                if_true=lambda ssh_conn_info: PyFn.effect(
+                    lambda: logger.debug(f"Found SSH connection info with {len(ssh_conn_info.ansible_hosts)} hosts")
                 )
+                .flat_map(
+                    lambda _: PyFn.of(utilities).for_each(
+                        lambda utility: PyFn.of(SSHConnInfo_Utility_Tuple(ssh_conn_info, utility))
+                        .flat_map(
+                            lambda sshconninfo_utility_tuple: self._print_pre_install_summary(
+                                env, sshconninfo_utility_tuple.utility
+                            ).map(lambda _: sshconninfo_utility_tuple)
+                        )
+                        .flat_map(
+                            lambda sshconninfo_utility_tuple: self._install_on_remote_machine(
+                                env, sshconninfo_utility_tuple
+                            ).map(lambda output: (output, sshconninfo_utility_tuple.utility))
+                        )
+                        .map(
+                            lambda output_utility_tuple: env.collaborators.printer()
+                            .new_line_fn()
+                            .print_fn(output_utility_tuple[0])
+                            and collect_result(output_utility_tuple[1])
+                        )
+                    )
+                )
+                .map(lambda _: installed_utilities if installed_utilities else utilities),
             )
+        )
 
-            # If result is None, return the utilities list
-            if result is None:
-                logger.warning("Remote installation operation returned None, returning original utilities instead")
-                return PyFn.success(utilities)
-
-            return result
-        except Exception as e:
-            logger.critical(f"Error in _run_remote_installation: {str(e)}")
-            # Return the original utilities list on error to avoid breaking the chain
+        # If result is None, return the utilities list
+        if result is None:
+            logger.warning("Remote installation operation returned None, returning original utilities instead")
             return PyFn.success(utilities)
 
+        return result
+
     def is_hosts_found(self, ssh_conn_info: SSHConnectionInfo) -> bool:
+        
         return ssh_conn_info.ansible_hosts is not None and len(ssh_conn_info.ansible_hosts) > 0
 
     def _run_ansible(
