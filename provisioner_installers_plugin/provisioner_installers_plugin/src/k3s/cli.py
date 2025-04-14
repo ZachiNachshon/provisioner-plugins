@@ -190,6 +190,11 @@ def k3s_server_install(
     remote_opts: RemoteOpts,
 ) -> None:
     cli_ctx = CliContextManager.create(modifiers)
+    # Extract uninstall flag from args if present
+    uninstall = False
+    if name_ver_args.maybe_args and "uninstall" in name_ver_args.maybe_args.as_dict():
+        uninstall = name_ver_args.maybe_args.as_dict()["uninstall"]
+        
     Evaluator.eval_installer_cli_entrypoint_pyfn_step(
         name="k3s-server",
         call=lambda: UtilityInstallerCmd().run(
@@ -198,6 +203,7 @@ def k3s_server_install(
                 utils_to_install=[name_ver_args],
                 sub_command_name=InstallerSubCommandName.K8S,
                 remote_opts=remote_opts,
+                uninstall=uninstall,
             ),
         ),
         verbose=cli_ctx.is_verbose(),
@@ -210,6 +216,11 @@ def k3s_agent_install(
     remote_opts: RemoteOpts,
 ) -> None:
     cli_ctx = CliContextManager.create(modifiers)
+    # Extract uninstall flag from args if present
+    uninstall = False
+    if name_ver_args.maybe_args and "uninstall" in name_ver_args.maybe_args.as_dict():
+        uninstall = name_ver_args.maybe_args.as_dict()["uninstall"]
+        
     Evaluator.eval_installer_cli_entrypoint_pyfn_step(
         name="k3s-agent",
         call=lambda: UtilityInstallerCmd().run(
@@ -218,6 +229,7 @@ def k3s_agent_install(
                 utils_to_install=[name_ver_args],
                 sub_command_name=InstallerSubCommandName.K8S,
                 remote_opts=remote_opts,
+                uninstall=uninstall,
             ),
         ),
         verbose=cli_ctx.is_verbose(),

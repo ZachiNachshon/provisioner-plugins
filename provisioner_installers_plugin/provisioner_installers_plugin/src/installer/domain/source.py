@@ -22,15 +22,20 @@ class ActiveInstallSource(str, Enum):
 
 class InstallSource:
     class Callback:
-        def __init__(self, install_fn: Callable[[str, CoreCollaborators, DynamicArgs], str]):
+        def __init__(
+                self, 
+                install_fn: Callable[[str, CoreCollaborators, DynamicArgs], str],
+                uninstall_fn: Callable[[str, CoreCollaborators, DynamicArgs], str]):
             self.install_fn = install_fn
+            self.uninstall_fn = uninstall_fn
 
         def as_summary_object(self, verbose: Optional[bool] = False) -> "InstallSource.Callback":
             return self if verbose else None
 
     class Script:
-        def __init__(self, install_script: str):
+        def __init__(self, install_script: str, uninstall_script: Optional[str] = None):
             self.install_script = install_script
+            self.uninstall_script = uninstall_script
 
         def as_summary_object(self, verbose: Optional[bool] = False) -> "InstallSource.Script":
             return self if verbose else None
@@ -41,11 +46,13 @@ class InstallSource:
             playbook: AnsiblePlaybook,
             ansible_tags: Optional[List[str]] = [],
             ansible_vars: Optional[List[str]] = [],
+            uninstall_tags: Optional[List[str]] = [],
         ):
 
             self.playbook = playbook
             self.ansible_tags = ansible_tags
             self.ansible_vars = ansible_vars
+            self.uninstall_tags = uninstall_tags
 
         def as_summary_object(self, verbose: Optional[bool] = False) -> "InstallSource.Ansible":
             return self if verbose else None

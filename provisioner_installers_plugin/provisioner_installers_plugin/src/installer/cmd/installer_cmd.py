@@ -30,12 +30,14 @@ class UtilityInstallerCmdArgs:
         sub_command_name: InstallerSubCommandName,
         git_access_token: str = None,
         force: bool = False,
+        uninstall: bool = False,
     ) -> None:
 
         self.utils_to_install = utils_to_install
         self.remote_opts = remote_opts
         self.sub_command_name = sub_command_name
         self.force = force
+        self.uninstall = uninstall
         if git_access_token:
             self.git_access_token = git_access_token
         else:
@@ -49,6 +51,7 @@ class UtilityInstallerCmdArgs:
             + f"  utilities: {str(self.utils_to_install)}\n"
             + f"  sub_command_name: {str(self.sub_command_name.value)}\n"
             + f"  force: {str(self.force)}\n"
+            + f"  uninstall: {str(self.uninstall)}\n"
             + "  git_access_token: REDACTED\n"
         )
 
@@ -69,6 +72,7 @@ class UtilityInstallerCmd:
                     sub_command_name=args.sub_command_name,
                     git_access_token=args.git_access_token,
                     force=args.force,
+                    uninstall=args.uninstall,
                 ),
             )
         )
