@@ -120,7 +120,10 @@ class RemoteMachineOsConfigureRunner:
                 content=ANSIBLE_PLAYBOOK_RPI_CONFIGURE_NODE,
                 remote_context=remote_ctx,
             ),
-            ansible_vars=[f"host_name={ssh_hostname}"],
+            ansible_vars=[
+                f"host_name={ssh_hostname}",
+                f"become_root={'no' if remote_ctx.is_dry_run() else 'yes'}",
+            ],
             ansible_tags=["configure_remote_node", "reboot"],
             # ansible_tags=[
             #     "configure_remote_node",
