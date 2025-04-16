@@ -46,7 +46,7 @@ def register_k3s_commands(cli_group: click.Group):
     )
     @click.option(
         "--k3s-args",
-        default="--disable traefik --disable kubernetes-dashboard",
+        default="--disable=traefik,kubernetes-dashboard",
         show_default=True,
         is_flag=False,
         help="Optional server configuration as CLI arguments",
