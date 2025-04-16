@@ -1018,8 +1018,13 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
     ) -> List[str]:
         """Prepare Ansible variables for the remote installation."""
         # Prepare basic vars
+        command = self._build_provisioner_command(env, utility)
+        
+        # Log the exact command that will be executed remotely for debugging
+        logger.debug(f"Remote provisioner command: {command}")
+        
         ansible_vars = [
-            f"provisioner_command='{self._build_provisioner_command(env, utility)}'",
+            f"provisioner_command='{command}'",
             "required_plugins=['provisioner_installers_plugin']",
             f"git_access_token={env.args.git_access_token}",
         ]
@@ -1034,7 +1039,7 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
             ansible_vars.extend(test_vars)
             
         return ansible_vars
-        
+    
     def _build_provisioner_command(self, env: InstallerEnv, utility: Installable.Utility) -> str:
         """Build the provisioner command to run on the remote machine."""
         # Determine if this is an uninstall operation
@@ -1071,6 +1076,12 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
         
         # Build the full command
         verbose_flag = "-v" if env.args.remote_opts.get_remote_context().is_verbose() else ""
+        
+        # Clean utility args (remove any double quotes that might cause issues)
+        # This is especially important for uninstall operations where we don't want shell interpretation issues
+        utility_maybe_args = utility_maybe_args.replace('"', '\\"')
+        
+        # Return the simple command without bash -c wrapping
         return f"{operation} --environment Local {env.args.sub_command_name} {utility_maybe_ver} {utility_maybe_args} {uninstall_flag} {is_force_flag} -y {verbose_flag}"
         
     def _determine_ansible_tags(self, env: InstallerEnv) -> List[str]:
