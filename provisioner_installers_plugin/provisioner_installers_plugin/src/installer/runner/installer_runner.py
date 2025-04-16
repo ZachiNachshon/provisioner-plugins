@@ -349,7 +349,27 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
         if not utilities:
             logger.warning("No utilities to uninstall")
             return PyFn.success([])
-            
+        
+        # Get utility names for the confirmation message
+        utility_names = ", ".join([utility.display_name for utility in utilities])
+        
+        # Prompt for confirmation if not already confirmed with -y flag
+        if not env.ctx.is_auto_prompt():
+            return (
+                PyFn.effect(lambda: env.collaborators.prompter().prompt_yes_no_fn(
+                    message=f"Are you sure you want to uninstall {utility_names}",
+                    post_yes_message=f"Uninstalling {utility_names}",
+                    post_no_message=f"Aborting uninstallation of {utility_names}"
+                ))
+                .flat_map(lambda confirmed: 
+                    self._process_utility_list(
+                        env=env,
+                        utilities=utilities,
+                        processing_fn=self._uninstall_single_utility
+                    ) if confirmed else PyFn.success([])
+                )
+            )
+        
         # Process each utility and collect results
         return self._process_utility_list(
             env=env,
@@ -1017,23 +1037,41 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
         
     def _build_provisioner_command(self, env: InstallerEnv, utility: Installable.Utility) -> str:
         """Build the provisioner command to run on the remote machine."""
+        # Determine if this is an uninstall operation
+        is_uninstall = env.args.uninstall or (
+            utility.maybe_args and utility.maybe_args.as_dict().get("uninstall", False)
+        )
+        
+        # Always use "install" as the base command
+        operation = "install"
+        
         # Format utility name with version if applicable
         if env.args.sub_command_name == InstallerSubCommandName.CLI:
-            utility_maybe_ver = f"{utility.binary_name}@{utility.version}" if utility.version else utility.binary_name
+            utility_maybe_ver = f"{utility.display_name}@{utility.version}" if utility.version else utility.display_name
         else:
-            utility_maybe_ver = utility.binary_name
+            utility_maybe_ver = utility.display_name
 
         # Get utility args if any
         utility_maybe_args = ""
         if utility.maybe_args is not None:
-            utility_maybe_args = utility.maybe_args.as_cli_args()
+            # For uninstall operations, remove the uninstall flag since we'll add it separately
+            if is_uninstall and utility.maybe_args:
+                args_dict = utility.maybe_args.as_dict().copy()
+                if "uninstall" in args_dict:
+                    del args_dict["uninstall"]
+                utility_maybe_args = DynamicArgs(args_dict).as_cli_args()
+            else:
+                utility_maybe_args = utility.maybe_args.as_cli_args()
 
         # Format force flag
-        is_force_install = "--force" if env.args.force else ""
+        is_force_flag = "--force" if env.args.force else ""
+        
+        # Format uninstall flag
+        uninstall_flag = "--uninstall" if is_uninstall else ""
         
         # Build the full command
         verbose_flag = "-v" if env.args.remote_opts.get_remote_context().is_verbose() else ""
-        return f"install --environment Local {env.args.sub_command_name} {utility_maybe_ver} {utility_maybe_args} {is_force_install} -y {verbose_flag}"
+        return f"{operation} --environment Local {env.args.sub_command_name} {utility_maybe_ver} {utility_maybe_args} {uninstall_flag} {is_force_flag} -y {verbose_flag}"
         
     def _determine_ansible_tags(self, env: InstallerEnv) -> List[str]:
         """Determine which Ansible tags to use."""
