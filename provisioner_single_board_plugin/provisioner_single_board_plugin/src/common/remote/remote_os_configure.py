@@ -123,11 +123,9 @@ class RemoteMachineOsConfigureRunner:
             ansible_vars=[
                 f"host_name={ssh_hostname}",
                 f"become_root={'no' if remote_ctx.is_dry_run() else 'yes'}",
+                f"reboot_required={'false' if remote_ctx.is_dry_run() else 'true'}",
             ],
             ansible_tags=["configure_remote_node", "reboot"],
-            # ansible_tags=[
-            #     "configure_remote_node",
-            # ] + (["reboot"] if not args.remote_opts.get_remote_context().is_dry_run() else []),
         )
 
     def _get_ssh_conn_info(

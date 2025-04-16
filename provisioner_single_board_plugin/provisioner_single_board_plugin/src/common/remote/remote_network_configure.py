@@ -178,6 +178,8 @@ class RemoteMachineNetworkConfigureRunner:
                 f"static_ip={dhcpcd_configure_info.static_ip_address}",
                 f"gateway_address={dhcpcd_configure_info.gw_ip_address}",
                 f"dns_address={dhcpcd_configure_info.dns_ip_address}",
+                f"become_root={'no' if remote_ctx.is_dry_run() else 'yes'}",
+                f"reboot_required={'false' if remote_ctx.is_dry_run() else 'true'}",
             ],
             ansible_tags=[
                 "configure_rpi_network",
@@ -219,9 +221,10 @@ class RemoteMachineNetworkConfigureRunner:
     ):
         """Add entry to hosts file if needed."""
         if not update_hosts_file:
-            logger.debug("Skipping hosts file update as --update-hosts-file flag was not specified")
+            collaborators.printer().print_fn("Skipping hosts file update as --update-hosts-file flag was not specified")
             return
 
+        collaborators.printer().print_fn("Updating hosts file with the remote IP address and hostname (Password required)\n")
         network_info = self._bundle_network_information_from_tuple(ctx, tuple_info)
         collaborators.hosts_file().add_entry_fn(
             ip_address=network_info.static_ip_address,
@@ -296,9 +299,13 @@ def generate_instructions_post_network(ip_address: str, static_ip: str, username
   To declare the new static node in the provisioner config,
   update the following file ~/.config/provisioner/config.yaml with:
 
-    provisioner:
-        remote:
-            hosts:
-              - name: <NAME>
-                address: <IP-ADDRESS>
+    <plugin-name>:
+      remote:
+        hosts:
+        - name: <NAME>
+          address: <IP-ADDRESS>
+          auth:
+            username: <USERNAME>
+            ssh_private_key_file_path: <PATH-TO-PRIVATE-KEY> (recommended)
+            password: <PASSWORD> (optional)
 """
