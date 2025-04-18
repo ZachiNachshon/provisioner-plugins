@@ -548,10 +548,6 @@ def install_k3s_server(version: str, collaborators: CoreCollaborators, maybe_arg
     install_as_binary = args["install_as_binary"]
     use_kube_config = args["use_kube_config"]
 
-    print("======================================================")
-    print("k3s_additional_cli_args: ", k3s_additional_cli_args)
-    print("======================================================")
-    
     # Continue with installation
     if not k3s_token:
         raise ValueError("Missing mandatory parameter: k3s_token")
