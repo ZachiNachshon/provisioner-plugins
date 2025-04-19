@@ -1,6 +1,6 @@
 os:
   raspbian:
-    download_path: $HOME/temp/rpi_raspios_image
+    download_path: $HOME/.config/provisioner/images/raspios
     active_system: 64bit
     download_url:
       url_64bit: https://downloads.raspberrypi.org/raspios_lite_arm64/images/raspios_lite_arm64-2024-11-19/2024-11-19-raspios-bookworm-arm64-lite.img.xz
