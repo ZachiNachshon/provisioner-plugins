@@ -3,6 +3,7 @@
 from typing import Optional
 
 import click
+from provisioner_single_board_plugin.src.config.domain.config import SingleBoardConfig
 from provisioner_single_board_plugin.src.raspberry_pi.node.configure_cmd import RPiOsConfigureCmd, RPiOsConfigureCmdArgs
 from provisioner_single_board_plugin.src.raspberry_pi.node.network_cmd import (
     RPiNetworkConfigureCmd,
@@ -16,7 +17,7 @@ from provisioner_shared.components.runtime.infra.context import CliContextManage
 from provisioner_shared.components.runtime.infra.evaluator import Evaluator
 
 
-def register_node_commands(cli_group: click.Group):
+def register_node_commands(cli_group: click.Group, single_board_cfg: Optional[SingleBoardConfig] = None):
 
     @cli_group.command()
     @cli_modifiers

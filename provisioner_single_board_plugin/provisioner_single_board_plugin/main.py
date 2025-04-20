@@ -3,6 +3,7 @@
 import pathlib
 
 import click
+from provisioner_single_board_plugin.src.info.cli import register_remote_info_commands
 
 from provisioner_shared.components.runtime.cli.cli_modifiers import cli_modifiers
 from provisioner_shared.components.runtime.cli.menu_format import CustomGroup
@@ -41,3 +42,4 @@ def append_to_cli(root_menu: click.Group):
     )
 
     register_raspberry_pi_commands(cli_group=single_board, single_board_cfg=single_board_cfg)
+    register_remote_info_commands(cli_group=single_board, single_board_cfg=single_board_cfg)

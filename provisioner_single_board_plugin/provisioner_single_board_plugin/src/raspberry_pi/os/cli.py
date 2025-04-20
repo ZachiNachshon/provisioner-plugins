@@ -18,8 +18,11 @@ import os
 
 def register_os_commands(cli_group: click.Group, single_board_cfg: Optional[SingleBoardConfig] = None):
 
+    first_boot_username = single_board_cfg.maybe_get("os.raspbian.first_boot_username") if single_board_cfg else ""
+    first_boot_password = single_board_cfg.maybe_get("os.raspbian.first_boot_password") if single_board_cfg else ""
     maybe_image_download_url = single_board_cfg.maybe_get("os.raspbian.download_url.url_64bit")
     maybe_image_download_path = single_board_cfg.maybe_get("os.raspbian.download_path")
+    
     @cli_group.command()
     @click.option(
         "--image-download-url",
@@ -29,7 +32,6 @@ def register_os_commands(cli_group: click.Group, single_board_cfg: Optional[Sing
         default=maybe_image_download_url if maybe_image_download_url else "",
         envvar="PROV_SINGLE_BOARD_IMAGE_DOWNLOAD_URL",
     )
-    @cli_group.command()
     @click.option(
         "--image-download-path",
         type=str,
@@ -38,9 +40,25 @@ def register_os_commands(cli_group: click.Group, single_board_cfg: Optional[Sing
         default=maybe_image_download_path if maybe_image_download_path else "",
         envvar="PROV_SINGLE_BOARD_IMAGE_DOWNLOAD_PATH",
     )
+    @click.option(
+        "--first-boot-username",
+        type=str,
+        help="First boot username",
+        show_default=True,
+        default=first_boot_username,
+        envvar="PROV_SINGLE_BOARD_FIRST_BOOT_USERNAME",
+    )
+    @click.option(
+        "--first-boot-password",
+        type=str,
+        help="First boot password",
+        show_default=True,
+        default=first_boot_password,
+        envvar="PROV_SINGLE_BOARD_FIRST_BOOT_PASSWORD",
+    )
     @cli_modifiers
     @click.pass_context
-    def burn_image(ctx: click.Context, image_download_url: Optional[str] = None, image_download_path: Optional[str] = None) -> None:
+    def burn_image(ctx: click.Context, image_download_url: str, image_download_path: str, first_boot_username: str, first_boot_password: str) -> None:
         """
         Select an available block device to burn a Raspbian OS image (SD-Card / HDD)
         """
@@ -52,6 +70,8 @@ def register_os_commands(cli_group: click.Group, single_board_cfg: Optional[Sing
                 args=RPiOsBurnImageCmdArgs(
                     image_download_url=image_download_url,
                     image_download_path=image_download_path,
+                    first_boot_username=first_boot_username,
+                    first_boot_password=first_boot_password,
                 ),
             ),
             error_message="Failed to burn Raspbian OS",

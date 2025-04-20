@@ -10,6 +10,7 @@ from provisioner_installers_plugin.src.installer.domain.installable import Insta
 from provisioner_installers_plugin.src.installer.domain.source import ActiveInstallSource
 from provisioner_installers_plugin.src.installer.domain.version import NameVersionArgsTuple
 from provisioner_installers_plugin.src.installer.domain.dynamic_args import DynamicArgs
+from provisioner_shared.components.remote.ansible.remote_provisioner_runner import RemoteProvisionerRunner, RemoteProvisionerRunnerArgs
 
 from provisioner_shared.components.remote.domain.config import RunEnvironment
 from provisioner_shared.components.remote.remote_connector import RemoteMachineConnector, SSHConnectionInfo
@@ -34,19 +35,6 @@ from provisioner_shared.framework.functional.pyfn import Environment, PyFn, PyFn
 
 ProvisionerInstallableBinariesPath = os.path.expanduser("~/.config/provisioner/binaries")
 ProvisionerInstallableSymlinksPath = os.path.expanduser("~/.local/bin")
-
-ANSIBLE_PLAYBOOK_REMOTE_PROVISIONER_WRAPPER = """
----
-- name: Provisioner run command
-  hosts: selected_hosts
-  gather_facts: no
-  {modifiers}
-
-  roles:
-    - role: {ansible_playbooks_path}/roles/provisioner
-      tags: ['provisioner_wrapper']
-"""
-
 
 class Utility_InstallStatus_Tuple(NamedTuple):
     utility: Installable.Utility
@@ -991,53 +979,25 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
         self, env: InstallerEnv, ssh_conn_info: SSHConnectionInfo, utility: Installable.Utility
     ) -> str:
         """Execute the Ansible playbook that installs utilities on remote machines."""
-        runner = env.collaborators.ansible_runner()
-        remote_ctx = env.args.remote_opts.get_remote_context()
-        
-        ansible_vars = self._prepare_ansible_vars(
-            env=env,
-            utility=utility,
-            remote_ctx=remote_ctx,
-        )
-        
-        ansible_tags = self._determine_ansible_tags(env)
-        
-        return runner.run_fn(
-            selected_hosts=ssh_conn_info.ansible_hosts,
-            playbook=AnsiblePlaybook(
-                name="provisioner_wrapper",
-                content=ANSIBLE_PLAYBOOK_REMOTE_PROVISIONER_WRAPPER,
-                remote_context=remote_ctx,
-            ),
-            ansible_vars=ansible_vars,
-            ansible_tags=ansible_tags,
-        )
-
-    def _prepare_ansible_vars(
-        self, env: InstallerEnv, utility: Installable.Utility, remote_ctx: RemoteContext
-    ) -> List[str]:
-        """Prepare Ansible variables for the remote installation."""
-        # Prepare basic vars
         command = self._build_provisioner_command(env, utility)
-        
-        # Log the exact command that will be executed remotely for debugging
         logger.debug(f"Remote provisioner command: {command}")
         
+        ansible_vars = self._prepare_ansible_vars(env)
+
+        args = RemoteProvisionerRunnerArgs(
+            provisioner_command=command,
+            remote_context=env.args.remote_opts.get_remote_context(),
+            ssh_connection_info=ssh_conn_info,
+            required_plugins=["provisioner_installers_plugin"],
+            ansible_vars=ansible_vars,
+        )
+        return RemoteProvisionerRunner().run(env.ctx, args, env.collaborators)
+
+    def _prepare_ansible_vars(self, env: InstallerEnv) -> List[str]:
+        """Prepare Ansible variables for the remote installation."""
         ansible_vars = [
-            f"provisioner_command='{command}'",
-            "required_plugins=['provisioner_installers_plugin']",
             f"git_access_token={env.args.git_access_token}",
         ]
-        
-        # Add install method
-        install_method = "install_method='pip'"
-        ansible_vars.append(install_method)
-        
-        # Add test vars if needed
-        if self._test_only_is_installer_run_from_local_sdists(env):
-            test_vars = self._prepare_testing_ansible_vars(env)
-            ansible_vars.extend(test_vars)
-            
         return ansible_vars
     
     def _build_provisioner_command(self, env: InstallerEnv, utility: Installable.Utility) -> str:
@@ -1084,48 +1044,7 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
         # Return the simple command without bash -c wrapping
         return f"{operation} --environment Local {env.args.sub_command_name} {utility_maybe_ver} {utility_maybe_args} {uninstall_flag} {is_force_flag} -y {verbose_flag}"
         
-    def _determine_ansible_tags(self, env: InstallerEnv) -> List[str]:
-        """Determine which Ansible tags to use."""
-        ansible_tags = ["provisioner_wrapper"]
         
-        if self._test_only_is_installer_run_from_local_sdists(env):
-            ansible_tags.append("provisioner_testing")
-            
-        return ansible_tags
-        
-    def _prepare_testing_ansible_vars(self, env: InstallerEnv) -> List[str]:
-        """Prepare Ansible variables for testing mode."""
-        print("\n\n================================================================")
-        print("\n===== Running Ansible Provisioner Wrapper in testing mode ======")
-        print("\n================================================================\n")
-        
-        # Build sdists for testing
-        temp_folder_path = self._test_only_prepare_test_artifacts(env)
-        
-        # Return test-specific vars
-        return [
-            "install_method='testing'",
-            "provisioner_testing=True",
-            f"provisioner_e2e_tests_archives_host_path='{temp_folder_path}'",
-            "ansible_python_interpreter='auto'"
-        ]
-
-    def _test_only_is_installer_run_from_local_sdists(self, env: InstallerEnv) -> bool:
-        return env.collaborators.checks().is_env_var_equals_fn("PROVISIONER_INSTALLER_PLUGIN_TEST", "true")
-
-    def _test_only_prepare_test_artifacts(self, env: InstallerEnv) -> str:
-        project_git_root = env.collaborators.io_utils().find_git_repo_root_abs_path_fn(clazz=UtilityInstallerCmdRunner)
-        sdist_output_path = f"{project_git_root}/tests-outputs/installers-plugin/dist"
-        env.collaborators.package_loader().build_sdists_fn(
-            [
-                f"{project_git_root}/provisioner",
-                f"{project_git_root}/provisioner_shared",
-                f"{project_git_root}/plugins/provisioner_installers_plugin",
-            ],
-            sdist_output_path,
-        )
-        return sdist_output_path
-
     def _filter_ansible_warnings(self, output: str) -> str:
         # Ansible warnings should be handled through ansible.cfg settings, not filtered here
         return output
