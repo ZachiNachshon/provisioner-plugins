@@ -65,7 +65,9 @@ class InstallerCliE2ETestShould(unittest.TestCase):
         )
         self.assertIn("Uninstalling utility: anchor", output)
         self.assertIn(f"Removing symlink at {os.path.expanduser('~/.local/bin/anchor')}", output)
-        self.assertIn(f"Removing binary directory at {os.path.expanduser('~/.config/provisioner/binaries/anchor')}", output)
+        self.assertIn(
+            f"Removing binary directory at {os.path.expanduser('~/.config/provisioner/binaries/anchor')}", output
+        )
 
     def test_e2e_install_uninstall_anchor_on_remote_successfully(self):
         output = TestCliRunner.run(
@@ -131,5 +133,5 @@ class InstallerCliE2ETestShould(unittest.TestCase):
             test_cfg=CliTestRunnerConfig(is_installer_plugin_test=True),
         )
         self.assertIn("Uninstalling utility: anchor", output)
-        self.assertIn(f"Removing symlink at /home/pi/.local/bin/anchor", output)
-        self.assertIn(f"Removing binary directory at /home/pi/.config/provisioner/binaries/anchor", output)
+        self.assertIn("Removing symlink at /home/pi/.local/bin/anchor", output)
+        self.assertIn("Removing binary directory at /home/pi/.config/provisioner/binaries/anchor", output)

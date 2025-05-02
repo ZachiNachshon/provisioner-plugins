@@ -5,11 +5,6 @@ from typing import Optional
 import click
 from provisioner_single_board_plugin.src.config.domain.config import SingleBoardConfig
 from provisioner_single_board_plugin.src.info.system.system_info_cmd import SystemInfoCmd, SystemInfoCmdArgs
-from provisioner_single_board_plugin.src.raspberry_pi.node.configure_cmd import RPiOsConfigureCmd, RPiOsConfigureCmdArgs
-from provisioner_single_board_plugin.src.raspberry_pi.node.network_cmd import (
-    RPiNetworkConfigureCmd,
-    RPiNetworkConfigureCmdArgs,
-)
 
 from provisioner_shared.components.remote.remote_opts import RemoteOpts
 from provisioner_shared.components.runtime.cli.cli_modifiers import cli_modifiers
@@ -35,5 +30,3 @@ def register_system_info_commands(cli_group: click.Group, single_board_cfg: Opti
             error_message="Failed to collect system information",
             verbose=cli_ctx.is_verbose(),
         )
-
-    

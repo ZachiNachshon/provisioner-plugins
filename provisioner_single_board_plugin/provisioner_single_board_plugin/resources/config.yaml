@@ -1,7 +1,5 @@
 os:
   raspbian:
-    first_boot_username: pi
-    first_boot_password: provisioner
     download_path: $HOME/.config/provisioner/images/raspios
     active_system: 64bit
     download_url:

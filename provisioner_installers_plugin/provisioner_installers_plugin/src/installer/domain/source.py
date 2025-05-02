@@ -23,9 +23,10 @@ class ActiveInstallSource(str, Enum):
 class InstallSource:
     class Callback:
         def __init__(
-                self, 
-                install_fn: Callable[[str, CoreCollaborators, DynamicArgs], str],
-                uninstall_fn: Callable[[str, CoreCollaborators, DynamicArgs], str]):
+            self,
+            install_fn: Callable[[str, CoreCollaborators, DynamicArgs], str],
+            uninstall_fn: Callable[[str, CoreCollaborators, DynamicArgs], str],
+        ):
             self.install_fn = install_fn
             self.uninstall_fn = uninstall_fn
 

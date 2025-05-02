@@ -45,7 +45,11 @@ def register_cli_commands(cli_group: click.Group):
 
 
 def install_utilities(
-    utils_name_ver: List[NameVersionArgsTuple], modifiers: CliModifiers, remote_opts: RemoteOpts, force: bool, uninstall: bool = False
+    utils_name_ver: List[NameVersionArgsTuple],
+    modifiers: CliModifiers,
+    remote_opts: RemoteOpts,
+    force: bool,
+    uninstall: bool = False,
 ) -> None:
     cli_ctx = CliContextManager.create(modifiers)
     Evaluator.eval_installer_cli_entrypoint_pyfn_step(

@@ -3,12 +3,13 @@
 
 from loguru import logger
 from provisioner_single_board_plugin.src.common.remote.remote_system_info_collector import (
-    RemoteMachineSystemInfoCollectArgs, RemoteMachineSystemInfoCollectRunner)
+    RemoteMachineSystemInfoCollectArgs,
+    RemoteMachineSystemInfoCollectRunner,
+)
 
 from provisioner_shared.components.remote.remote_opts import RemoteOpts
 from provisioner_shared.components.runtime.infra.context import Context
-from provisioner_shared.components.runtime.shared.collaborators import \
-    CoreCollaborators
+from provisioner_shared.components.runtime.shared.collaborators import CoreCollaborators
 
 
 class SystemInfoCmdArgs:
@@ -23,6 +24,7 @@ class SystemInfoCmdArgs:
         if self.remote_opts:
             self.remote_opts.print()
         logger.debug("SystemInfoCmdArgs: \n")
+
 
 class SystemInfoCmd:
     def run(self, ctx: Context, args: SystemInfoCmdArgs) -> None:

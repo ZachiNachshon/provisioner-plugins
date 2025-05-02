@@ -224,7 +224,9 @@ class RemoteMachineNetworkConfigureRunner:
             collaborators.printer().print_fn("Skipping hosts file update as --update-hosts-file flag was not specified")
             return
 
-        collaborators.printer().print_fn("Updating hosts file with the remote IP address and hostname (Password required)\n")
+        collaborators.printer().print_fn(
+            "Updating hosts file with the remote IP address and hostname (Password required)\n"
+        )
         network_info = self._bundle_network_information_from_tuple(ctx, tuple_info)
         collaborators.hosts_file().add_entry_fn(
             ip_address=network_info.static_ip_address,

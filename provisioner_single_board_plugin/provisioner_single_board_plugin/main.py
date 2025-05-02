@@ -3,13 +3,13 @@
 import pathlib
 
 import click
-from provisioner_single_board_plugin.src.info.cli import register_remote_info_commands
 
 from provisioner_shared.components.runtime.cli.cli_modifiers import cli_modifiers
 from provisioner_shared.components.runtime.cli.menu_format import CustomGroup
 from provisioner_shared.components.runtime.cli.version import append_version_cmd_to_cli
 from provisioner_shared.components.runtime.config.manager.config_manager import ConfigManager
 from provisioner_single_board_plugin.src.config.domain.config import SINGLE_BOARD_PLUGIN_NAME, SingleBoardConfig
+from provisioner_single_board_plugin.src.info.cli import register_remote_info_commands
 from provisioner_single_board_plugin.src.raspberry_pi.cli import (
     register_raspberry_pi_commands,
 )

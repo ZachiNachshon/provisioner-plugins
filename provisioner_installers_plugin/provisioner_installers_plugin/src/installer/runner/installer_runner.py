@@ -6,12 +6,15 @@ from typing import List, NamedTuple, Optional
 
 from loguru import logger
 from provisioner_installers_plugin.src.installer.domain.command import InstallerSubCommandName
+from provisioner_installers_plugin.src.installer.domain.dynamic_args import DynamicArgs
 from provisioner_installers_plugin.src.installer.domain.installable import Installable
 from provisioner_installers_plugin.src.installer.domain.source import ActiveInstallSource
 from provisioner_installers_plugin.src.installer.domain.version import NameVersionArgsTuple
-from provisioner_installers_plugin.src.installer.domain.dynamic_args import DynamicArgs
-from provisioner_shared.components.remote.ansible.remote_provisioner_runner import RemoteProvisionerRunner, RemoteProvisionerRunnerArgs
 
+from provisioner_shared.components.remote.ansible.remote_provisioner_runner import (
+    RemoteProvisionerRunner,
+    RemoteProvisionerRunnerArgs,
+)
 from provisioner_shared.components.remote.domain.config import RunEnvironment
 from provisioner_shared.components.remote.remote_connector import RemoteMachineConnector, SSHConnectionInfo
 from provisioner_shared.components.remote.remote_opts import RemoteOpts
@@ -23,11 +26,9 @@ from provisioner_shared.components.runtime.errors.cli_errors import (
     VersionResolverError,
 )
 from provisioner_shared.components.runtime.infra.context import Context
-from provisioner_shared.components.runtime.infra.remote_context import RemoteContext
 from provisioner_shared.components.runtime.runner.ansible.ansible_runner import (
     AnsibleHost,
     AnsiblePlaybook,
-    AnsibleRunnerLocal,
 )
 from provisioner_shared.components.runtime.shared.collaborators import CoreCollaborators
 from provisioner_shared.components.runtime.utils.os import OsArch
@@ -35,6 +36,7 @@ from provisioner_shared.framework.functional.pyfn import Environment, PyFn, PyFn
 
 ProvisionerInstallableBinariesPath = os.path.expanduser("~/.config/provisioner/binaries")
 ProvisionerInstallableSymlinksPath = os.path.expanduser("~/.local/bin")
+
 
 class Utility_InstallStatus_Tuple(NamedTuple):
     utility: Installable.Utility
@@ -174,10 +176,10 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
             if name_ver_tuple.name in env.supported_utilities:
                 # Create a copy of the utility
                 utility = Installable.Utility(**env.supported_utilities[name_ver_tuple.name].__dict__)
-                
+
                 # Add dynamic args from the name_ver_tuple
                 utility.maybe_args = name_ver_tuple.maybe_args
-                
+
                 # Ensure uninstall flag is propagated to each utility's dynamic args
                 if env.args.uninstall:
                     if utility.maybe_args is None:
@@ -186,7 +188,7 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
                         args_dict = utility.maybe_args.as_dict()
                         args_dict["uninstall"] = True
                         utility.maybe_args = DynamicArgs(args_dict)
-                
+
                 result.append(utility)
 
         logger.debug(f"Mapped utilities with dynamic args: {[u.display_name for u in result]}")
@@ -209,7 +211,7 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
     ) -> PyFn["UtilityInstallerCmdRunner", None, List[Installable.Utility]]:
         # Determine if this is an uninstall operation
         is_uninstall = self._determine_uninstall_mode(env, utilities)
-        
+
         return PyFn.effect(
             lambda: env.collaborators.printer().print_with_rich_table_fn(
                 generate_installer_welcome(utilities, env.args.remote_opts.get_environment(), is_uninstall)
@@ -251,7 +253,9 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
                 return self._run_remote_installation(env, run_env_utils_tuple.utilities)
             case _:
                 logger.error(f"Unsupported run environment: {run_env_utils_tuple.run_env}")
-                return PyFn.fail(error=StepEvaluationFailure(f"Unsupported run environment: {run_env_utils_tuple.run_env}"))
+                return PyFn.fail(
+                    error=StepEvaluationFailure(f"Unsupported run environment: {run_env_utils_tuple.run_env}")
+                )
 
     def _print_pre_install_summary(
         self, env: InstallerEnv, maybe_utility: Optional[Installable.Utility]
@@ -299,22 +303,21 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
         else:
             logger.debug("Starting install flow")
             return self._execute_install_flow(env, utilities)
-            
+
     def _determine_uninstall_mode(self, env: InstallerEnv, utilities: List[Installable.Utility]) -> bool:
         """Determine if we're in uninstall mode based on args and utility settings."""
         # Check main uninstall flag first
         if env.args.uninstall:
             return True
-            
+
         # If not set globally, check if any utility has it in its args
         if utilities:
             return any(
-                utility.maybe_args and utility.maybe_args.as_dict().get("uninstall", False)
-                for utility in utilities
+                utility.maybe_args and utility.maybe_args.as_dict().get("uninstall", False) for utility in utilities
             )
-            
+
         return False
-        
+
     def _execute_install_flow(
         self, env: InstallerEnv, utilities: List[Installable.Utility]
     ) -> PyFn["UtilityInstallerCmdRunner", Exception, List[Installable.Utility]]:
@@ -322,14 +325,10 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
         if not utilities:
             logger.warning("No utilities to install")
             return PyFn.success([])
-            
+
         # Process each utility and collect results
-        return self._process_utility_list(
-            env=env,
-            utilities=utilities,
-            processing_fn=self._install_single_utility
-        )
-        
+        return self._process_utility_list(env=env, utilities=utilities, processing_fn=self._install_single_utility)
+
     def _execute_uninstall_flow(
         self, env: InstallerEnv, utilities: List[Installable.Utility]
     ) -> PyFn["UtilityInstallerCmdRunner", Exception, List[Installable.Utility]]:
@@ -337,54 +336,46 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
         if not utilities:
             logger.warning("No utilities to uninstall")
             return PyFn.success([])
-        
+
         # Get utility names for the confirmation message
         utility_names = ", ".join([utility.display_name for utility in utilities])
-        
+
         # Prompt for confirmation if not already confirmed with -y flag
         if not env.ctx.is_auto_prompt():
-            return (
-                PyFn.effect(lambda: env.collaborators.prompter().prompt_yes_no_fn(
+            return PyFn.effect(
+                lambda: env.collaborators.prompter().prompt_yes_no_fn(
                     message=f"Are you sure you want to uninstall {utility_names}",
                     post_yes_message=f"Uninstalling {utility_names}",
-                    post_no_message=f"Aborting uninstallation of {utility_names}"
-                ))
-                .flat_map(lambda confirmed: 
+                    post_no_message=f"Aborting uninstallation of {utility_names}",
+                )
+            ).flat_map(
+                lambda confirmed: (
                     self._process_utility_list(
-                        env=env,
-                        utilities=utilities,
-                        processing_fn=self._uninstall_single_utility
-                    ) if confirmed else PyFn.success([])
+                        env=env, utilities=utilities, processing_fn=self._uninstall_single_utility
+                    )
+                    if confirmed
+                    else PyFn.success([])
                 )
             )
-        
+
         # Process each utility and collect results
-        return self._process_utility_list(
-            env=env,
-            utilities=utilities,
-            processing_fn=self._uninstall_single_utility
-        )
-        
+        return self._process_utility_list(env=env, utilities=utilities, processing_fn=self._uninstall_single_utility)
+
     def _process_utility_list(
-        self, 
-        env: InstallerEnv, 
-        utilities: List[Installable.Utility],
-        processing_fn: callable
+        self, env: InstallerEnv, utilities: List[Installable.Utility], processing_fn: callable
     ) -> PyFn["UtilityInstallerCmdRunner", Exception, List[Installable.Utility]]:
         """Process a list of utilities using the provided processing function."""
         # Use for_each to process utilities in sequence
         installed_utilities = []
-        
+
         def collect_result(result):
             if result is not None:
                 installed_utilities.append(result)
             return result
-            
+
         return (
             PyFn.of(utilities)
-            .for_each(
-                lambda utility: processing_fn(env, utility).map(lambda result: collect_result(result))
-            )
+            .for_each(lambda utility: processing_fn(env, utility).map(lambda result: collect_result(result)))
             .map(lambda _: installed_utilities)
         )
 
@@ -396,30 +387,34 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
             # Step 1: Check if utility is already installed
             self._check_if_utility_already_installed(env, utility)
             # Step 2: Handle already installed utilities (may return None to skip installation)
-            .flat_map(lambda util_install_tuple: 
-                self._notify_if_utility_already_installed(
+            .flat_map(
+                lambda util_install_tuple: self._notify_if_utility_already_installed(
                     env, util_install_tuple.utility, util_install_tuple.installed
                 )
             )
             # Step 3: Print pre-install summary if not skipped
-            .flat_map(lambda maybe_utility: 
-                PyFn.empty() if maybe_utility is None 
-                else self._print_pre_install_summary(env, maybe_utility)
+            .flat_map(
+                lambda maybe_utility: (
+                    PyFn.empty() if maybe_utility is None else self._print_pre_install_summary(env, maybe_utility)
+                )
             )
             # Step 4: Install the utility based on its source type
-            .flat_map(lambda maybe_utility: 
-                PyFn.empty() if maybe_utility is None 
-                else self._install_by_source_type(env, maybe_utility)
+            .flat_map(
+                lambda maybe_utility: (
+                    PyFn.empty() if maybe_utility is None else self._install_by_source_type(env, maybe_utility)
+                )
             )
             # Step 5: Trigger version command to verify installation
-            .flat_map(lambda maybe_utility: 
-                PyFn.empty() if maybe_utility is None 
-                else self._trigger_utility_version_command(env, maybe_utility)
+            .flat_map(
+                lambda maybe_utility: (
+                    PyFn.empty() if maybe_utility is None else self._trigger_utility_version_command(env, maybe_utility)
+                )
             )
             # Step 6: Print post-install summary
-            .flat_map(lambda maybe_utility: 
-                PyFn.empty() if maybe_utility is None 
-                else self._print_post_install_summary(env, maybe_utility)
+            .flat_map(
+                lambda maybe_utility: (
+                    PyFn.empty() if maybe_utility is None else self._print_post_install_summary(env, maybe_utility)
+                )
             )
         )
 
@@ -427,9 +422,8 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
         self, env: InstallerEnv, utility: Installable.Utility
     ) -> PyFn["UtilityInstallerCmdRunner", Exception, Installable.Utility]:
         """Uninstall a single utility."""
-        return (
-            PyFn.effect(lambda: logger.info(f"Uninstalling utility: {utility.display_name}"))
-            .flat_map(lambda _: self._uninstall_utility_locally(env, utility))
+        return PyFn.effect(lambda: logger.info(f"Uninstalling utility: {utility.display_name}")).flat_map(
+            lambda _: self._uninstall_utility_locally(env, utility)
         )
 
     def _uninstall_github_utility(
@@ -438,10 +432,10 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
         """Uninstall a GitHub-based utility by removing the symlink and binaries directory."""
         symlink_path = self._genreate_binary_symlink_path(utility.binary_name)
         binaries_path = f"{ProvisionerInstallableBinariesPath}/{utility.binary_name}"
-        
+
         logger.info(f"Removing symlink at {symlink_path}")
         logger.info(f"Removing binary directory at {binaries_path}")
-        
+
         # First remove symlink, then try to remove the binaries directory
         return (
             # Remove symlink first
@@ -451,14 +445,14 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
             # Always return the utility
             .map(lambda _: utility)
         )
-        
+
     def _safely_remove_symlink(self, env: InstallerEnv, symlink_path: str) -> None:
         """Safely remove a symlink with error handling."""
         try:
             env.collaborators.io_utils().remove_symlink_fn(symlink_path)
         except Exception as e:
             logger.warning(f"Could not remove symlink at {symlink_path}: {str(e)}")
-    
+
     def _safely_remove_directory(self, env: InstallerEnv, directory_path: str) -> None:
         """Safely remove a directory with error handling."""
         try:
@@ -557,15 +551,13 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
     ) -> PyFn["UtilityInstallerCmdRunner", InstallerSourceError, Installable.Utility]:
         """Handle uninstallation of utilities based on their source type."""
         # First check if utility is actually installed (but still continue even if not installed)
-        return (
-            PyFn.effect(lambda: env.collaborators.checks().is_tool_exist_fn(utility.binary_name))
-            .flat_map(
-                lambda binary_exists: (
-                    PyFn.effect(lambda: logger.info(f"Note: Utility {utility.display_name} is not currently installed"))
-                    .flat_map(lambda _: self._uninstall_by_source_type(env, utility))
-                    if not binary_exists
-                    else self._uninstall_by_source_type(env, utility)
-                )
+        return PyFn.effect(lambda: env.collaborators.checks().is_tool_exist_fn(utility.binary_name)).flat_map(
+            lambda binary_exists: (
+                PyFn.effect(
+                    lambda: logger.info(f"Note: Utility {utility.display_name} is not currently installed")
+                ).flat_map(lambda _: self._uninstall_by_source_type(env, utility))
+                if not binary_exists
+                else self._uninstall_by_source_type(env, utility)
             )
         )
 
@@ -584,14 +576,20 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
                 return self._uninstall_ansible_utility(env, utility)
             case _:
                 return PyFn.fail(
-                    error=InstallerSourceError(f"Invalid installation active source for uninstall. value: {utility.active_source}")
+                    error=InstallerSourceError(
+                        f"Invalid installation active source for uninstall. value: {utility.active_source}"
+                    )
                 )
 
     def _uninstall_callback_utility(
         self, env: InstallerEnv, utility: Installable.Utility
     ) -> PyFn["UtilityInstallerCmdRunner", InstallerSourceError, Installable.Utility]:
         """Uninstall a callback-based utility."""
-        if utility.has_callback_active_source() and hasattr(utility.source.callback, 'uninstall_fn') and utility.source.callback.uninstall_fn:
+        if (
+            utility.has_callback_active_source()
+            and hasattr(utility.source.callback, "uninstall_fn")
+            and utility.source.callback.uninstall_fn
+        ):
             logger.info(f"Uninstalling callback-based utility: {utility.display_name}")
             maybe_args = utility.maybe_args if utility.maybe_args is not None else None
             return PyFn.effect(
@@ -604,7 +602,7 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
         self, env: InstallerEnv, utility: Installable.Utility
     ) -> PyFn["UtilityInstallerCmdRunner", InstallerSourceError, Installable.Utility]:
         """Uninstall a script-based utility."""
-        if utility.has_script_active_source() and hasattr(utility.source.script, 'uninstall_script'):
+        if utility.has_script_active_source() and hasattr(utility.source.script, "uninstall_script"):
             return PyFn.effect(
                 lambda: env.collaborators.process().run_fn(
                     args=[utility.source.script.uninstall_script], allow_single_shell_command_str=True
@@ -617,7 +615,11 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
         self, env: InstallerEnv, utility: Installable.Utility
     ) -> PyFn["UtilityInstallerCmdRunner", InstallerSourceError, Installable.Utility]:
         """Uninstall an Ansible-based utility."""
-        if utility.has_ansible_active_source() and hasattr(utility.source.ansible, 'uninstall_tags') and utility.source.ansible.uninstall_tags:
+        if (
+            utility.has_ansible_active_source()
+            and hasattr(utility.source.ansible, "uninstall_tags")
+            and utility.source.ansible.uninstall_tags
+        ):
             ansible_vars = []
             if utility.maybe_args is not None:
                 ansible_vars.extend(utility.maybe_args.as_ansible_vars())
@@ -647,12 +649,14 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
     ) -> PyFn["UtilityInstallerCmdRunner", InstallerSourceError, Installable.Utility]:
         """Remove the symlink for a utility as a basic uninstall method."""
         symlink_path = self._genreate_binary_symlink_path(utility.binary_name)
-        
+
         return (
             PyFn.of(env)
             .flat_map(lambda e: e.collaborators.io_utils().remove_symlink_fn(symlink_path))
             .flat_map(lambda _: PyFn.effect(lambda: logger.info(f"Removed symlink at {symlink_path}")))
-            .flat_map(lambda _: PyFn.effect(lambda: logger.info(f"Basic uninstall of {utility.display_name} completed")))
+            .flat_map(
+                lambda _: PyFn.effect(lambda: logger.info(f"Basic uninstall of {utility.display_name} completed"))
+            )
             .map(lambda _: utility)
         )
 
@@ -807,11 +811,10 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
     ) -> PyFn["UtilityInstallerCmdRunner", Exception, UnpackedReleaseFolderPath_Utility_OsArch_Tuple]:
         """Extract the downloaded binary if it's an archive, otherwise return the parent directory."""
         release_filepath = release_info.release_download_filepath
-        
+
         return (
             # Check if the file is an archive
-            PyFn.effect(lambda: env.collaborators.io_utils().is_archive_fn(release_filepath))
-            .flat_map(
+            PyFn.effect(lambda: env.collaborators.io_utils().is_archive_fn(release_filepath)).flat_map(
                 lambda is_archive: (
                     # If it's an archive, extract it and log the extraction
                     self._extract_and_log_archive(env, release_filepath, release_info.utility)
@@ -829,7 +832,7 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
                 )
             )
         )
-        
+
     def _extract_and_log_archive(
         self, env: InstallerEnv, archive_path: str, utility: Installable.Utility
     ) -> PyFn["UtilityInstallerCmdRunner", Exception, str]:
@@ -873,7 +876,7 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
         """Install a utility from GitHub releases."""
         if not utility.source.github:
             return PyFn.fail(error=InstallerSourceError("Missing installation source. name: GitHub"))
-        
+
         return (
             # Resolve version & validate source
             self._resolve_github_release_info(env, utility)
@@ -884,7 +887,7 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
             # Return the original utility
             .map(lambda _: utility)
         )
-    
+
     def _resolve_github_release_info(
         self, env: InstallerEnv, utility: Installable.Utility
     ) -> PyFn["UtilityInstallerCmdRunner", InstallerSourceError, Utility_Version_ReleaseFileName_OsArch_Tuple]:
@@ -897,13 +900,15 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
             # Log download information
             .flat_map(lambda util_ver_name_tuple: self._print_before_downloading(env, util_ver_name_tuple))
         )
-        
+
     def _download_github_binary(
         self, env: InstallerEnv, release_info: Utility_Version_ReleaseFileName_OsArch_Tuple
-    ) -> PyFn["UtilityInstallerCmdRunner", InstallerSourceError, ReleaseFilename_ReleaseDownloadFilePath_Utility_OsArch_Tuple]:
+    ) -> PyFn[
+        "UtilityInstallerCmdRunner", InstallerSourceError, ReleaseFilename_ReleaseDownloadFilePath_Utility_OsArch_Tuple
+    ]:
         """Download the binary from GitHub or alternative URL."""
         return self._download_binary_by_version(env, release_info)
-    
+
     def _prepare_github_binary(
         self, env: InstallerEnv, download_info: ReleaseFilename_ReleaseDownloadFilePath_Utility_OsArch_Tuple
     ) -> PyFn["UtilityInstallerCmdRunner", InstallerSourceError, None]:
@@ -916,21 +921,21 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
             # Set permissions and create symlink
             .flat_map(lambda extraction_info: self._setup_binary_permissions_and_symlink(env, extraction_info))
         )
-        
+
     def _setup_binary_permissions_and_symlink(
         self, env: InstallerEnv, extraction_info: UnpackedReleaseFolderPath_Utility_OsArch_Tuple
     ) -> PyFn["UtilityInstallerCmdRunner", InstallerSourceError, None]:
         """Set binary permissions and create symlink."""
         binary_path = f"{extraction_info.unpacked_release_folderpath}/{extraction_info.utility.binary_name}"
         symlink_path = self._genreate_binary_symlink_path(extraction_info.utility.binary_name)
-        
+
         return (
             # Set executable permissions
             PyFn.effect(lambda: env.collaborators.io_utils().set_file_permissions_fn(file_path=binary_path))
             # Create symlink
-            .flat_map(lambda _: PyFn.effect(lambda: env.collaborators.io_utils().write_symlink_fn(
-                binary_path, symlink_path
-            )))
+            .flat_map(
+                lambda _: PyFn.effect(lambda: env.collaborators.io_utils().write_symlink_fn(binary_path, symlink_path))
+            )
         )
 
     def _force_binary_at_download_path_root(
@@ -974,14 +979,14 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
                 desc_end="Ansible playbook finished remotely (Provisioner Wrapper).",
             ),
         )
-        
+
     def _execute_remote_ansible_playbook(
         self, env: InstallerEnv, ssh_conn_info: SSHConnectionInfo, utility: Installable.Utility
     ) -> str:
         """Execute the Ansible playbook that installs utilities on remote machines."""
         command = self._build_provisioner_command(env, utility)
         logger.debug(f"Remote provisioner command: {command}")
-        
+
         ansible_vars = self._prepare_ansible_vars(env)
 
         args = RemoteProvisionerRunnerArgs(
@@ -999,17 +1004,17 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
             f"git_access_token={env.args.git_access_token}",
         ]
         return ansible_vars
-    
+
     def _build_provisioner_command(self, env: InstallerEnv, utility: Installable.Utility) -> str:
         """Build the provisioner command to run on the remote machine."""
         # Determine if this is an uninstall operation
         is_uninstall = env.args.uninstall or (
             utility.maybe_args and utility.maybe_args.as_dict().get("uninstall", False)
         )
-        
+
         # Always use "install" as the base command
         operation = "install"
-        
+
         # Format utility name with version if applicable
         if env.args.sub_command_name == InstallerSubCommandName.CLI:
             utility_maybe_ver = f"{utility.display_name}@{utility.version}" if utility.version else utility.display_name
@@ -1030,21 +1035,20 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
 
         # Format force flag
         is_force_flag = "--force" if env.args.force else ""
-        
+
         # Format uninstall flag
         uninstall_flag = "--uninstall" if is_uninstall else ""
-        
+
         # Build the full command
         verbose_flag = "-v" if env.args.remote_opts.get_remote_context().is_verbose() else ""
-        
+
         # Clean utility args (remove any double quotes that might cause issues)
         # This is especially important for uninstall operations where we don't want shell interpretation issues
         utility_maybe_args = utility_maybe_args.replace('"', '\\"')
-        
+
         # Return the simple command without bash -c wrapping
         return f"{operation} --environment Local {env.args.sub_command_name} {utility_maybe_ver} {utility_maybe_args} {uninstall_flag} {is_force_flag} -y {verbose_flag}"
-        
-        
+
     def _filter_ansible_warnings(self, output: str) -> str:
         # Ansible warnings should be handled through ansible.cfg settings, not filtered here
         return output
@@ -1078,7 +1082,7 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
                     desc_end=f"Ansible playbook finished locally ({utility.source.ansible.playbook.get_name()})).",
                 )
             )
-            
+
     def _print_ansible_response(self, env: InstallerEnv, output: str):
         # Simply print the output, letting ansible.cfg handle warning suppression
         return PyFn.effect(lambda: env.collaborators.printer().print_fn(output))
@@ -1103,28 +1107,27 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
         logger.debug(
             f"Running remote installation for utilities: {[u.display_name for u in utilities] if utilities else 'None'}"
         )
-        
+
         # Early return if no utilities
         if not utilities:
             logger.warning("No utilities to install remotely")
             return PyFn.success([])
-            
+
         return (
             # Get remote connector and SSH connection info
             self._get_remote_connector_and_connection_info(env)
             # Process utilities on remote hosts
             .flat_map(lambda ssh_conn_info: self._process_remote_utilities(env, utilities, ssh_conn_info))
         )
-        
+
     def _get_remote_connector_and_connection_info(
         self, env: InstallerEnv
     ) -> PyFn["UtilityInstallerCmdRunner", Exception, SSHConnectionInfo]:
         """Get remote connector and collect SSH connection info."""
-        return (
-            PyFn.of(RemoteMachineConnector(collaborators=env.collaborators))
-            .flat_map(lambda connector: self._collect_ssh_connection_info(env, connector))
+        return PyFn.of(RemoteMachineConnector(collaborators=env.collaborators)).flat_map(
+            lambda connector: self._collect_ssh_connection_info(env, connector)
         )
-        
+
     def _process_remote_utilities(
         self, env: InstallerEnv, utilities: List[Installable.Utility], ssh_conn_info: SSHConnectionInfo
     ) -> PyFn["UtilityInstallerCmdRunner", Exception, List[Installable.Utility]]:
@@ -1133,30 +1136,31 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
         if not self._has_remote_hosts(ssh_conn_info):
             logger.warning("No remote hosts found to install utilities on. Returning without installation.")
             return PyFn.success(utilities)
-            
+
         logger.debug(f"Found SSH connection info with {len(ssh_conn_info.ansible_hosts)} hosts")
-        
+
         # Use for_each to process each utility
         installed_utilities = []
-        
+
         def collect_result(result):
             if result is not None:
                 installed_utilities.append(result)
             return result
-            
+
         return (
             PyFn.of(utilities)
             .for_each(
-                lambda utility: self._install_single_utility_remotely(env, utility, ssh_conn_info)
-                                .map(lambda result: collect_result(result))
+                lambda utility: self._install_single_utility_remotely(env, utility, ssh_conn_info).map(
+                    lambda result: collect_result(result)
+                )
             )
             .map(lambda _: installed_utilities)
         )
-        
+
     def _has_remote_hosts(self, ssh_conn_info: SSHConnectionInfo) -> bool:
         """Check if there are remote hosts available."""
         return ssh_conn_info.ansible_hosts is not None and len(ssh_conn_info.ansible_hosts) > 0
-        
+
     def _install_single_utility_remotely(
         self, env: InstallerEnv, utility: Installable.Utility, ssh_conn_info: SSHConnectionInfo
     ) -> PyFn["UtilityInstallerCmdRunner", Exception, Installable.Utility]:
@@ -1165,36 +1169,30 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
             # Create tuple with SSH connection info and utility
             PyFn.of(SSHConnInfo_Utility_Tuple(ssh_conn_info, utility))
             # Print pre-install summary
-            .flat_map(lambda tuple_info: 
-                self._print_pre_install_summary(env, tuple_info.utility)
-                .map(lambda _: tuple_info)
+            .flat_map(
+                lambda tuple_info: self._print_pre_install_summary(env, tuple_info.utility).map(lambda _: tuple_info)
             )
             # Execute remote installation
-            .flat_map(lambda tuple_info: 
-                self._install_on_remote_machine(env, tuple_info)
-                .map(lambda output: (output, tuple_info.utility))
+            .flat_map(
+                lambda tuple_info: self._install_on_remote_machine(env, tuple_info).map(
+                    lambda output: (output, tuple_info.utility)
+                )
             )
             # Print output and return utility
-            .flat_map(lambda output_utility: 
-                self._print_remote_output_and_return_utility(env, output_utility)
-            )
+            .flat_map(lambda output_utility: self._print_remote_output_and_return_utility(env, output_utility))
         )
-        
+
     def _print_remote_output_and_return_utility(
         self, env: InstallerEnv, output_utility_tuple: tuple[str, Installable.Utility]
     ) -> PyFn["UtilityInstallerCmdRunner", Exception, Installable.Utility]:
         """Print remote output and return the utility."""
         output, utility = output_utility_tuple
-        return PyFn.effect(
-            lambda: env.collaborators.printer().new_line_fn().print_fn(output)
-        ).map(lambda _: utility)
+        return PyFn.effect(lambda: env.collaborators.printer().new_line_fn().print_fn(output)).map(lambda _: utility)
 
 
 @staticmethod
 def generate_installer_welcome(
-    utilities_to_install: List[Installable.Utility], 
-    environment: Optional[RunEnvironment],
-    is_uninstall: bool = False
+    utilities_to_install: List[Installable.Utility], environment: Optional[RunEnvironment], is_uninstall: bool = False
 ) -> str:
     selected_utils_names = ""
     if utilities_to_install:

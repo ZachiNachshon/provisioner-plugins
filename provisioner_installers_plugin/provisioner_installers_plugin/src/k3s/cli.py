@@ -83,13 +83,21 @@ def register_k3s_commands(cli_group: click.Group):
     )
     @cli_modifiers
     @click.pass_context
-    def k3s_server(ctx: click.Context, k3s_token: str, k3s_args: str, install_as_binary: bool, use_kube_config: bool, uninstall: bool, version: str):
+    def k3s_server(
+        ctx: click.Context,
+        k3s_token: str,
+        k3s_args: str,
+        install_as_binary: bool,
+        use_kube_config: bool,
+        uninstall: bool,
+        version: str,
+    ):
         """
         Install or uninstall a Rancher K3s Server on systemd and openrc based systems
         """
         if not uninstall and not k3s_token:
             raise click.UsageError("--k3s-token is required for installation")
-            
+
         k3s_server_install(
             NameVersionArgsTuple(
                 "k3s-server",
@@ -154,7 +162,13 @@ def register_k3s_commands(cli_group: click.Group):
     @cli_modifiers
     @click.pass_context
     def k3s_agent(
-        ctx: click.Context, k3s_token: str, k3s_url: str, k3s_args: str, install_as_binary: bool, uninstall: bool, version: str
+        ctx: click.Context,
+        k3s_token: str,
+        k3s_url: str,
+        k3s_args: str,
+        install_as_binary: bool,
+        uninstall: bool,
+        version: str,
     ):
         """
         Install or uninstall a Rancher K3s Agent on systemd and openrc based systems
@@ -164,7 +178,7 @@ def register_k3s_commands(cli_group: click.Group):
                 raise click.UsageError("--k3s-token is required for installation")
             if not k3s_url:
                 raise click.UsageError("--k3s-url is required for installation")
-                
+
         k3s_agent_install(
             NameVersionArgsTuple(
                 "k3s-agent",
@@ -194,7 +208,7 @@ def k3s_server_install(
     uninstall = False
     if name_ver_args.maybe_args and "uninstall" in name_ver_args.maybe_args.as_dict():
         uninstall = name_ver_args.maybe_args.as_dict()["uninstall"]
-        
+
     Evaluator.eval_installer_cli_entrypoint_pyfn_step(
         name="k3s-server",
         call=lambda: UtilityInstallerCmd().run(
@@ -220,7 +234,7 @@ def k3s_agent_install(
     uninstall = False
     if name_ver_args.maybe_args and "uninstall" in name_ver_args.maybe_args.as_dict():
         uninstall = name_ver_args.maybe_args.as_dict()["uninstall"]
-        
+
     Evaluator.eval_installer_cli_entrypoint_pyfn_step(
         name="k3s-agent",
         call=lambda: UtilityInstallerCmd().run(

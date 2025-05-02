@@ -76,7 +76,7 @@ def check_service_exists(collaborators: CoreCollaborators, node_type: str, curre
 
 def install_binary(collaborators: CoreCollaborators, version: str, local_bin_folder: str) -> None:
     """Install K3s binary."""
-    logger.info(f"Installing K3s as binary...")
+    logger.info("Installing K3s as binary...")
     install_cmd = (
         f"curl -sfL https://get.k3s.io | "
         f"INSTALL_K3S_SKIP_ENABLE=true "
@@ -117,7 +117,7 @@ def start_k3s_binary(
 ) -> None:
     """Start K3s as a binary process."""
     clean_args = k3s_additional_cli_args.replace('"', "")
-    
+
     # Add kubeconfig configuration if requested (server only)
     kubeconfig_args = ""
     if use_kube_config and node_type == "server":
@@ -129,9 +129,7 @@ def start_k3s_binary(
         logger.info(f"Configuring K3s to write kubeconfig to {kube_config}")
 
     if node_type == "server":
-        run_command = (
-            f"nohup sudo {local_bin_folder}/k3s server --token {k3s_token} {clean_args} {kubeconfig_args} > /var/log/k3s.log 2>&1 &"
-        )
+        run_command = f"nohup sudo {local_bin_folder}/k3s server --token {k3s_token} {clean_args} {kubeconfig_args} > /var/log/k3s.log 2>&1 &"
     else:  # agent
         if not k3s_url:
             raise ValueError("Missing mandatory parameter: k3s-url for agent")
@@ -160,7 +158,7 @@ def install_service(
     use_kube_config: bool = False,
 ) -> None:
     """Install K3s as a system service."""
-    logger.info(f"Installing K3s as a system service...")
+    logger.info("Installing K3s as a system service...")
     # Add kubeconfig configuration if requested (server only)
     kubeconfig_args = ""
     if use_kube_config and node_type == "server":
@@ -170,7 +168,7 @@ def install_service(
         os.makedirs(kube_dir, exist_ok=True)
         kubeconfig_args = f"--write-kubeconfig {kube_config} --write-kubeconfig-mode 644"
         logger.info(f"Configuring K3s to write kubeconfig to {kube_config}")
-    
+
     if node_type == "server":
         install_cmd = (
             f"curl -sfL https://get.k3s.io | "
@@ -201,7 +199,7 @@ def install_service(
 def _check_ssh_context(collaborators: CoreCollaborators) -> bool:
     """
     Determine if running in an SSH context.
-    
+
     Returns:
         bool: True if running in SSH context, False otherwise
     """
@@ -225,10 +223,10 @@ def _check_ssh_context(collaborators: CoreCollaborators) -> bool:
 def _get_uninstall_script_path(node_type: str) -> str:
     """
     Get the appropriate uninstall script path based on node type.
-    
+
     Args:
         node_type: Type of K3s node ('server' or 'agent')
-        
+
     Returns:
         str: Path to the uninstall script
     """
@@ -237,16 +235,18 @@ def _get_uninstall_script_path(node_type: str) -> str:
     return "/usr/local/bin/k3s-uninstall.sh"
 
 
-def _try_service_uninstall(collaborators: CoreCollaborators, node_type: str, script_path: str, is_remote: bool) -> Optional[str]:
+def _try_service_uninstall(
+    collaborators: CoreCollaborators, node_type: str, script_path: str, is_remote: bool
+) -> Optional[str]:
     """
     Attempt to uninstall K3s using the service uninstall script.
-    
+
     Args:
         collaborators: Core collaborators object
         node_type: Type of K3s node ('server' or 'agent')
         script_path: Path to the uninstall script
         is_remote: Whether running in SSH context
-        
+
     Returns:
         Optional[str]: Status message if successful, None if failed
     """
@@ -258,9 +258,9 @@ def _try_service_uninstall(collaborators: CoreCollaborators, node_type: str, scr
             logger.info("Running uninstall with nohup to prevent SSH interruption")
         else:
             script_cmd = f"sudo {script_path}"
-        
+
         logger.debug(f"Executing uninstall command: {script_cmd}")
-            
+
         # Execute the uninstall script
         result = collaborators.process().run_fn(
             args=script_cmd,
@@ -269,9 +269,9 @@ def _try_service_uninstall(collaborators: CoreCollaborators, node_type: str, scr
             fail_on_error=False,  # Don't fail if script reports an error
             allow_single_shell_command_str=True,
         )
-        
+
         logger.debug(f"Uninstall script execution result: {result}")
-        
+
         # For remote installs, we might not get output since the SSH connection might be dropped
         if is_remote:
             logger.info(f"K3s {node_type} service uninstall initiated with nohup")
@@ -279,7 +279,7 @@ def _try_service_uninstall(collaborators: CoreCollaborators, node_type: str, scr
         else:
             logger.info(f"K3s {node_type} service uninstalled successfully")
             return f"K3s {node_type} service uninstalled successfully"
-            
+
     except Exception as e:
         logger.warning(f"Service uninstall script execution failed: {e}")
         logger.debug(f"Full exception: {str(e)}")
@@ -290,10 +290,10 @@ def _try_service_uninstall(collaborators: CoreCollaborators, node_type: str, scr
 def _kill_k3s_processes(collaborators: CoreCollaborators) -> bool:
     """
     Kill all running K3s processes.
-    
+
     Args:
         collaborators: Core collaborators object
-        
+
     Returns:
         bool: True if successful, False otherwise
     """
@@ -317,18 +317,18 @@ def _kill_k3s_processes(collaborators: CoreCollaborators) -> bool:
 def _remove_k3s_binary(collaborators: CoreCollaborators, local_bin_folder: str) -> bool:
     """
     Remove the K3s binary.
-    
+
     Args:
         collaborators: Core collaborators object
         local_bin_folder: Path to the local bin folder
-        
+
     Returns:
         bool: True if successful, False otherwise
     """
     try:
         binary_path = os.path.join(local_bin_folder, "k3s")
         logger.info(f"Checking for K3s binary at: {binary_path}")
-        
+
         if os.path.exists(binary_path):
             logger.info(f"Removing K3s binary at: {binary_path}")
             collaborators.process().run_fn(
@@ -337,7 +337,7 @@ def _remove_k3s_binary(collaborators: CoreCollaborators, local_bin_folder: str) 
                 fail_on_error=False,
                 allow_single_shell_command_str=True,
             )
-            logger.info(f"Binary removed successfully")
+            logger.info("Binary removed successfully")
             return True
         else:
             logger.info("K3s binary not found at expected location")
@@ -352,10 +352,10 @@ def _remove_k3s_binary(collaborators: CoreCollaborators, local_bin_folder: str) 
 def _clean_k3s_data_directory(collaborators: CoreCollaborators) -> bool:
     """
     Clean up the K3s data directory.
-    
+
     Args:
         collaborators: Core collaborators object
-        
+
     Returns:
         bool: True if successful, False otherwise
     """
@@ -367,7 +367,7 @@ def _clean_k3s_data_directory(collaborators: CoreCollaborators) -> bool:
             fail_on_error=False,
             allow_single_shell_command_str=True,
         )
-        logger.info(f"Data directory removed successfully")
+        logger.info("Data directory removed successfully")
         return True
     except Exception as e:
         logger.warning(f"Failed to remove K3s data directory: {e}")
@@ -379,10 +379,10 @@ def _clean_k3s_data_directory(collaborators: CoreCollaborators) -> bool:
 def _clean_k3s_config_directory(collaborators: CoreCollaborators) -> bool:
     """
     Clean up the K3s config directory.
-    
+
     Args:
         collaborators: Core collaborators object
-        
+
     Returns:
         bool: True if successful, False otherwise
     """
@@ -394,7 +394,7 @@ def _clean_k3s_config_directory(collaborators: CoreCollaborators) -> bool:
             fail_on_error=False,
             allow_single_shell_command_str=True,
         )
-        logger.info(f"Config directory removed successfully")
+        logger.info("Config directory removed successfully")
         return True
     except Exception as e:
         logger.warning(f"Failed to remove K3s config directory: {e}")
@@ -406,17 +406,17 @@ def _clean_k3s_config_directory(collaborators: CoreCollaborators) -> bool:
 def _clean_kube_config(collaborators: CoreCollaborators) -> bool:
     """
     Clean up the ~/.kube/config file if it exists.
-    
+
     Args:
         collaborators: Core collaborators object
-        
+
     Returns:
         bool: True if successful or file didn't exist, False if failed
     """
     try:
         kube_config = os.path.expanduser("~/.kube/config")
         logger.info(f"Checking for kubectl config at: {kube_config}")
-        
+
         if os.path.exists(kube_config):
             logger.info(f"Removing kubectl config at: {kube_config}")
             collaborators.process().run_fn(
@@ -425,7 +425,7 @@ def _clean_kube_config(collaborators: CoreCollaborators) -> bool:
                 fail_on_error=False,
                 allow_single_shell_command_str=True,
             )
-            logger.info(f"kubectl config removed successfully")
+            logger.info("kubectl config removed successfully")
             return True
         else:
             logger.info("kubectl config not found at expected location")
@@ -440,17 +440,17 @@ def _clean_kube_config(collaborators: CoreCollaborators) -> bool:
 def _perform_binary_uninstall(collaborators: CoreCollaborators, node_type: str, local_bin_folder: str) -> str:
     """
     Perform a manual binary uninstall of K3s.
-    
+
     Args:
         collaborators: Core collaborators object
         node_type: Type of K3s node ('server' or 'agent')
         local_bin_folder: Path to the local bin folder
-        
+
     Returns:
         str: Status message indicating the result
     """
     logger.info("Attempting binary uninstall method as fallback...")
-    
+
     # Track the success of each step
     steps_results = {
         # TODO: Need to solve the kill process issue, it fails the Ansible playbook
@@ -458,16 +458,16 @@ def _perform_binary_uninstall(collaborators: CoreCollaborators, node_type: str, 
         "remove_binary": _remove_k3s_binary(collaborators, local_bin_folder),
         "clean_data_dir": _clean_k3s_data_directory(collaborators),
         "clean_config_dir": _clean_k3s_config_directory(collaborators),
-        "clean_kube_config": _clean_kube_config(collaborators)
+        "clean_kube_config": _clean_kube_config(collaborators),
     }
-    
+
     # Log summary of steps
     successful_steps = sum(1 for step, result in steps_results.items() if result)
     logger.info(f"Binary uninstall completed {successful_steps}/{len(steps_results)} steps successfully")
-    
+
     for step, result in steps_results.items():
         logger.debug(f"Step '{step}': {'Success' if result else 'Failed'}")
-    
+
     # Even if some steps failed, consider the uninstallation "successful"
     logger.info(f"K3s {node_type} binary uninstall completed")
     return f"K3s {node_type} uninstalled using the binary cleanup method"
@@ -476,48 +476,48 @@ def _perform_binary_uninstall(collaborators: CoreCollaborators, node_type: str, 
 def uninstall_k3s(collaborators: CoreCollaborators, node_type: str, local_bin_folder: str) -> str:
     """
     Uninstall K3s by trying both service and binary uninstallation methods.
-    
+
     This function follows a two-phase approach:
     1. PRIMARY METHOD: Attempts to use the official K3s uninstall script
        - For 'server' nodes: uses /usr/local/bin/k3s-uninstall.sh
        - For 'agent' nodes: uses /usr/local/bin/k3s-agent-uninstall.sh
        - Uses nohup for remote SSH connections to prevent connection drops
-    
+
     2. FALLBACK METHOD: If service uninstall fails, performs manual cleanup:
        - Kills K3s processes
        - Removes the K3s binary
        - Cleans up data and config directories
-    
+
     The function is designed to be resilient against failures and SSH disconnections,
     and will always return a status message rather than raising exceptions.
-    
+
     Args:
         collaborators: Core collaborators object for accessing system functions
         node_type: Type of K3s node ('server' or 'agent')
         local_bin_folder: Path to the local bin folder
-        
+
     Returns:
         A status message indicating the outcome of the uninstallation
     """
     logger.info(f"Uninstalling K3s {node_type}...")
     logger.debug(f"Using local_bin_folder: {local_bin_folder}")
-    
+
     # Wrap all operations in try/except to ensure we always return a status message
     try:
         #############################################
         # PHASE 1: SERVICE UNINSTALL (PREFERRED METHOD)
         #############################################
-        
+
         # Get the appropriate uninstall script path
         script_path = _get_uninstall_script_path(node_type)
         logger.debug(f"Checking for uninstall script at: {script_path}")
-            
+
         if os.path.exists(script_path):
             logger.info(f"Found uninstall script at {script_path}, attempting service uninstall...")
-            
+
             # Check if running in SSH/remote context
             is_remote = _check_ssh_context(collaborators)
-                
+
             # Try service uninstall
             result = _try_service_uninstall(collaborators, node_type, script_path, is_remote)
             if result:
@@ -525,13 +525,13 @@ def uninstall_k3s(collaborators: CoreCollaborators, node_type: str, local_bin_fo
         else:
             logger.warning(f"Uninstall script not found at {script_path}")
             logger.info("Will try binary uninstall method instead")
-        
+
         #############################################
         # PHASE 2: BINARY UNINSTALL (FALLBACK METHOD)
         #############################################
         return _perform_binary_uninstall(collaborators, node_type, local_bin_folder)
         # return "TEST TES TTEST"
-    
+
     except Exception as e:
         # Catch all exceptions and return a message instead of raising
         logger.error(f"K3s uninstall encountered an error: {e}")
@@ -568,7 +568,9 @@ def install_k3s_server(version: str, collaborators: CoreCollaborators, maybe_arg
         logger.info("K3s server binary installed successfully")
 
         prepare_log_file(collaborators)
-        start_k3s_binary(collaborators, local_bin_folder, "server", k3s_token, None, k3s_additional_cli_args, use_kube_config)
+        start_k3s_binary(
+            collaborators, local_bin_folder, "server", k3s_token, None, k3s_additional_cli_args, use_kube_config
+        )
 
         return f"K3s server binary installed and started successfully at {binary_path}"
     else:
@@ -578,7 +580,16 @@ def install_k3s_server(version: str, collaborators: CoreCollaborators, maybe_arg
             return "K3s server system service is already installed and running."
 
         # Install as service
-        install_service(collaborators, version, local_bin_folder, "server", k3s_token, None, k3s_additional_cli_args, use_kube_config)
+        install_service(
+            collaborators,
+            version,
+            local_bin_folder,
+            "server",
+            k3s_token,
+            None,
+            k3s_additional_cli_args,
+            use_kube_config,
+        )
 
         return "K3s server service installed successfully"
 
@@ -591,8 +602,8 @@ def install_k3s_agent(version: str, collaborators: CoreCollaborators, maybe_args
     k3s_url = args["k3s_url"]
     k3s_additional_cli_args = args["k3s_additional_cli_args"]
     install_as_binary = args["install_as_binary"]
-    use_kube_config = args["use_kube_config"]  # We get the parameter but ignore it for agents
-    
+    # use_kube_config = args["use_kube_config"]  # We get the parameter but ignore it for agents
+
     # Continue with installation
     if not k3s_token:
         raise ValueError("Missing mandatory parameter: k3s-token")
@@ -601,7 +612,7 @@ def install_k3s_agent(version: str, collaborators: CoreCollaborators, maybe_args
 
     # Setup environment
     local_bin_folder, current_os = setup_environment()
-    
+
     logger.info(f"Installing K3s agent, version: {version}, OS: {current_os}")
     binary_path, binary_exists = check_binary_exists(local_bin_folder)
 
@@ -627,9 +638,12 @@ def install_k3s_agent(version: str, collaborators: CoreCollaborators, maybe_args
 
         # Install as service
         # Note: use_kube_config is always False for agents as it only applies to servers
-        install_service(collaborators, version, local_bin_folder, "agent", k3s_token, k3s_url, k3s_additional_cli_args, False)
+        install_service(
+            collaborators, version, local_bin_folder, "agent", k3s_token, k3s_url, k3s_additional_cli_args, False
+        )
 
         return "K3s agent service installed successfully"
+
 
 def uninstall_k3s_server(version: str, collaborators: CoreCollaborators, maybe_args: Optional[DynamicArgs]) -> str:
     """Uninstall K3s server node."""
@@ -642,6 +656,7 @@ def uninstall_k3s_server(version: str, collaborators: CoreCollaborators, maybe_a
         logger.error(f"Failed to uninstall K3s server: {str(e)}")
         return f"K3s server uninstall process completed with errors: {str(e)}"
 
+
 def uninstall_k3s_agent(version: str, collaborators: CoreCollaborators, maybe_args: Optional[DynamicArgs]) -> str:
     """Uninstall K3s agent node."""
     try:
@@ -652,6 +667,7 @@ def uninstall_k3s_agent(version: str, collaborators: CoreCollaborators, maybe_ar
     except Exception as e:
         logger.error(f"Failed to uninstall K3s agent: {str(e)}")
         return f"K3s agent uninstall process completed with errors: {str(e)}"
+
 
 # def wait_for_k3s_api(
 #     ip_address: str,

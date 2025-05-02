@@ -5,18 +5,17 @@ from typing import List, Optional
 from loguru import logger
 
 from provisioner_shared.components.remote.ansible.remote_provisioner_runner import (
-    RemoteProvisionerRunner, RemoteProvisionerRunnerArgs)
+    RemoteProvisionerRunner,
+    RemoteProvisionerRunnerArgs,
+)
 from provisioner_shared.components.remote.domain.config import RunEnvironment
-from provisioner_shared.components.remote.remote_connector import (
-    RemoteMachineConnector, SSHConnectionInfo)
+from provisioner_shared.components.remote.remote_connector import RemoteMachineConnector, SSHConnectionInfo
 from provisioner_shared.components.remote.remote_opts import RemoteOpts
 from provisioner_shared.components.runtime.infra.context import Context
 from provisioner_shared.components.runtime.infra.evaluator import Evaluator
-from provisioner_shared.components.runtime.shared.collaborators import \
-    CoreCollaborators
+from provisioner_shared.components.runtime.shared.collaborators import CoreCollaborators
 from provisioner_shared.components.runtime.utils.checks import Checks
-from provisioner_shared.components.runtime.utils.system_reader import \
-    SystemReader
+from provisioner_shared.components.runtime.utils.system_reader import SystemReader
 
 
 class SystemInfo:
@@ -24,6 +23,7 @@ class SystemInfo:
     hardware_cpu: str = ""
     hardware_mem: str = ""
     hardware_network: str = ""
+
 
 class RemoteMachineSystemInfoCollectArgs:
     remote_opts: RemoteOpts
@@ -60,10 +60,16 @@ class RemoteMachineSystemInfoCollectRunner:
                 print(result)
 
             else:
-                raise NotImplementedError(f"RunEnvironment enum does not support label '{args.remote_opts.get_environment()}'")
+                raise NotImplementedError(
+                    f"RunEnvironment enum does not support label '{args.remote_opts.get_environment()}'"
+                )
 
     def _collect_system_info_on_remote_machine(
-        self, ctx: Context, collaborators: CoreCollaborators, args: RemoteMachineSystemInfoCollectArgs, ssh_conn_info: SSHConnectionInfo
+        self,
+        ctx: Context,
+        collaborators: CoreCollaborators,
+        args: RemoteMachineSystemInfoCollectArgs,
+        ssh_conn_info: SSHConnectionInfo,
     ) -> str:
         """Run the system info collection on a remote machine using Ansible."""
         return self._execute_remote_ansible_playbook(
@@ -72,14 +78,18 @@ class RemoteMachineSystemInfoCollectRunner:
             collaborators=collaborators,
             ssh_conn_info=ssh_conn_info,
         )
-    
+
     def _execute_remote_ansible_playbook(
-        self, ctx: Context, args: RemoteMachineSystemInfoCollectArgs, collaborators: CoreCollaborators, ssh_conn_info: SSHConnectionInfo
+        self,
+        ctx: Context,
+        args: RemoteMachineSystemInfoCollectArgs,
+        collaborators: CoreCollaborators,
+        ssh_conn_info: SSHConnectionInfo,
     ) -> str:
         """Execute the Ansible playbook that installs utilities on remote machines."""
         command = self._build_provisioner_command(ctx, args)
         logger.debug(f"Remote provisioner command: {command}")
-        
+
         ansible_vars = self._prepare_ansible_vars(ctx, args)
 
         args = RemoteProvisionerRunnerArgs(
@@ -90,12 +100,12 @@ class RemoteMachineSystemInfoCollectRunner:
             ansible_vars=ansible_vars,
         )
         return RemoteProvisionerRunner().run(ctx, args, collaborators)
-    
+
     def _prepare_ansible_vars(self, ctx: Context, args: RemoteMachineSystemInfoCollectArgs) -> List[str]:
         """Prepare Ansible variables for the remote command."""
         ansible_vars = []
         return ansible_vars
-    
+
     def _get_ssh_conn_info(
         self, ctx: Context, collaborators: CoreCollaborators, remote_opts: Optional[RemoteOpts] = None
     ) -> SSHConnectionInfo:
@@ -134,6 +144,7 @@ class RemoteMachineSystemInfoCollectRunner:
             raise NotImplementedError("Windows is not supported")
         else:
             raise NotImplementedError("OS is not supported")
+
 
 def generate_system_info_summary(system_info: SystemInfo) -> str:
     return f"""

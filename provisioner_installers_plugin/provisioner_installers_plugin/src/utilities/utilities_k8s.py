@@ -5,7 +5,12 @@ from provisioner_installers_plugin.src.installer.domain.source import (
     ActiveInstallSource,
     InstallSource,
 )
-from provisioner_installers_plugin.src.k3s.installer import install_k3s_agent, install_k3s_server, uninstall_k3s_agent, uninstall_k3s_server
+from provisioner_installers_plugin.src.k3s.installer import (
+    install_k3s_agent,
+    install_k3s_server,
+    uninstall_k3s_agent,
+    uninstall_k3s_server,
+)
 from provisioner_installers_plugin.src.utilities.utilities_versions import ToolingVersions
 
 SupportedOS = ["linux", "darwin"]
