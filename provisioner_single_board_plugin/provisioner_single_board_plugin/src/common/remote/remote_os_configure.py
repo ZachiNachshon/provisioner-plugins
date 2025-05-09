@@ -62,20 +62,6 @@ class RemoteMachineOsConfigureRunner:
         )
         self._print_post_run_instructions(ansible_host, collaborators)
 
-    def _get_ssh_conn_info(
-        self, ctx: Context, collaborators: CoreCollaborators, remote_opts: Optional[RemoteOpts] = None
-    ) -> SSHConnectionInfo:
-
-        ssh_conn_info = Evaluator.eval_step_return_value_throw_on_failure(
-            call=lambda: RemoteMachineConnector(collaborators=collaborators).collect_ssh_connection_info(
-                ctx, remote_opts, force_single_conn_info=True
-            ),
-            ctx=ctx,
-            err_msg="Could not resolve SSH connection info",
-        )
-        collaborators.summary().append("ssh_conn_info", ssh_conn_info)
-        return ssh_conn_info
-
     def _run_ansible_configure_os_playbook_with_progress_bar(
         self,
         ctx: Context,

@@ -6,6 +6,7 @@ from provisioner_installers_plugin.src.installer.cmd.installer_cmd import Utilit
 from provisioner_installers_plugin.src.installer.domain.command import InstallerSubCommandName
 from provisioner_installers_plugin.src.installer.domain.dynamic_args import DynamicArgs
 from provisioner_installers_plugin.src.installer.domain.version import NameVersionArgsTuple
+from provisioner_installers_plugin.src.k3s.cmd.k3s_gather_info_cmd import K3sGatherInfoCmd, K3sGatherInfoCmdArgs
 from provisioner_installers_plugin.src.utilities.utilities_versions import ToolingVersions
 
 from provisioner_shared.components.remote.remote_opts import RemoteOpts
@@ -197,6 +198,18 @@ def register_k3s_commands(cli_group: click.Group):
             RemoteOpts.from_click_ctx(ctx),
         )
 
+    @distro.command()
+    @cli_modifiers
+    @click.pass_context
+    def k3s_info(ctx: click.Context):
+        """
+        Gather and display K3s configuration information from a remote host
+        """
+        k3s_info_gather(
+            modifiers=CliModifiers.from_click_ctx(ctx),
+            remote_opts=RemoteOpts.from_click_ctx(ctx),
+        )
+
 
 def k3s_server_install(
     name_ver_args: NameVersionArgsTuple,
@@ -244,6 +257,21 @@ def k3s_agent_install(
                 sub_command_name=InstallerSubCommandName.K8S,
                 remote_opts=remote_opts,
                 uninstall=uninstall,
+            ),
+        ),
+        verbose=cli_ctx.is_verbose(),
+    )
+
+
+def k3s_info_gather(modifiers: CliModifiers, remote_opts: RemoteOpts) -> None:
+    cli_ctx = CliContextManager.create(modifiers)
+
+    Evaluator.eval_installer_cli_entrypoint_pyfn_step(
+        name="k3s-info",
+        call=lambda: K3sGatherInfoCmd().run(
+            ctx=cli_ctx,
+            args=K3sGatherInfoCmdArgs(
+                remote_opts=remote_opts,
             ),
         ),
         verbose=cli_ctx.is_verbose(),
