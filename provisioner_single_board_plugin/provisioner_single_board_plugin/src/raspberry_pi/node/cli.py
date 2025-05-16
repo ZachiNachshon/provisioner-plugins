@@ -3,6 +3,7 @@
 from typing import Optional
 
 import click
+from provisioner_single_board_plugin.src.config.domain.config import SingleBoardConfig
 from provisioner_single_board_plugin.src.raspberry_pi.node.configure_cmd import RPiOsConfigureCmd, RPiOsConfigureCmdArgs
 from provisioner_single_board_plugin.src.raspberry_pi.node.network_cmd import (
     RPiNetworkConfigureCmd,
@@ -16,7 +17,7 @@ from provisioner_shared.components.runtime.infra.context import CliContextManage
 from provisioner_shared.components.runtime.infra.evaluator import Evaluator
 
 
-def register_node_commands(cli_group: click.Group):
+def register_node_commands(cli_group: click.Group, single_board_cfg: Optional[SingleBoardConfig] = None):
 
     @cli_group.command()
     @cli_modifiers
@@ -39,22 +40,28 @@ def register_node_commands(cli_group: click.Group):
     @click.option(
         "--static-ip-address",
         type=str,
-        help="Static IP address to set as the remote host IP address",
-        show_default=False,
+        help="Static IP address to set as the remote host IP address [example: 192.168.1.200]",
+        # show_default=True,
+        # default="192.168.1.200",
+        # required=False,
         envvar="PROV_RPI_STATIC_IP",
     )
     @click.option(
         "--gw-ip-address",
         type=str,
-        help="Internet gateway address / home router address",
-        show_default=False,
+        help="Internet gateway address / home router address [example: 192.168.1.1]",
+        # show_default=True,
+        # default="192.168.1.1",
+        # required=True,
         envvar="PROV_GATEWAY_ADDRESS",
     )
     @click.option(
         "--dns-ip-address",
         type=str,
-        help="Domain name server address / home router address",
-        show_default=False,
+        help="Domain name server address / home router address [example: 192.168.1.1]",
+        # show_default=True,
+        # default="192.168.1.1",
+        # required=True,
         envvar="PROV_DNS_ADDRESS",
     )
     @click.option(

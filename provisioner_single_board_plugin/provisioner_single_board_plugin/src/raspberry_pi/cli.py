@@ -47,5 +47,5 @@ def register_raspberry_pi_commands(cli_group: click.Group, single_board_cfg: Opt
         if ctx.invoked_subcommand is None:
             click.echo(ctx.get_help())
 
-    register_node_commands(cli_group=node)
+    register_node_commands(cli_group=node, single_board_cfg=single_board_cfg)
     register_os_commands(cli_group=os, single_board_cfg=single_board_cfg)

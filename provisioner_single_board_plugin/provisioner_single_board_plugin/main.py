@@ -9,6 +9,7 @@ from provisioner_shared.components.runtime.cli.menu_format import CustomGroup
 from provisioner_shared.components.runtime.cli.version import append_version_cmd_to_cli
 from provisioner_shared.components.runtime.config.manager.config_manager import ConfigManager
 from provisioner_single_board_plugin.src.config.domain.config import SINGLE_BOARD_PLUGIN_NAME, SingleBoardConfig
+from provisioner_single_board_plugin.src.info.cli import register_remote_info_commands
 from provisioner_single_board_plugin.src.raspberry_pi.cli import (
     register_raspberry_pi_commands,
 )
@@ -41,3 +42,4 @@ def append_to_cli(root_menu: click.Group):
     )
 
     register_raspberry_pi_commands(cli_group=single_board, single_board_cfg=single_board_cfg)
+    register_remote_info_commands(cli_group=single_board, single_board_cfg=single_board_cfg)

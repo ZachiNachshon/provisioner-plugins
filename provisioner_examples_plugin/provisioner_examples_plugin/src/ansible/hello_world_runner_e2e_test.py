@@ -31,7 +31,6 @@ class HelloWorldE2ETestShould(unittest.TestCase):
             cls.container.stop()
             cls.container = None  # Ensure cleanup
 
-    # @unittest.SkipTest
     def test_e2e_examples_hello_world_command_run_remote_successfully(self):
         result = TestCliRunner.run(
             root_menu,

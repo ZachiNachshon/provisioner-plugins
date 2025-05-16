@@ -32,8 +32,10 @@ class UtilityListCmd:
         help_info = ""
         help_info += 'Use "provisioner install cli <name>" to install any utility'
         help_info += '\nUse "provisioner install cli <name>@<ver>" to install specific version'
+        help_info += '\n\nUse "-h" for help on any command'
         help_info += "\n\nExamples:\n"
         help_info += "  provisioner install cli helm\n"
-        help_info += "  provisioner install cli helm@3.7.0"
+        help_info += "  provisioner install cli helm@3.7.0\n"
+        help_info += "  provisioner install cli helm -h\n"
         collaborators.printer().print_with_rich_table_fn(utilities)
         collaborators.printer().print_fn(help_info)
