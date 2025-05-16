@@ -30,13 +30,7 @@ ANSIBLE_PLAYBOOK_RPI_CONFIGURE_NODE = """
   roles:
     - role: {ansible_playbooks_path}/roles/rpi_config_node
       tags: ['configure_remote_node']
-
-  tasks:
-    - name: Reboot and wait
-      include_tasks: {ansible_playbooks_path}/reboot.yaml
-      tags: ['reboot']
 """
-
 
 class RemoteMachineOsConfigureArgs:
 

@@ -530,7 +530,6 @@ def uninstall_k3s(collaborators: CoreCollaborators, node_type: str, local_bin_fo
         # PHASE 2: BINARY UNINSTALL (FALLBACK METHOD)
         #############################################
         return _perform_binary_uninstall(collaborators, node_type, local_bin_folder)
-        # return "TEST TES TTEST"
 
     except Exception as e:
         # Catch all exceptions and return a message instead of raising
