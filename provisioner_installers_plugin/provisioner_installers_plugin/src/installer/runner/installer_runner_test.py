@@ -28,7 +28,9 @@ from provisioner_installers_plugin.src.installer.runner.installer_runner import 
     generate_installer_welcome,
 )
 
-from provisioner_shared.components.remote.ansible.remote_provisioner_runner import ANSIBLE_PLAYBOOK_REMOTE_PROVISIONER_WRAPPER
+from provisioner_shared.components.remote.ansible.remote_provisioner_runner import (
+    ANSIBLE_PLAYBOOK_REMOTE_PROVISIONER_WRAPPER,
+)
 from provisioner_shared.components.remote.domain.config import RunEnvironment
 from provisioner_shared.components.remote.remote_connector import RemoteMachineConnector
 from provisioner_shared.components.remote.remote_connector_fakes import (

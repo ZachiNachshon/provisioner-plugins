@@ -42,7 +42,7 @@ def register_k3s_commands(cli_group: click.Group):
         "--k3s-token",
         show_default=False,
         required=False,
-        help="K3s server token",
+        help="K3s server token in format K10<CA-HASH>::<USERNAME>:<PASSWORD> or plaintext password",
         envvar="PROV_K3S_SERVER_TOKEN",
     )
     @click.option(
@@ -96,9 +96,6 @@ def register_k3s_commands(cli_group: click.Group):
         """
         Install or uninstall a Rancher K3s Server on systemd and openrc based systems
         """
-        if not uninstall and not k3s_token:
-            raise click.UsageError("--k3s-token is required for installation")
-
         k3s_server_install(
             NameVersionArgsTuple(
                 "k3s-server",

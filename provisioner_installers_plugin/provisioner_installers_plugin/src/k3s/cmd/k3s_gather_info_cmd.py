@@ -2,10 +2,9 @@
 
 
 from loguru import logger
-from provisioner_installers_plugin.src.k3s.cmd.remote_k3s_gather_info import RemoteK3sGatherInfoArgs, RemoteK3sGatherInfoRunner
-from provisioner_single_board_plugin.src.common.remote.remote_os_configure import (
-    RemoteMachineOsConfigureArgs,
-    RemoteMachineOsConfigureRunner,
+from provisioner_installers_plugin.src.k3s.cmd.remote_k3s_gather_info import (
+    RemoteK3sGatherInfoArgs,
+    RemoteK3sGatherInfoRunner,
 )
 
 from provisioner_shared.components.remote.remote_opts import RemoteOpts

@@ -110,7 +110,7 @@ def start_k3s_binary(
     collaborators: CoreCollaborators,
     local_bin_folder: str,
     node_type: str,
-    k3s_token: str,
+    k3s_token: Optional[str],
     k3s_url: Optional[str],
     k3s_additional_cli_args: str,
     use_kube_config: bool = False,
@@ -129,7 +129,10 @@ def start_k3s_binary(
         logger.info(f"Configuring K3s to write kubeconfig to {kube_config}")
 
     if node_type == "server":
-        run_command = f"nohup sudo {local_bin_folder}/k3s server --token {k3s_token} {clean_args} {kubeconfig_args} > /var/log/k3s.log 2>&1 &"
+        token_args = ""
+        if k3s_token:
+            token_args = f"--token {k3s_token}"
+        run_command = f"nohup sudo {local_bin_folder}/k3s server {token_args} {clean_args} {kubeconfig_args} > /var/log/k3s.log 2>&1 &"
     else:  # agent
         if not k3s_url:
             raise ValueError("Missing mandatory parameter: k3s-url for agent")
@@ -152,7 +155,7 @@ def install_service(
     version: str,
     local_bin_folder: str,
     node_type: str,
-    k3s_token: str,
+    k3s_token: Optional[str],
     k3s_url: Optional[str],
     k3s_additional_cli_args: str,
     use_kube_config: bool = False,
@@ -170,11 +173,15 @@ def install_service(
         logger.info(f"Configuring K3s to write kubeconfig to {kube_config}")
 
     if node_type == "server":
+        token_args = ""
+        if k3s_token:
+            token_args = f"--token {k3s_token}"
+
         install_cmd = (
             f"curl -sfL https://get.k3s.io | "
             f'INSTALL_K3S_VERSION="{version}" '
             f'INSTALL_K3S_BIN_DIR="{local_bin_folder}" '
-            f"sh -s - {k3s_additional_cli_args} {kubeconfig_args} --token {k3s_token}"
+            f"sh -s - {k3s_additional_cli_args} {kubeconfig_args} {token_args}"
         )
     else:  # agent
         if not k3s_url:
@@ -231,8 +238,8 @@ def _get_uninstall_script_path(node_type: str) -> str:
         str: Path to the uninstall script
     """
     if node_type == "agent":
-        return "/usr/local/bin/k3s-agent-uninstall.sh"
-    return "/usr/local/bin/k3s-uninstall.sh"
+        return "~/.local/bin/k3s-agent-uninstall.sh"
+    return "~/.local/bin/k3s-uninstall.sh"
 
 
 def _try_service_uninstall(
@@ -479,8 +486,8 @@ def uninstall_k3s(collaborators: CoreCollaborators, node_type: str, local_bin_fo
 
     This function follows a two-phase approach:
     1. PRIMARY METHOD: Attempts to use the official K3s uninstall script
-       - For 'server' nodes: uses /usr/local/bin/k3s-uninstall.sh
-       - For 'agent' nodes: uses /usr/local/bin/k3s-agent-uninstall.sh
+       - For 'server' nodes: uses ~/.local/bin/k3s-uninstall.sh
+       - For 'agent' nodes: uses ~/.local/bin/k3s-agent-uninstall.sh
        - Uses nohup for remote SSH connections to prevent connection drops
 
     2. FALLBACK METHOD: If service uninstall fails, performs manual cleanup:
@@ -509,7 +516,7 @@ def uninstall_k3s(collaborators: CoreCollaborators, node_type: str, local_bin_fo
         #############################################
 
         # Get the appropriate uninstall script path
-        script_path = _get_uninstall_script_path(node_type)
+        script_path = os.path.expanduser(_get_uninstall_script_path(node_type))
         logger.debug(f"Checking for uninstall script at: {script_path}")
 
         if os.path.exists(script_path):
@@ -546,10 +553,6 @@ def install_k3s_server(version: str, collaborators: CoreCollaborators, maybe_arg
     k3s_additional_cli_args = args["k3s_additional_cli_args"]
     install_as_binary = args["install_as_binary"]
     use_kube_config = args["use_kube_config"]
-
-    # Continue with installation
-    if not k3s_token:
-        raise ValueError("Missing mandatory parameter: k3s_token")
 
     # Setup environment
     local_bin_folder, current_os = setup_environment()

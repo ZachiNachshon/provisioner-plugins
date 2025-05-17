@@ -32,6 +32,7 @@ ANSIBLE_PLAYBOOK_RPI_CONFIGURE_NODE = """
       tags: ['configure_remote_node']
 """
 
+
 class RemoteMachineOsConfigureArgs:
 
     remote_opts: RemoteOpts
@@ -105,7 +106,10 @@ class RemoteMachineOsConfigureRunner:
                 f"become_root={'no' if remote_ctx.is_dry_run() else 'yes'}",
                 f"reboot_required={'false' if remote_ctx.is_dry_run() else 'true'}",
             ],
-            ansible_tags=["configure_remote_node", "reboot"],
+            ansible_tags=[
+                "configure_remote_node",
+            ]
+            + (["reboot"] if not remote_ctx.is_dry_run() else []),
         )
 
     def _get_ssh_conn_info(
