@@ -48,7 +48,7 @@ class RemoteK3sGatherInfoRunner:
 
         self._prerequisites(ctx=ctx, checks=collaborators.checks())
         ssh_conn_info = self._get_ssh_conn_info(ctx, collaborators, args.remote_opts)
-        ansible_host = self._run_ansible_k3s_gather_info_playbook_with_progress_bar(
+        self._run_ansible_k3s_gather_info_playbook_with_progress_bar(
             ctx=ctx,
             ssh_conn_info=ssh_conn_info,
             collaborators=collaborators,
