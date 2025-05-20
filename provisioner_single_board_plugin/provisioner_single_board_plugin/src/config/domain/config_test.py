@@ -30,6 +30,7 @@ remote:
         ssh_private_key_file_path: /path/to/unknown
   lan_scan:
     ip_discovery_range: 192.168.1.1/24
+    dns_server: 192.168.1.1
 
 os:
   raspbian:
@@ -71,7 +72,7 @@ os:
         self.assertEqual(merged_config_obj.remote.hosts[0].auth.ssh_private_key_file_path, "/test/path")
 
         self.assertEqual(merged_config_obj.remote.lan_scan.ip_discovery_range, "192.168.1.1/24")
-
+        self.assertEqual(merged_config_obj.remote.lan_scan.dns_server, "192.168.1.1")
         self.assertEqual(merged_config_obj.os.raspbian.active_system, "32bit")
         self.assertEqual(
             merged_config_obj.os.raspbian.download_url.url_32bit, "http://download-url-32-bit-test-path.com"
