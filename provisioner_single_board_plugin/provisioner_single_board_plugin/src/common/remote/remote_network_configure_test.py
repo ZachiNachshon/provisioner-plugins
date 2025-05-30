@@ -236,6 +236,8 @@ class RemoteMachineNetworkConfigureTestShould(unittest.TestCase):
                         f"static_ip={TestDataRemoteConnector.TEST_DATA_DHCP_STATIC_IP_ADDRESS}",
                         f"gateway_address={TestDataRemoteConnector.TEST_DATA_DHCP_GW_IP_ADDRESS}",
                         f"dns_address={TestDataRemoteConnector.TEST_DATA_DHCP_DNS_IP_ADDRESS}",
+                        "become_root=yes",
+                        "reboot_required=true",
                     ],
                 ),
                 self.assertEqual(ansible_tags, ["configure_rpi_network", "define_static_ip", "reboot"]),
