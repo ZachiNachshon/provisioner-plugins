@@ -350,7 +350,7 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
         ],
     )
     @mock.patch(
-        f"{UTILITY_INSTALLER_CMD_RUNNER_PATH}._install_utility_locally",
+        f"{UTILITY_INSTALLER_CMD_RUNNER_PATH}._install_by_source_type",
         side_effect=[
             PyFn.of(TestSupportedToolings[TEST_UTILITY_1_GITHUB_NAME]),
             PyFn.of(TestSupportedToolings[TEST_UTILITY_2_SCRIPT_NAME]),
