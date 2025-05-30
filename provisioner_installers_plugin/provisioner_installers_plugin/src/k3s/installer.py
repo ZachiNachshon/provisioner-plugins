@@ -181,7 +181,7 @@ def install_service(
             f"curl -sfL https://get.k3s.io | "
             f'INSTALL_K3S_VERSION="{version}" '
             f'INSTALL_K3S_BIN_DIR="{local_bin_folder}" '
-            f"sh -s - {k3s_additional_cli_args} {kubeconfig_args} {token_args}"
+            f"sh -s - server {k3s_additional_cli_args} {kubeconfig_args} {token_args}"
         )
     else:  # agent
         if not k3s_url:
@@ -190,7 +190,7 @@ def install_service(
             f"curl -sfL https://get.k3s.io | "
             f'INSTALL_K3S_VERSION="{version}" '
             f'INSTALL_K3S_BIN_DIR="{local_bin_folder}" '
-            f"sh -s - {k3s_additional_cli_args} --token {k3s_token} --server {k3s_url}"
+            f"sh -s - agent {k3s_additional_cli_args} --token {k3s_token} --server {k3s_url}"
         )
 
     collaborators.process().run_fn(
