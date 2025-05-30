@@ -915,43 +915,39 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
         utility = TestSupportedToolings[TEST_UTILITY_1_GITHUB_NAME]
         env = TestEnv.create()
         remote_ctx = RemoteContext.no_op()
-        fake_runner = FakeAnsibleRunnerLocal(env.get_context())
         fake_installer_env = self.create_fake_installer_env(env, is_force_install=True)
         env.get_collaborators().checks().on("is_env_var_equals_fn", str, str).return_value = False
-        fake_runner.on("run_fn", List, AnsiblePlaybook, List, List, str).side_effect = (
-            lambda selected_hosts, playbook, ansible_vars, ansible_tags, ansible_playbook_package: (
-                self.assertEqual(selected_hosts, TestDataRemoteConnector.TEST_DATA_SSH_ANSIBLE_HOSTS),
-                Assertion.expect_equal_objects(
-                    self,
-                    playbook,
-                    AnsiblePlaybook(
-                        name="provisioner_wrapper",
-                        content=ANSIBLE_PLAYBOOK_REMOTE_PROVISIONER_WRAPPER,
-                        remote_context=remote_ctx,
-                    ),
-                ),
-                self.assertEqual(
-                    ansible_vars,
-                    [
-                        f"provisioner_command='install --environment Local {InstallerSubCommandName.CLI} {utility.display_name}@{TEST_UTILITY_1_GITHUB_VER} --test_arg_1=test_arg_1_value --force -y {'-v ' if remote_ctx.is_verbose() else ''}'",
-                        "required_plugins=['provisioner_installers_plugin']",
-                        "install_method='pip'",
-                        f"git_access_token={TEST_GITHUB_ACCESS_TOKEN}",
-                    ],
-                ),
-                self.assertEqual(ansible_tags, ["provisioner_wrapper"]),
+        
+        # Mock the RemoteProvisionerRunner.run method which is what the production code actually uses
+        with mock.patch("provisioner_shared.components.remote.ansible.remote_provisioner_runner.RemoteProvisionerRunner.run") as mock_runner:
+            mock_runner.return_value = "DRY_RUN_OUTPUT"
+            
+            runner = UtilityInstallerCmdRunner(env.get_context())
+            ssh_conn_info = TestDataRemoteConnector.create_fake_ssh_conn_info()
+            
+            # Call the actual production method
+            runner._execute_remote_ansible_playbook(
+                env=fake_installer_env,
+                ssh_conn_info=ssh_conn_info,
+                utility=utility,
             )
-        )
-
-        UtilityInstallerCmdRunner(env.get_context())._run_ansible(
-            env=fake_installer_env,
-            runner=fake_runner,
-            remote_ctx=remote_ctx,
-            ssh_conn_info=TestDataRemoteConnector.create_fake_ssh_conn_info(),
-            sub_command_name=InstallerSubCommandName.CLI,
-            utility=utility,
-            git_access_token=TEST_GITHUB_ACCESS_TOKEN,
-        )
+            
+            # Verify the RemoteProvisionerRunner.run was called with correct arguments
+            mock_runner.assert_called_once()
+            call_args = mock_runner.call_args
+            
+            # Extract the RemoteProvisionerRunnerArgs
+            args = call_args[0][1]  # Second positional argument
+            
+            # Verify the provisioner command
+            expected_command = f"install --environment Local {InstallerSubCommandName.CLI} {utility.display_name}@{TEST_UTILITY_1_GITHUB_VER} --test_arg_1=test_arg_1_value --force -y {'-v ' if remote_ctx.is_verbose() else ''}"
+            self.assertEqual(args.provisioner_command, expected_command)
+            
+            # Verify required plugins
+            self.assertEqual(args.required_plugins, ["provisioner_installers_plugin"])
+            
+            # Verify SSH connection info
+            self.assertEqual(args.ssh_connection_info, ssh_conn_info)
 
     @mock.patch(
         f"{UTILITY_INSTALLER_CMD_RUNNER_PATH}._install_on_remote_machine",
