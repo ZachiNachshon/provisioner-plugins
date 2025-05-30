@@ -2,7 +2,6 @@
 
 import os
 import subprocess
-from pathlib import Path
 from typing import Optional
 
 from loguru import logger
@@ -17,10 +16,15 @@ from provisioner_shared.components.runtime.infra.evaluator import Evaluator
 from provisioner_shared.components.runtime.shared.collaborators import CoreCollaborators
 from provisioner_shared.components.runtime.utils.checks import Checks
 
+K3S_KUBECONFIG_DEFAULT_SERVER_URL = "https://127.0.0.1:6443"
+
 
 class RemoteK3sKubeConfigDownloadArgs:
-    def __init__(self, remote_opts: RemoteOpts, dest_file_path: Optional[str] = None) -> None:
+    def __init__(
+        self, remote_opts: RemoteOpts, dest_file_path: Optional[str] = None, server_url: Optional[str] = None
+    ) -> None:
         self.remote_opts = remote_opts
+        self.server_url = server_url
         if dest_file_path:
             self.dest_file_path = os.path.expanduser(dest_file_path)
         else:
@@ -51,16 +55,27 @@ class RemoteK3sKubeConfigDownloadRunner:
         remote_ip = ansible_host.ip_address
         remote_user = ansible_host.username
 
-        collaborators.summary().show_summary_and_prompt_for_enter("Downloading K3s Kubeconfig, SSH password may be required")
+        collaborators.summary().show_summary_and_prompt_for_enter(
+            "Downloading K3s Kubeconfig, SSH password may be required"
+        )
 
-        output = self._download_kubeconfig(ctx,
+        self._download_kubeconfig(
+            ctx,
             collaborators,
             remote_user,
             remote_ip,
             args.dest_file_path,
         )
 
-        collaborators.printer().new_line_fn().print_fn(output)
+        if args.server_url:
+            self._update_kubeconfig_server_url(collaborators, args.dest_file_path, args.server_url)
+
+    def _update_kubeconfig_server_url(
+        self, collaborators: CoreCollaborators, kubeconfig_path: str, server_url: str
+    ) -> None:
+        kubeconfig_content: str = collaborators.io_utils().read_file_safe_fn(kubeconfig_path)
+        kubeconfig_content = kubeconfig_content.replace(K3S_KUBECONFIG_DEFAULT_SERVER_URL, server_url)
+        collaborators.io_utils().write_file_fn(kubeconfig_content, kubeconfig_path)
 
     def _download_kubeconfig(
         self,
@@ -75,18 +90,14 @@ class RemoteK3sKubeConfigDownloadRunner:
         # Create empty file with proper permissions
         # Path(dest_file_path).touch(exist_ok=True)
         # os.chmod(dest_file_path, 0o600)
-        
+
         if ctx.is_dry_run():
             return f"[DRY-RUN] Would download kubeconfig from {remote_user}@{remote_ip} to {dest_file_path}"
-        
+
         try:
             # Download the kubeconfig from remote server
-            ssh_cmd = f"ssh -o ConnectTimeout=5 {remote_user}@{remote_ip} \"sudo cat /etc/rancher/k3s/k3s.yaml\" > {dest_file_path}"
-            collaborators.process().run_fn(
-                args=[ssh_cmd],
-                fail_on_error=True,
-                allow_single_shell_command_str=True
-            )            
+            ssh_cmd = f'ssh -o ConnectTimeout=5 {remote_user}@{remote_ip} "sudo cat /etc/rancher/k3s/k3s.yaml" > {dest_file_path}'
+            collaborators.process().run_fn(args=[ssh_cmd], fail_on_error=True, allow_single_shell_command_str=True)
             return f"Successfully downloaded kubeconfig from {remote_user}@{remote_ip} to {dest_file_path}"
         except subprocess.CalledProcessError as e:
             error_msg = f"Failed to download kubeconfig: {str(e)}"
