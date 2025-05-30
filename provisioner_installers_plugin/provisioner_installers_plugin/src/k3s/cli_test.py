@@ -20,5 +20,5 @@ class UtilityInstallerk3sTestShould(unittest.TestCase):
                 "distro",
             ],
         )
-        self.assertIn("k3s-agent   Install a Rancher K3s Agent as a service", output)
-        self.assertIn("k3s-server  Install a Rancher K3s Server as a service", output)
+        self.assertIn("k3s-agent       Install or uninstall a Rancher K3s Agent...", output)
+        self.assertIn("k3s-server      Install or uninstall a Rancher K3s Server...", output)
