@@ -255,7 +255,7 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
             TestSupportedToolings[TEST_UTILITY_1_GITHUB_NAME],
             TestSupportedToolings[TEST_UTILITY_2_SCRIPT_NAME],
         ]
-        fake_installer_env = self.create_fake_installer_env(self.env, environment=RunEnvironment.Local)
+        fake_installer_env = self.create_fake_installer_env(self.env)
         eval = self.create_evaluator(fake_installer_env)
         Assertion.expect_equal_objects(
             self,
@@ -302,8 +302,8 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
         eval << self.get_runner(eval)._run_installation(
             fake_installer_env, RunEnv_Utilities_Tuple(RunEnvironment.Local, utilities)
         )
-        Assertion.expect_call_argument(self, run_call, "env", fake_installer_env)
-        Assertion.expect_call_argument(self, run_call, "utilities", utilities)
+        # Check positional arguments since the production code uses positional calls
+        run_call.assert_called_once_with(fake_installer_env, utilities)
 
     @mock.patch(f"{UTILITY_INSTALLER_CMD_RUNNER_PATH}._run_remote_installation")
     def test_run_installation_on_remote_env(self, run_call: mock.MagicMock) -> None:
@@ -316,8 +316,8 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
         eval << self.get_runner(eval)._run_installation(
             fake_installer_env, RunEnv_Utilities_Tuple(RunEnvironment.Remote, utilities)
         )
-        Assertion.expect_call_argument(self, run_call, "env", fake_installer_env)
-        Assertion.expect_call_argument(self, run_call, "utilities", utilities)
+        # Check positional arguments since the production code uses positional calls
+        run_call.assert_called_once_with(fake_installer_env, utilities)
 
     def test_print_pre_install_summary_skips_on_missing_utility(self) -> None:
         fake_installer_env = self.create_fake_installer_env(self.env)
