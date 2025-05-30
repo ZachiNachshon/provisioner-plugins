@@ -940,7 +940,7 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
             args = call_args[0][1]  # Second positional argument
             
             # Verify the provisioner command
-            expected_command = f"install --environment Local {InstallerSubCommandName.CLI} {utility.display_name}@{TEST_UTILITY_1_GITHUB_VER} --test_arg_1=test_arg_1_value --force -y {'-v ' if remote_ctx.is_verbose() else ''}"
+            expected_command = f"install --environment Local {InstallerSubCommandName.CLI} {utility.display_name}@{TEST_UTILITY_1_GITHUB_VER} --test_arg_1=test_arg_1_value  --force -y {'-v ' if remote_ctx.is_verbose() else ''}"
             self.assertEqual(args.provisioner_command, expected_command)
             
             # Verify required plugins
