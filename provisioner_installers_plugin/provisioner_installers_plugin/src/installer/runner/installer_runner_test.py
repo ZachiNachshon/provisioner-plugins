@@ -799,15 +799,13 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
         result = eval << self.get_runner(eval)._elevate_permission_and_symlink(fake_installer_env, expected_input)
         Assertion.expect_equal_objects(self, result, symlink_path)
 
-    @mock.patch(f"{UTILITY_INSTALLER_CMD_RUNNER_PATH}._elevate_permission_and_symlink", return_value=PyFn.empty())
-    @mock.patch(f"{UTILITY_INSTALLER_CMD_RUNNER_PATH}._force_binary_at_download_path_root", return_value=PyFn.empty())
-    @mock.patch(f"{UTILITY_INSTALLER_CMD_RUNNER_PATH}._maybe_extract_downloaded_binary", return_value=PyFn.empty())
-    @mock.patch(f"{UTILITY_INSTALLER_CMD_RUNNER_PATH}._download_binary_by_version", return_value=PyFn.empty())
-    @mock.patch(f"{UTILITY_INSTALLER_CMD_RUNNER_PATH}._print_before_downloading", return_value=PyFn.empty())
-    @mock.patch(
-        f"{UTILITY_INSTALLER_CMD_RUNNER_PATH}._try_get_github_release_name_by_os_arch", return_value=PyFn.empty()
-    )
-    @mock.patch(f"{UTILITY_INSTALLER_CMD_RUNNER_PATH}._try_resolve_utility_version", return_value=PyFn.empty())
+    @mock.patch(f"{UTILITY_INSTALLER_CMD_RUNNER_PATH}._setup_binary_permissions_and_symlink", return_value=PyFn.empty())
+    @mock.patch(f"{UTILITY_INSTALLER_CMD_RUNNER_PATH}._force_binary_at_download_path_root")
+    @mock.patch(f"{UTILITY_INSTALLER_CMD_RUNNER_PATH}._maybe_extract_downloaded_binary")
+    @mock.patch(f"{UTILITY_INSTALLER_CMD_RUNNER_PATH}._download_binary_by_version")
+    @mock.patch(f"{UTILITY_INSTALLER_CMD_RUNNER_PATH}._print_before_downloading")
+    @mock.patch(f"{UTILITY_INSTALLER_CMD_RUNNER_PATH}._try_get_github_release_name_by_os_arch")
+    @mock.patch(f"{UTILITY_INSTALLER_CMD_RUNNER_PATH}._try_resolve_utility_version")
     def test_install_from_github_success(
         self,
         resolve_call: mock.MagicMock,
@@ -819,7 +817,29 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
         elevate_binary_permissions_call: mock.MagicMock,
     ) -> None:
         utility = TestSupportedToolings[TEST_UTILITY_1_GITHUB_NAME]
-        fake_installer_env = self.create_fake_installer_env(self.env)
+        test_env = TestEnv.create()
+        
+        # Create proper data structures for the chain
+        util_version_tuple = Utility_Version_Tuple(utility, utility.version)
+        util_version_release_tuple = Utility_Version_ReleaseFileName_OsArch_Tuple(
+            utility, utility.version, "test_release.tar.gz", test_env.get_context().os_arch
+        )
+        download_tuple = ReleaseFilename_ReleaseDownloadFilePath_Utility_OsArch_Tuple(
+            "test_release.tar.gz", "/path/to/download", utility, test_env.get_context().os_arch
+        )
+        extraction_tuple = UnpackedReleaseFolderPath_Utility_OsArch_Tuple(
+            "/path/to/extracted", utility, test_env.get_context().os_arch
+        )
+        
+        # Set up the mock chain with proper return values
+        resolve_call.return_value = PyFn.of(util_version_tuple)
+        get_release_name_call.return_value = PyFn.of(util_version_release_tuple)
+        print_release_call.return_value = PyFn.of(util_version_release_tuple)
+        download_binary_call.return_value = PyFn.of(download_tuple)
+        extract_binary_archive_call.return_value = PyFn.of(extraction_tuple)
+        force_binary_call.return_value = PyFn.of(extraction_tuple)
+        
+        fake_installer_env = self.create_fake_installer_env(test_env)
         eval = self.create_evaluator(fake_installer_env)
         eval << self.get_runner(eval)._install_from_github(fake_installer_env, utility)
         resolve_call.assert_called_once()
