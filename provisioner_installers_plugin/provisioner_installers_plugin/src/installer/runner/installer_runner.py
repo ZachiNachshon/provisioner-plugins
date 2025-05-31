@@ -422,7 +422,7 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
         self, env: InstallerEnv, utility: Installable.Utility
     ) -> PyFn["UtilityInstallerCmdRunner", Exception, Installable.Utility]:
         """Uninstall a single utility."""
-        return PyFn.effect(lambda: logger.info(f"Uninstalling utility: {utility.display_name}")).flat_map(
+        return PyFn.effect(lambda: env.collaborators.printer().print_fn(f"Uninstalling utility: {utility.display_name}")).flat_map(
             lambda _: self._uninstall_utility_locally(env, utility)
         )
 
@@ -433,8 +433,8 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
         symlink_path = self._genreate_binary_symlink_path(utility.binary_name)
         binaries_path = f"{ProvisionerInstallableBinariesPath}/{utility.binary_name}"
 
-        logger.info(f"Removing symlink at {symlink_path}")
-        logger.info(f"Removing binary directory at {binaries_path}")
+        env.collaborators.printer().print_fn(f"Removing symlink at {symlink_path}")
+        env.collaborators.printer().print_fn(f"Removing binary directory at {binaries_path}")
 
         # First remove symlink, then try to remove the binaries directory
         return (
@@ -554,7 +554,7 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
         return PyFn.effect(lambda: env.collaborators.checks().is_tool_exist_fn(utility.binary_name)).flat_map(
             lambda binary_exists: (
                 PyFn.effect(
-                    lambda: logger.info(f"Note: Utility {utility.display_name} is not currently installed")
+                    lambda: env.collaborators.printer().print_fn(f"Note: Utility {utility.display_name} is not currently installed")
                 ).flat_map(lambda _: self._uninstall_by_source_type(env, utility))
                 if not binary_exists
                 else self._uninstall_by_source_type(env, utility)
@@ -653,9 +653,9 @@ class UtilityInstallerCmdRunner(PyFnEnvBase):
         return (
             PyFn.of(env)
             .flat_map(lambda e: e.collaborators.io_utils().remove_symlink_fn(symlink_path))
-            .flat_map(lambda _: PyFn.effect(lambda: logger.info(f"Removed symlink at {symlink_path}")))
+            .flat_map(lambda _: PyFn.effect(lambda: env.collaborators.printer().print_fn(f"Removed symlink at {symlink_path}")))
             .flat_map(
-                lambda _: PyFn.effect(lambda: logger.info(f"Basic uninstall of {utility.display_name} completed"))
+                lambda _: PyFn.effect(lambda: env.collaborators.printer().print_fn(f"Basic uninstall of {utility.display_name} completed"))
             )
             .map(lambda _: utility)
         )
