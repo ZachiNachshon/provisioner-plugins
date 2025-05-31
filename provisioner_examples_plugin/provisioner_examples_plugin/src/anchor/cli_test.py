@@ -19,6 +19,6 @@ class AnchorCliTestShould(unittest.TestCase):
         print(f"Exit code: {result.exit_code}")
         
         # Use flexible regex that matches the core description - handle CI/local differences
-        run_command_pattern = re.compile(r'run-cmd\s+Run a dummy anchor run scenario locally')
+        run_command_pattern = re.compile(r'run\s+Run a dummy anchor run scenario locally')
         
         self.assertIsNotNone(run_command_pattern.search(result.output))
