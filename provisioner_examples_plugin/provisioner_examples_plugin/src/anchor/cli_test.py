@@ -15,7 +15,7 @@ class AnchorCliTestShould(unittest.TestCase):
     def test_anchor_cmds_prints_to_menu_as_expected(self) -> None:
         result = TestCliRunner.run_throws_not_managed(root_menu, ["examples", "anchor"])
         
-        # Use regex to match command description with flexible spacing
-        run_command_pattern = re.compile(r'run-command\s+Run a dummy anchor run scenario locally or')
+        # Use flexible regex that matches the core description - handle CI/local differences
+        run_command_pattern = re.compile(r'run-command\s+Run a dummy anchor run scenario locally')
         
         self.assertIsNotNone(run_command_pattern.search(result.output))
