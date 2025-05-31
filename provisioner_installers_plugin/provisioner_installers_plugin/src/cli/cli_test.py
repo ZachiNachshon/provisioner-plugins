@@ -1,5 +1,6 @@
 # !/usr/bin/env python3
 
+import re
 import unittest
 
 from provisioner.main import root_menu
@@ -14,12 +15,17 @@ INSTALLER_CMD_MODULE_PATH = "provisioner_installers_plugin.src.installer.cmd.ins
 class UtilityInstallerCliTestShould(unittest.TestCase):
 
     def test_cli_utilities_prints_to_menu_as_expected(self) -> None:
-        output = TestCliRunner.run(
+        result = TestCliRunner.run_throws_not_managed(
             root_menu,
             [
                 "install",
                 "cli",
             ],
         )
-        self.assertIn("anchor    Create Dynamic CLI's as your GitOps Marketplace", output)
-        self.assertIn("helm      Package Manager for Kubernetes", output)
+        
+        # Use regex to match command descriptions with flexible spacing
+        anchor_pattern = re.compile(r'anchor\s+Create Dynamic CLI\'s as your GitOps Marketplace')
+        helm_pattern = re.compile(r'helm\s+Package Manager for Kubernetes')
+        
+        self.assertIsNotNone(anchor_pattern.search(result.output))
+        self.assertIsNotNone(helm_pattern.search(result.output))
