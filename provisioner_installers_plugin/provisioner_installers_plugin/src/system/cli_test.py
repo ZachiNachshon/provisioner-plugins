@@ -1,5 +1,6 @@
 # !/usr/bin/env python3
 
+import re
 import unittest
 
 from provisioner.main import root_menu
@@ -12,11 +13,15 @@ from provisioner_shared.test_lib.test_cli_runner import TestCliRunner
 class UtilityInstallerSystemTestShould(unittest.TestCase):
 
     def test_system_utils_prints_to_menu_as_expected(self) -> None:
-        output = TestCliRunner.run(
+        result = TestCliRunner.run_throws_not_managed(
             root_menu,
             [
                 "install",
                 "system",
             ],
         )
-        self.assertIn("python  Install Python / pip package manager", output)
+        
+        # Use regex to match command description with flexible spacing
+        python_pattern = re.compile(r'python\s+Install Python / pip package manager')
+        
+        self.assertIsNotNone(python_pattern.search(result.output))

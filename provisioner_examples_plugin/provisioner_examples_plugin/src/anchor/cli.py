@@ -36,13 +36,13 @@ def register_anchor_commands(
 
     @anchor.command()
     @click.argument(
-        "run-command",
+        "command",
         type=click.STRING,
         required=True,
     )
     @cli_modifiers
     @click.pass_context
-    def run_command(ctx: click.Context, run_command: str):
+    def run(ctx: click.Context, command: str):
         """
         Run a dummy anchor run scenario locally or on remote machine via Ansible playbook
         """
@@ -52,7 +52,7 @@ def register_anchor_commands(
             call=lambda: AnchorCmd().run(
                 ctx=cli_ctx,
                 args=AnchorCmdArgs(
-                    anchor_run_command=run_command,
+                    anchor_run_command=command,
                     vcs_opts=CliVersionControlOpts.from_click_ctx(ctx),
                     remote_opts=RemoteOpts.from_click_ctx(ctx),
                 ),

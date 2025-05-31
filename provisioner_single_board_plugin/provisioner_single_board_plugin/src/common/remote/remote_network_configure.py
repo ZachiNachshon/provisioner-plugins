@@ -5,7 +5,7 @@ from typing import Optional
 from loguru import logger
 
 from provisioner_shared.components.remote.remote_connector import (
-    DHCPCDConfigurationInfo,
+    NetworkConfigurationInfo,
     RemoteMachineConnector,
     SSHConnectionInfo,
 )
@@ -30,11 +30,6 @@ ANSIBLE_PLAYBOOK_RPI_CONFIGURE_NETWORK = """
 
     - role: {ansible_playbooks_path}/roles/dhcp_static_ip
       tags: ['define_static_ip']
-
-  tasks:
-    - name: Reboot and wait
-      include_tasks: {ansible_playbooks_path}/reboot.yaml
-      tags: ['reboot']
 """
 
 
@@ -79,12 +74,12 @@ class RemoteMachineNetworkConfigureRunner:
         self._prerequisites(ctx=ctx, checks=collaborators.checks())
         self._print_pre_run_instructions(collaborators)
         ssh_conn_info = self._get_ssh_conn_info(ctx, collaborators, args.remote_opts)
-        dhcpcd_configure_info = self._get_dhcpcd_configure_info(ctx, collaborators, args, ssh_conn_info)
+        network_configure_info = self._get_network_configure_info(ctx, collaborators, args, ssh_conn_info)
 
         tuple_info = self._run_ansible_network_configure_playbook_with_progress_bar(
             ctx=ctx,
             ssh_conn_info=ssh_conn_info,
-            dhcpcd_configure_info=dhcpcd_configure_info,
+            network_configure_info=network_configure_info,
             collaborators=collaborators,
             args=args,
         )
@@ -105,16 +100,16 @@ class RemoteMachineNetworkConfigureRunner:
         collaborators.summary().append("ssh_conn_info", ssh_conn_info)
         return ssh_conn_info
 
-    def _get_dhcpcd_configure_info(
+    def _get_network_configure_info(
         self,
         ctx: Context,
         collaborators: CoreCollaborators,
         args: RemoteMachineNetworkConfigureArgs,
         ssh_conn_info: SSHConnectionInfo,
-    ) -> DHCPCDConfigurationInfo:
+    ) -> NetworkConfigurationInfo:
 
-        dhcpcd_configure_info = Evaluator.eval_step_return_value_throw_on_failure(
-            call=lambda: RemoteMachineConnector(collaborators=collaborators).collect_dhcpcd_configuration_info(
+        network_configure_info = Evaluator.eval_step_return_value_throw_on_failure(
+            call=lambda: RemoteMachineConnector(collaborators=collaborators).collect_network_configuration_info(
                 ctx=ctx,
                 ansible_hosts=ssh_conn_info.ansible_hosts,
                 static_ip_address=args.static_ip_address,
@@ -122,21 +117,21 @@ class RemoteMachineNetworkConfigureRunner:
                 dns_ip_address=args.dns_ip_address,
             ),
             ctx=ctx,
-            err_msg="Could not resolve DHCPCD configure info",
+            err_msg="Could not resolve network configuration info",
         )
-        collaborators.summary().append("dhcpcd_configure_info", dhcpcd_configure_info)
-        return dhcpcd_configure_info
+        collaborators.summary().append("network_configure_info", network_configure_info)
+        return network_configure_info
 
     def _run_ansible_network_configure_playbook_with_progress_bar(
         self,
         ctx: Context,
         ssh_conn_info: SSHConnectionInfo,
-        dhcpcd_configure_info: DHCPCDConfigurationInfo,
+        network_configure_info: NetworkConfigurationInfo,
         collaborators: CoreCollaborators,
         args: RemoteMachineNetworkConfigureArgs,
-    ) -> tuple[SSHConnectionInfo, DHCPCDConfigurationInfo]:
+    ) -> tuple[SSHConnectionInfo, NetworkConfigurationInfo]:
 
-        tuple_info = (ssh_conn_info, dhcpcd_configure_info)
+        tuple_info = (ssh_conn_info, network_configure_info)
         network_info = self._bundle_network_information_from_tuple(ctx, tuple_info)
         collaborators.summary().show_summary_and_prompt_for_enter("Configure Network")
         output = (
@@ -148,7 +143,7 @@ class RemoteMachineNetworkConfigureRunner:
                     args.remote_opts.get_remote_context(),
                     network_info.ssh_hostname,
                     ssh_conn_info,
-                    dhcpcd_configure_info,
+                    network_configure_info,
                 ),
                 desc_run="Running Ansible playbook (Configure Network)",
                 desc_end="Ansible playbook finished (Configure Network).",
@@ -163,7 +158,7 @@ class RemoteMachineNetworkConfigureRunner:
         remote_ctx: RemoteContext,
         ssh_hostname: str,
         ssh_conn_info: SSHConnectionInfo,
-        dhcpcd_configure_info: DHCPCDConfigurationInfo,
+        network_configure_info: NetworkConfigurationInfo,
     ) -> str:
 
         return runner.run_fn(
@@ -175,9 +170,9 @@ class RemoteMachineNetworkConfigureRunner:
             ),
             ansible_vars=[
                 f"host_name={ssh_hostname}",
-                f"static_ip={dhcpcd_configure_info.static_ip_address}",
-                f"gateway_address={dhcpcd_configure_info.gw_ip_address}",
-                f"dns_address={dhcpcd_configure_info.dns_ip_address}",
+                f"static_ip={network_configure_info.static_ip_address}",
+                f"gateway_address={network_configure_info.gw_ip_address}",
+                f"dns_address={network_configure_info.dns_ip_address}",
                 f"become_root={'no' if remote_ctx.is_dry_run() else 'yes'}",
                 f"reboot_required={'false' if remote_ctx.is_dry_run() else 'true'}",
             ],
@@ -191,7 +186,7 @@ class RemoteMachineNetworkConfigureRunner:
     def _print_post_run_instructions(
         self,
         ctx: Context,
-        tuple_info: tuple[SSHConnectionInfo, DHCPCDConfigurationInfo],
+        tuple_info: tuple[SSHConnectionInfo, NetworkConfigurationInfo],
         collaborators: CoreCollaborators,
     ):
         network_info = self._bundle_network_information_from_tuple(ctx, tuple_info)
@@ -215,7 +210,7 @@ class RemoteMachineNetworkConfigureRunner:
     def _maybe_add_hosts_file_entry(
         self,
         ctx: Context,
-        tuple_info: tuple[SSHConnectionInfo, DHCPCDConfigurationInfo],
+        tuple_info: tuple[SSHConnectionInfo, NetworkConfigurationInfo],
         collaborators: CoreCollaborators,
         update_hosts_file: bool,
     ):
@@ -240,13 +235,13 @@ class RemoteMachineNetworkConfigureRunner:
         collaborators.prompter().prompt_for_enter_fn()
 
     def _bundle_network_information_from_tuple(
-        self, ctx: Context, tuple_info: tuple[SSHConnectionInfo, DHCPCDConfigurationInfo]
+        self, ctx: Context, tuple_info: tuple[SSHConnectionInfo, NetworkConfigurationInfo]
     ) -> "RemoteMachineNetworkConfigureRunner.NetworkInfoBundle":
         ssh_conn_info = tuple_info[0]
         ansible_host = ssh_conn_info.ansible_hosts[0]
 
-        dhcpcd_configure_info = tuple_info[1]
-        static_ip_address = dhcpcd_configure_info.static_ip_address
+        network_configure_info = tuple_info[1]
+        static_ip_address = network_configure_info.static_ip_address
 
         return RemoteMachineNetworkConfigureRunner.NetworkInfoBundle(
             ssh_username=ansible_host.username,
@@ -279,7 +274,7 @@ def generate_logo_network() -> str:
 def generate_instructions_pre_network() -> str:
     return """
   Select a remote Raspberry Pi node ([yellow]ethernet connected[/yellow]) to set a static IP address.
-  It uses DHCPCD (Dynamic Host Configuration Protocol Client Daemon a.k.a DHCP client daemon).
+  It uses nmcli (NetworkManager Command Line Tool) to set the static IP address.
 
   It is vital for a RPi server to have a predictable address to interact with.
   Every time the Raspberry Pi node will connect to the network, it will use the same address.

@@ -13,7 +13,7 @@ from provisioner_single_board_plugin.src.common.remote.remote_network_configure 
 )
 
 from provisioner_shared.components.remote.remote_connector import (
-    DHCPCDConfigurationInfo,
+    NetworkConfigurationInfo,
     SSHConnectionInfo,
 )
 from provisioner_shared.components.remote.remote_connector_fakes import (
@@ -124,7 +124,7 @@ class RemoteMachineNetworkConfigureTestShould(unittest.TestCase):
     @mock.patch(f"{REMOTE_NETWORK_CONFIGURE_RUNNER_PATH}._prerequisites")
     @mock.patch(f"{REMOTE_NETWORK_CONFIGURE_RUNNER_PATH}._print_pre_run_instructions")
     @mock.patch(f"{REMOTE_NETWORK_CONFIGURE_RUNNER_PATH}._get_ssh_conn_info")
-    @mock.patch(f"{REMOTE_NETWORK_CONFIGURE_RUNNER_PATH}._get_dhcpcd_configure_info")
+    @mock.patch(f"{REMOTE_NETWORK_CONFIGURE_RUNNER_PATH}._get_network_configure_info")
     @mock.patch(f"{REMOTE_NETWORK_CONFIGURE_RUNNER_PATH}._run_ansible_network_configure_playbook_with_progress_bar")
     @mock.patch(f"{REMOTE_NETWORK_CONFIGURE_RUNNER_PATH}._print_post_run_instructions")
     @mock.patch(f"{REMOTE_NETWORK_CONFIGURE_RUNNER_PATH}._maybe_add_hosts_file_entry")
@@ -133,7 +133,7 @@ class RemoteMachineNetworkConfigureTestShould(unittest.TestCase):
         maybe_add_hosts_file_call: mock.MagicMock,
         post_run_call: mock.MagicMock,
         run_ansible_call: mock.MagicMock,
-        get_dhcpcd_configure_info_call: mock.MagicMock,
+        get_network_configure_info_call: mock.MagicMock,
         get_ssh_conn_info_call: mock.MagicMock,
         pre_run_call: mock.MagicMock,
         prerequisites_call: mock.MagicMock,
@@ -145,7 +145,7 @@ class RemoteMachineNetworkConfigureTestShould(unittest.TestCase):
         prerequisites_call.assert_called_once()
         pre_run_call.assert_called_once()
         get_ssh_conn_info_call.assert_called_once()
-        get_dhcpcd_configure_info_call.assert_called_once()
+        get_network_configure_info_call.assert_called_once()
         run_ansible_call.assert_called_once()
         post_run_call.assert_called_once()
         maybe_add_hosts_file_call.assert_called_once()
@@ -164,18 +164,18 @@ class RemoteMachineNetworkConfigureTestShould(unittest.TestCase):
         Assertion.expect_call_argument(self, run_call, arg_name="force_single_conn_info", expected_value=True)
 
     @mock.patch(
-        target=f"{REMOTE_MACHINE_CONNECTOR_PATH}.collect_dhcpcd_configuration_info",
-        return_value=TestDataRemoteConnector.create_fake_get_dhcpcd_configure_info(),
+        target=f"{REMOTE_MACHINE_CONNECTOR_PATH}.collect_network_configuration_info",
+        return_value=TestDataRemoteConnector.create_fake_get_network_configure_info(),
     )
-    def test_get_dhcpcd_config_info_with_summary(self, run_call: mock.MagicMock) -> None:
+    def test_get_network_config_info_with_summary(self, run_call: mock.MagicMock) -> None:
         env = TestEnv.create()
         args = self.create_fake_configure_args()
         ssh_conn_info = TestDataRemoteConnector.create_fake_ssh_conn_info()
-        env.get_collaborators().summary().on("append", str, DHCPCDConfigurationInfo).side_effect = (
-            lambda attribute_name, value: self.assertEqual(attribute_name, "dhcpcd_configure_info")
+        env.get_collaborators().summary().on("append", str, NetworkConfigurationInfo).side_effect = (
+            lambda attribute_name, value: self.assertEqual(attribute_name, "network_configure_info")
         )
 
-        RemoteMachineNetworkConfigureRunner()._get_dhcpcd_configure_info(
+        RemoteMachineNetworkConfigureRunner()._get_network_configure_info(
             env.get_context(), env.get_collaborators(), args, ssh_conn_info
         )
         Assertion.expect_call_argument(
@@ -206,12 +206,12 @@ class RemoteMachineNetworkConfigureTestShould(unittest.TestCase):
             collaborators=env.get_collaborators(),
             args=self.create_fake_configure_args(),
             ssh_conn_info=TestDataRemoteConnector.create_fake_ssh_conn_info(),
-            dhcpcd_configure_info=TestDataRemoteConnector.create_fake_get_dhcpcd_configure_info(),
+            network_configure_info=TestDataRemoteConnector.create_fake_get_network_configure_info(),
         )
 
         self.assertEqual(len(tuple_info), 2)
         self.assertIsInstance(tuple_info[0], SSHConnectionInfo)
-        self.assertIsInstance(tuple_info[1], DHCPCDConfigurationInfo)
+        self.assertIsInstance(tuple_info[1], NetworkConfigurationInfo)
 
     def test_run_ansible(self) -> None:
         env = TestEnv.create()
@@ -236,6 +236,8 @@ class RemoteMachineNetworkConfigureTestShould(unittest.TestCase):
                         f"static_ip={TestDataRemoteConnector.TEST_DATA_DHCP_STATIC_IP_ADDRESS}",
                         f"gateway_address={TestDataRemoteConnector.TEST_DATA_DHCP_GW_IP_ADDRESS}",
                         f"dns_address={TestDataRemoteConnector.TEST_DATA_DHCP_DNS_IP_ADDRESS}",
+                        "become_root=yes",
+                        "reboot_required=true",
                     ],
                 ),
                 self.assertEqual(ansible_tags, ["configure_rpi_network", "define_static_ip", "reboot"]),
@@ -247,12 +249,15 @@ class RemoteMachineNetworkConfigureTestShould(unittest.TestCase):
             remote_ctx=REMOTE_CONTEXT,
             ssh_hostname=TestDataRemoteConnector.TEST_DATA_SSH_HOSTNAME_1,
             ssh_conn_info=TestDataRemoteConnector.create_fake_ssh_conn_info(),
-            dhcpcd_configure_info=TestDataRemoteConnector.create_fake_get_dhcpcd_configure_info(),
+            network_configure_info=TestDataRemoteConnector.create_fake_get_network_configure_info(),
         )
 
     @skip_if_not_in_docker
     def test_add_hosts_file_entry_upon_prompt(self) -> None:
         env = TestEnv.create()
+        env.get_collaborators().printer().on("print_fn", str).side_effect = (
+            lambda message: self.assertIn("Updating hosts file with the remote IP address", message)
+        )
         env.get_collaborators().prompter().on("prompt_yes_no_fn", str, PromptLevel, str, str).side_effect = (
             lambda message, level, post_yes_message, post_no_message: (
                 self.assertIn("Add entry", message),
@@ -275,7 +280,7 @@ class RemoteMachineNetworkConfigureTestShould(unittest.TestCase):
             env.get_context(),
             (
                 TestDataRemoteConnector.create_fake_ssh_conn_info(),
-                TestDataRemoteConnector.create_fake_get_dhcpcd_configure_info(),
+                TestDataRemoteConnector.create_fake_get_network_configure_info(),
             ),
             env.get_collaborators(),
             update_hosts_file=True,
@@ -309,7 +314,7 @@ class RemoteMachineNetworkConfigureTestShould(unittest.TestCase):
             env.get_context(),
             (
                 TestDataRemoteConnector.create_fake_ssh_conn_info(),
-                TestDataRemoteConnector.create_fake_get_dhcpcd_configure_info(),
+                TestDataRemoteConnector.create_fake_get_network_configure_info(),
             ),
             env.get_collaborators(),
         )

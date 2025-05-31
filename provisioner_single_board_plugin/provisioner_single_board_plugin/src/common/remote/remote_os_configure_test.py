@@ -34,6 +34,7 @@ from provisioner_shared.test_lib.test_env import TestEnv
 ARG_NODE_USERNAME = "test-username"
 ARG_NODE_PASSWORD = "test-password"
 ARG_IP_DISCOVERY_RANGE = "1.1.1.1/24"
+ARG_IP_DISCOVERY_DNS_SERVER = "1.1.1.1"
 
 REMOTE_NETWORK_CONFIGURE_RUNNER_PATH = (
     "provisioner_single_board_plugin.src.common.remote.remote_os_configure.RemoteMachineOsConfigureRunner"

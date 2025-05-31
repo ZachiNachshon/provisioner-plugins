@@ -19,19 +19,16 @@ class RPiOsBurnImageCmdArgs:
 
     image_download_url: str
     image_download_path: str
-    first_boot_username: str
 
-    def __init__(self, image_download_url: str, image_download_path: str, first_boot_username: str) -> None:
+    def __init__(self, image_download_url: str, image_download_path: str) -> None:
         self.image_download_url = image_download_url
         self.image_download_path = image_download_path
-        self.first_boot_username = first_boot_username
 
     def print(self) -> None:
         logger.debug(
             "RPiOsBurnImageCmdArgs: \n"
             + f"  image_download_url: {self.image_download_url}\n"
             + f"  image_download_path: {self.image_download_path}\n"
-            + f"  first_boot_username: {self.first_boot_username}\n"
         )
 
 

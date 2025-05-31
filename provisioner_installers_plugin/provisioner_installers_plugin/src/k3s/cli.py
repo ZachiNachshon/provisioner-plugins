@@ -6,6 +6,10 @@ from provisioner_installers_plugin.src.installer.cmd.installer_cmd import Utilit
 from provisioner_installers_plugin.src.installer.domain.command import InstallerSubCommandName
 from provisioner_installers_plugin.src.installer.domain.dynamic_args import DynamicArgs
 from provisioner_installers_plugin.src.installer.domain.version import NameVersionArgsTuple
+from provisioner_installers_plugin.src.k3s.cmd.k3s_download_kubeconfig import (
+    K3sKubeConfigDownloadCmd,
+    K3sKubeConfigDownloadCmdArgs,
+)
 from provisioner_installers_plugin.src.k3s.cmd.k3s_gather_info_cmd import K3sGatherInfoCmd, K3sGatherInfoCmdArgs
 from provisioner_installers_plugin.src.utilities.utilities_versions import ToolingVersions
 
@@ -42,7 +46,7 @@ def register_k3s_commands(cli_group: click.Group):
         "--k3s-token",
         show_default=False,
         required=False,
-        help="K3s server token",
+        help="K3s server token in format K10<CA-HASH>::<USERNAME>:<PASSWORD> or plaintext password",
         envvar="PROV_K3S_SERVER_TOKEN",
     )
     @click.option(
@@ -96,9 +100,6 @@ def register_k3s_commands(cli_group: click.Group):
         """
         Install or uninstall a Rancher K3s Server on systemd and openrc based systems
         """
-        if not uninstall and not k3s_token:
-            raise click.UsageError("--k3s-token is required for installation")
-
         k3s_server_install(
             NameVersionArgsTuple(
                 "k3s-server",
@@ -210,6 +211,36 @@ def register_k3s_commands(cli_group: click.Group):
             remote_opts=RemoteOpts.from_click_ctx(ctx),
         )
 
+    @click.option(
+        "--server-url",
+        show_default=True,
+        required=False,
+        default="https://kmaster:6443",
+        help="K3s server URL",
+        envvar="PROV_K3S_KUBECONFIG_SERVER_URL",
+    )
+    @click.option(
+        "--dest",
+        show_default=True,
+        required=False,
+        default="~/.kube/k3s/config",
+        help="Destination file path for the kubeconfig file",
+        envvar="PROV_K3S_KUBECONFIG_DESTINATION",
+    )
+    @distro.command()
+    @cli_modifiers
+    @click.pass_context
+    def k3s_kubeconfig(ctx: click.Context, dest: str, server_url: str):
+        """
+        Download K3s kubeconfig from a remote server
+        """
+        k3s_kubeconfig_download(
+            modifiers=CliModifiers.from_click_ctx(ctx),
+            remote_opts=RemoteOpts.from_click_ctx(ctx),
+            dest_file_path=dest,
+            server_url=server_url,
+        )
+
 
 def k3s_server_install(
     name_ver_args: NameVersionArgsTuple,
@@ -272,6 +303,25 @@ def k3s_info_gather(modifiers: CliModifiers, remote_opts: RemoteOpts) -> None:
             ctx=cli_ctx,
             args=K3sGatherInfoCmdArgs(
                 remote_opts=remote_opts,
+            ),
+        ),
+        verbose=cli_ctx.is_verbose(),
+    )
+
+
+def k3s_kubeconfig_download(
+    modifiers: CliModifiers, remote_opts: RemoteOpts, dest_file_path: str, server_url: str
+) -> None:
+    cli_ctx = CliContextManager.create(modifiers)
+
+    Evaluator.eval_installer_cli_entrypoint_pyfn_step(
+        name="k3s-kubeconfig",
+        call=lambda: K3sKubeConfigDownloadCmd().run(
+            ctx=cli_ctx,
+            args=K3sKubeConfigDownloadCmdArgs(
+                remote_opts=remote_opts,
+                dest_file_path=dest_file_path,
+                server_url=server_url,
             ),
         ),
         verbose=cli_ctx.is_verbose(),

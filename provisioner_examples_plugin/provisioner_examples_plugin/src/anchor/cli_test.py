@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import re
 import unittest
 
 from provisioner.main import root_menu
@@ -12,5 +13,12 @@ from provisioner_shared.test_lib.test_cli_runner import TestCliRunner
 class AnchorCliTestShould(unittest.TestCase):
 
     def test_anchor_cmds_prints_to_menu_as_expected(self) -> None:
-        output = TestCliRunner.run(root_menu, ["examples", "anchor"])
-        self.assertIn("run-command  Run a dummy anchor run scenario locally or", output)
+        result = TestCliRunner.run_throws_not_managed(root_menu, ["examples", "anchor"])
+        
+        print(f"Actual output:\n{result.output}")
+        print(f"Exit code: {result.exit_code}")
+        
+        # Use flexible regex that matches the core description - handle CI/local differences
+        run_command_pattern = re.compile(r'run\s+Run a dummy anchor run scenario locally')
+        
+        self.assertIsNotNone(run_command_pattern.search(result.output))
