@@ -20,8 +20,8 @@ class UtilityInstallerSystemTestShould(unittest.TestCase):
                 "system",
             ],
         )
-        
+
         # Use regex to match command description with flexible spacing
-        python_pattern = re.compile(r'python\s+Install Python / pip package manager')
-        
+        python_pattern = re.compile(r"python\s+Install Python / pip package manager")
+
         self.assertIsNotNone(python_pattern.search(result.output))

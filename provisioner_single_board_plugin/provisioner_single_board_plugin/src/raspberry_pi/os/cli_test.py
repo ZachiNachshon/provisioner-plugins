@@ -109,14 +109,18 @@ class RaspberryPiOsCliTestShould(unittest.TestCase):
     #         method_to_run=lambda: self.create_os_burn_image_runner(),
     #     )
 
-    @mock.patch("provisioner_shared.components.sd_card.image_burner.ImageBurnerCmdRunner._find_raspberry_pi_boot_partition")
+    @mock.patch(
+        "provisioner_shared.components.sd_card.image_burner.ImageBurnerCmdRunner._find_raspberry_pi_boot_partition"
+    )
     @mock.patch("provisioner_shared.components.sd_card.image_burner.ImageBurnerCmdRunner._extract_image_file")
-    def test_run_rpi_os_burn_image_darwin_success(self, mock_extract: mock.MagicMock, mock_boot_partition: mock.MagicMock) -> None:
+    def test_run_rpi_os_burn_image_darwin_success(
+        self, mock_extract: mock.MagicMock, mock_boot_partition: mock.MagicMock
+    ) -> None:
         # Mock the extraction to return the original file path for ZIP files in dry-run
         mock_extract.return_value = ("DRY_RUN_DOWNLOAD_FILE_PATH", None)
         # Mock the boot partition to return the expected path
         mock_boot_partition.return_value = "/Volumes/boot"
-        
+
         Assertion.expect_outputs(
             self,
             expected=[
@@ -126,20 +130,24 @@ class RaspberryPiOsCliTestShould(unittest.TestCase):
                 "sync",
                 f"diskutil unmountDisk {AUTO_PROMPT_RESPONSE}",
                 f"diskutil mountDisk {AUTO_PROMPT_RESPONSE}",
-                "sudo cp", # Configuration files are copied
+                "sudo cp",  # Configuration files are copied
                 f"diskutil eject {AUTO_PROMPT_RESPONSE}",
             ],
             method_to_run=lambda: self.create_os_burn_image_runner_darwin(),
         )
 
-    @mock.patch("provisioner_shared.components.sd_card.image_burner.ImageBurnerCmdRunner._find_raspberry_pi_boot_partition")
+    @mock.patch(
+        "provisioner_shared.components.sd_card.image_burner.ImageBurnerCmdRunner._find_raspberry_pi_boot_partition"
+    )
     @mock.patch("provisioner_shared.components.sd_card.image_burner.ImageBurnerCmdRunner._extract_image_file")
-    def test_run_rpi_os_burn_image_linux_success(self, mock_extract: mock.MagicMock, mock_boot_partition: mock.MagicMock) -> None:
+    def test_run_rpi_os_burn_image_linux_success(
+        self, mock_extract: mock.MagicMock, mock_boot_partition: mock.MagicMock
+    ) -> None:
         # Mock the extraction to return the original file path for ZIP files in dry-run
         mock_extract.return_value = ("DRY_RUN_DOWNLOAD_FILE_PATH", None)
         # Mock the boot partition to return the expected path
         mock_boot_partition.return_value = "/Volumes/boot"
-        
+
         Assertion.expect_outputs(
             self,
             expected=[

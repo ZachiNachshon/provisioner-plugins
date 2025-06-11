@@ -1,0 +1,9 @@
+{
+  "plugin_name": "provisioner_installers_plugin",
+  "plugin_version": "0.1.6",
+  "runtime_version_range": ">=0.1.15,<0.2.0",
+  "description": "Install anything anywhere on any OS/Arch either on a local or remote machine",
+  "author": "Zachi Nachshon",
+  "maintainer": "Zachi Nachshon",
+  "compatibility_notes": "Compatible with runtime versions 0.1.15 and above, but not with 0.2.x due to breaking changes in the plugin API"
+} 
