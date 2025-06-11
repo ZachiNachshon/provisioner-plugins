@@ -1,7 +1,7 @@
 {
   "name": "provisioner_installers_plugin",
   "version": "0.1.6",
-  "runtime_version_range": ">=0.1.15,<0.2.0",
+  "runtime_version_range": "~0.1.19",
   "description": "Install anything anywhere on any OS/Arch either on a local or remote machine",
   "author": "Zachi Nachshon",
   "maintainer": "Zachi Nachshon",
