@@ -1,0 +1,9 @@
+{
+  "name": "provisioner_single_board_plugin",
+  "version": "0.1.5",
+  "runtime_version_range": ">=0.1.10,<0.2.0",
+  "description": "Single boards management as simple as it gets",
+  "author": "Zachi Nachshon",
+  "maintainer": "Zachi Nachshon",
+  "compatibility_notes": "Requires runtime 0.1.10+ for enhanced remote capabilities, not compatible with 0.2.x"
+} 

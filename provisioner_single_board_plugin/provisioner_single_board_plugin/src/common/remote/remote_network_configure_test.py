@@ -255,8 +255,8 @@ class RemoteMachineNetworkConfigureTestShould(unittest.TestCase):
     @skip_if_not_in_docker
     def test_add_hosts_file_entry_upon_prompt(self) -> None:
         env = TestEnv.create()
-        env.get_collaborators().printer().on("print_fn", str).side_effect = (
-            lambda message: self.assertIn("Updating hosts file with the remote IP address", message)
+        env.get_collaborators().printer().on("print_fn", str).side_effect = lambda message: self.assertIn(
+            "Updating hosts file with the remote IP address", message
         )
         env.get_collaborators().prompter().on("prompt_yes_no_fn", str, PromptLevel, str, str).side_effect = (
             lambda message, level, post_yes_message, post_no_message: (

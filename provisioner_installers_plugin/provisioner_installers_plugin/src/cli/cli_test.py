@@ -22,10 +22,10 @@ class UtilityInstallerCliTestShould(unittest.TestCase):
                 "cli",
             ],
         )
-        
+
         # Use regex to match command descriptions with flexible spacing
-        anchor_pattern = re.compile(r'anchor\s+Create Dynamic CLI\'s as your GitOps Marketplace')
-        helm_pattern = re.compile(r'helm\s+Package Manager for Kubernetes')
-        
+        anchor_pattern = re.compile(r"anchor\s+Create Dynamic CLI\'s as your GitOps Marketplace")
+        helm_pattern = re.compile(r"helm\s+Package Manager for Kubernetes")
+
         self.assertIsNotNone(anchor_pattern.search(result.output))
         self.assertIsNotNone(helm_pattern.search(result.output))

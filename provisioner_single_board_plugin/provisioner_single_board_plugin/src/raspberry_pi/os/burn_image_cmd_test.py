@@ -27,7 +27,7 @@ class RPiOsInstallTestShould(unittest.TestCase):
 
     def create_fake_burn_image_cmd_args(self) -> RPiOsBurnImageCmdArgs:
         return RPiOsBurnImageCmdArgs(
-            image_download_url=ARG_IMAGE_DOWNLOAD_URL, 
+            image_download_url=ARG_IMAGE_DOWNLOAD_URL,
             image_download_path=ARG_IMAGE_DOWNLOAD_PATH,
         )
 

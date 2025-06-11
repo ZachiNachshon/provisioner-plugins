@@ -21,13 +21,13 @@ class UtilityInstallerk3sTestShould(unittest.TestCase):
                 "distro",
             ],
         )
-        
+
         # Use regex to match command descriptions with flexible spacing
-        k3s_agent_pattern = re.compile(r'k3s-agent\s+Install or uninstall a Rancher K3s Agent')
-        k3s_info_pattern = re.compile(r'k3s-info\s+Gather and display K3s configuration')
-        k3s_kubeconfig_pattern = re.compile(r'k3s-kubeconfig\s+Download K3s kubeconfig from a remote server')
-        k3s_server_pattern = re.compile(r'k3s-server\s+Install or uninstall a Rancher K3s Server')
-        
+        k3s_agent_pattern = re.compile(r"k3s-agent\s+Install or uninstall a Rancher K3s Agent")
+        k3s_info_pattern = re.compile(r"k3s-info\s+Gather and display K3s configuration")
+        k3s_kubeconfig_pattern = re.compile(r"k3s-kubeconfig\s+Download K3s kubeconfig from a remote server")
+        k3s_server_pattern = re.compile(r"k3s-server\s+Install or uninstall a Rancher K3s Server")
+
         self.assertIsNotNone(k3s_agent_pattern.search(result.output))
         self.assertIsNotNone(k3s_info_pattern.search(result.output))
         self.assertIsNotNone(k3s_kubeconfig_pattern.search(result.output))

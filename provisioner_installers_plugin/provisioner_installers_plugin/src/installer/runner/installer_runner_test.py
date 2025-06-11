@@ -28,9 +28,6 @@ from provisioner_installers_plugin.src.installer.runner.installer_runner import 
     generate_installer_welcome,
 )
 
-from provisioner_shared.components.remote.ansible.remote_provisioner_runner import (
-    ANSIBLE_PLAYBOOK_REMOTE_PROVISIONER_WRAPPER,
-)
 from provisioner_shared.components.remote.domain.config import RunEnvironment
 from provisioner_shared.components.remote.remote_connector import RemoteMachineConnector
 from provisioner_shared.components.remote.remote_connector_fakes import (
@@ -45,8 +42,6 @@ from provisioner_shared.components.runtime.errors.cli_errors import (
 )
 from provisioner_shared.components.runtime.infra.context import Context
 from provisioner_shared.components.runtime.infra.remote_context import RemoteContext
-from provisioner_shared.components.runtime.runner.ansible.ansible_fakes import FakeAnsibleRunnerLocal
-from provisioner_shared.components.runtime.runner.ansible.ansible_runner import AnsiblePlaybook
 from provisioner_shared.components.runtime.utils.os import OsArch
 from provisioner_shared.components.runtime.utils.printer import Printer
 from provisioner_shared.components.runtime.utils.summary import Summary
@@ -394,28 +389,32 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
     ) -> None:
         utility_github = TestSupportedToolings[TEST_UTILITY_1_GITHUB_NAME]
         utility_script = TestSupportedToolings[TEST_UTILITY_2_SCRIPT_NAME]
-        
+
         # Create test environment with proper printer mocks
         test_env = TestEnv.create()
-        test_env.get_collaborators().printer().on("new_line_fn", int).return_value = test_env.get_collaborators().printer()
+        test_env.get_collaborators().printer().on(
+            "new_line_fn", int
+        ).return_value = test_env.get_collaborators().printer()
         test_env.get_collaborators().printer().on("print_fn", str).return_value = None
-        
+
         # Add missing io_utils mocks that might be called during installation
         test_env.get_collaborators().io_utils().on("is_archive_fn", str).return_value = False
         test_env.get_collaborators().io_utils().on("set_file_permissions_fn", str, int).return_value = "/fake/path"
         test_env.get_collaborators().io_utils().on("write_symlink_fn", str, str).return_value = "/fake/symlink"
-        
+
         # Add mock for process().run_fn that might be called during installation
-        test_env.get_collaborators().process().on("run_fn", list, faker.Anything, str, bool, bool).return_value = "Process completed"
-        
+        test_env.get_collaborators().process().on(
+            "run_fn", list, faker.Anything, str, bool, bool
+        ).return_value = "Process completed"
+
         fake_installer_env = self.create_fake_installer_env(test_env)
         eval = self.create_evaluator(fake_installer_env)
-        
+
         # Just verify the method can be called without errors
         result = eval << self.get_runner(eval)._run_local_utilities_installation(
             fake_installer_env, [utility_github, utility_script]
         )
-        
+
         # Verify that the method completed successfully (returned a list of utilities)
         self.assertEqual(len(result), 2)
         self.assertEqual(result[0], utility_github)
@@ -779,14 +778,59 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
         Assertion.expect_equal_objects(self, result, symlink_path)
 
     @mock.patch(f"{UTILITY_INSTALLER_CMD_RUNNER_PATH}._elevate_permission_and_symlink", return_value=PyFn.empty())
-    @mock.patch(f"{UTILITY_INSTALLER_CMD_RUNNER_PATH}._force_binary_at_download_path_root", return_value=PyFn.of(UnpackedReleaseFolderPath_Utility_OsArch_Tuple("test_path", TestSupportedToolings[TEST_UTILITY_1_GITHUB_NAME], OsArch.from_string("linux_amd64"))))
-    @mock.patch(f"{UTILITY_INSTALLER_CMD_RUNNER_PATH}._maybe_extract_downloaded_binary", return_value=PyFn.of(UnpackedReleaseFolderPath_Utility_OsArch_Tuple("test_path", TestSupportedToolings[TEST_UTILITY_1_GITHUB_NAME], OsArch.from_string("linux_amd64"))))
-    @mock.patch(f"{UTILITY_INSTALLER_CMD_RUNNER_PATH}._download_binary_by_version", return_value=PyFn.of(ReleaseFilename_ReleaseDownloadFilePath_Utility_OsArch_Tuple("test_file", "test_path", TestSupportedToolings[TEST_UTILITY_1_GITHUB_NAME], OsArch.from_string("linux_amd64"))))
-    @mock.patch(f"{UTILITY_INSTALLER_CMD_RUNNER_PATH}._print_before_downloading", return_value=PyFn.of(Utility_Version_ReleaseFileName_OsArch_Tuple(TestSupportedToolings[TEST_UTILITY_1_GITHUB_NAME], "v1.0.0", "test_file", OsArch.from_string("linux_amd64"))))
     @mock.patch(
-        f"{UTILITY_INSTALLER_CMD_RUNNER_PATH}._try_get_github_release_name_by_os_arch", return_value=PyFn.of(Utility_Version_ReleaseFileName_OsArch_Tuple(TestSupportedToolings[TEST_UTILITY_1_GITHUB_NAME], "v1.0.0", "test_file", OsArch.from_string("linux_amd64")))
+        f"{UTILITY_INSTALLER_CMD_RUNNER_PATH}._force_binary_at_download_path_root",
+        return_value=PyFn.of(
+            UnpackedReleaseFolderPath_Utility_OsArch_Tuple(
+                "test_path", TestSupportedToolings[TEST_UTILITY_1_GITHUB_NAME], OsArch.from_string("linux_amd64")
+            )
+        ),
     )
-    @mock.patch(f"{UTILITY_INSTALLER_CMD_RUNNER_PATH}._try_resolve_utility_version", return_value=PyFn.of(Utility_Version_Tuple(TestSupportedToolings[TEST_UTILITY_1_GITHUB_NAME], "v1.0.0")))
+    @mock.patch(
+        f"{UTILITY_INSTALLER_CMD_RUNNER_PATH}._maybe_extract_downloaded_binary",
+        return_value=PyFn.of(
+            UnpackedReleaseFolderPath_Utility_OsArch_Tuple(
+                "test_path", TestSupportedToolings[TEST_UTILITY_1_GITHUB_NAME], OsArch.from_string("linux_amd64")
+            )
+        ),
+    )
+    @mock.patch(
+        f"{UTILITY_INSTALLER_CMD_RUNNER_PATH}._download_binary_by_version",
+        return_value=PyFn.of(
+            ReleaseFilename_ReleaseDownloadFilePath_Utility_OsArch_Tuple(
+                "test_file",
+                "test_path",
+                TestSupportedToolings[TEST_UTILITY_1_GITHUB_NAME],
+                OsArch.from_string("linux_amd64"),
+            )
+        ),
+    )
+    @mock.patch(
+        f"{UTILITY_INSTALLER_CMD_RUNNER_PATH}._print_before_downloading",
+        return_value=PyFn.of(
+            Utility_Version_ReleaseFileName_OsArch_Tuple(
+                TestSupportedToolings[TEST_UTILITY_1_GITHUB_NAME],
+                "v1.0.0",
+                "test_file",
+                OsArch.from_string("linux_amd64"),
+            )
+        ),
+    )
+    @mock.patch(
+        f"{UTILITY_INSTALLER_CMD_RUNNER_PATH}._try_get_github_release_name_by_os_arch",
+        return_value=PyFn.of(
+            Utility_Version_ReleaseFileName_OsArch_Tuple(
+                TestSupportedToolings[TEST_UTILITY_1_GITHUB_NAME],
+                "v1.0.0",
+                "test_file",
+                OsArch.from_string("linux_amd64"),
+            )
+        ),
+    )
+    @mock.patch(
+        f"{UTILITY_INSTALLER_CMD_RUNNER_PATH}._try_resolve_utility_version",
+        return_value=PyFn.of(Utility_Version_Tuple(TestSupportedToolings[TEST_UTILITY_1_GITHUB_NAME], "v1.0.0")),
+    )
     def test_install_from_github_success(
         self,
         resolve_call: mock.MagicMock,
@@ -799,17 +843,17 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
     ) -> None:
         utility = TestSupportedToolings[TEST_UTILITY_1_GITHUB_NAME]
         test_env = TestEnv.create()
-        
+
         # Add mocks for io_utils methods that will be called
         test_env.get_collaborators().io_utils().on("set_file_permissions_fn", str, int).return_value = "/fake/path"
         test_env.get_collaborators().io_utils().on("write_symlink_fn", str, str).return_value = "/fake/symlink"
-        
+
         fake_installer_env = self.create_fake_installer_env(test_env)
         eval = self.create_evaluator(fake_installer_env)
-        
+
         # Just verify the method can be called without errors
         result = eval << self.get_runner(eval)._install_from_github(fake_installer_env, utility)
-        
+
         # Verify that the method completed successfully (returned the utility)
         self.assertEqual(result, utility)
 
@@ -898,20 +942,19 @@ class UtilityInstallerRunnerTestShould(unittest.TestCase):
     def test_expected_ansible_args_on_run_commands(self, execute_ansible_call: mock.MagicMock) -> None:
         utility = TestSupportedToolings[TEST_UTILITY_1_GITHUB_NAME]
         env = TestEnv.create()
-        remote_ctx = RemoteContext.no_op()
         fake_installer_env = self.create_fake_installer_env(env, is_force_install=True)
         ssh_conn_info = TestDataRemoteConnector.create_fake_ssh_conn_info()
-        
+
         # Setup the mock to return a simple string
         execute_ansible_call.return_value = "Mock ansible execution completed"
-        
+
         # Call the actual method that exists
         result = UtilityInstallerCmdRunner(env.get_context())._execute_remote_ansible_playbook(
             env=fake_installer_env,
             ssh_conn_info=ssh_conn_info,
             utility=utility,
         )
-        
+
         # Verify the mock was called
         self.assertEqual(execute_ansible_call.call_count, 1)
         self.assertEqual(result, "Mock ansible execution completed")
