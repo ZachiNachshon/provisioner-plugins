@@ -1,6 +1,6 @@
 {
   "name": "provisioner_examples_plugin",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "runtime_version_range": "^0.1.0",
   "description": "Playground for using the CLI framework with basic dummy commands",
   "author": "Zachi Nachshon",
