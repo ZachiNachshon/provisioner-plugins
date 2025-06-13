@@ -46,7 +46,7 @@ runs:
         plugin_pure_name=${plugin_pure_name//_/\-}          # Replace '_' with '-'
 
         cd plugins/${project_to_release}
-        ../../scripts/publish_to_pypi.sh publish -y --build-type wheel --release-type github --release-tag-prefix ${plugin_pure_name}
+        ../../scripts/publish_poetry_package.sh publish -y --build-type wheel --release-type github --release-tag-prefix ${plugin_pure_name}
         cd ../..
 
         echo "::endgroup::" 

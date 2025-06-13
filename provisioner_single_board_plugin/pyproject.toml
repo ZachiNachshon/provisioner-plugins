@@ -22,7 +22,7 @@ test_runner = "main_fake:main"
 
 [tool.poetry.dependencies]
 python = "^3.11"
-provisioner_shared = "~0.1.19"
+provisioner_shared = ">=0.0.1"
 
 [build-system]
 requires = ["poetry-core>=1.4.0"]

@@ -5,5 +5,5 @@
   "description": "Playground for using the CLI framework with basic dummy commands",
   "author": "Zachi Nachshon",
   "maintainer": "Zachi Nachshon",
-  "compatibility_notes": "Compatible with all 0.1.x runtime versions"
+  "compatibility_notes": "Compatible with runtime version 0.1.19 and above"
 } 
