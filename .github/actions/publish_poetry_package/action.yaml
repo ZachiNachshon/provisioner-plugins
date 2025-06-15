@@ -102,7 +102,7 @@ runs:
         jq --arg version "$ver" '.version = $version' ${publishable}/resources/manifest.json > ${publishable}/resources/manifest.json.tmp
         mv ${publishable}/resources/manifest.json.tmp ${publishable}/resources/manifest.json
 
-        ../../scripts/publish_poetry_package.sh publish --build-type wheel --release-type pypi -y
+        ../../scripts/github_actions/package_deployer.sh publish --build-type wheel --release-type pypi -y
         cd ../..
 
         echo "::endgroup::" 
