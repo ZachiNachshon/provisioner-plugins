@@ -9,16 +9,77 @@ on:
       - '**' # Triggers the workflow on any pull request and on any branch
 
 env:
-  POETRY_VERSION: "1.8.4"
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  POETRY_VERSION: "2.1.3"
 
 jobs:
-  build:
-    name: Tests Suite
+  test_and_promote:
+    name: Test & Promote Plugins
     runs-on: ubuntu-latest
     strategy:
       matrix:
         python: [ '3.11' ]
+    
+    outputs:
+      plugins_changed: ${{ steps.detect_changes.outputs.plugins }}
 
+    steps:
+      - name: Checkout ZachiNachshon/provisioner
+        uses: actions/checkout@v4
+        with:
+          repository: 'ZachiNachshon/provisioner'
+          token: ${{ secrets.PROVISIONER_REPO_ACCESS_TOKEN }}
+          fetch-depth: 2  # Need previous commit to detect changes on push
+
+      - name: Checkout ZachiNachshon/provisioner-plugins
+        uses: actions/checkout@v4
+        with:
+          path: './plugins'
+          fetch-depth: 2  # Need previous commit to detect changes on push
+
+      - name: Setup Environment
+        uses: ../.github/actions/setup
+        env:
+          PYTHON_VERSION: ${{ matrix.python }}
+          POETRY_VERSION: ${{ env.POETRY_VERSION }}
+
+      - name: Run Tests
+        uses: ../.github/actions/tests
+        with:
+          include_e2e: false
+
+      - name: Save Unit Test Coverage
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: ./coverage.xml
+          fail_ci_if_error: false
+
+      # Only detect changes and create RCs on push to master (not on PRs)
+      - name: Detect Changed Plugins
+        id: detect_changes
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "::group::Detecting changed plugins"
+          
+          cd plugins
+          # Use the enhanced version manager to detect changed plugins
+          python3 ../scripts/github_actions/version_manager.py detect-plugins --plugin-mode --github-repo ZachiNachshon/provisioner-plugins
+          
+          echo "::endgroup::"
+
+  create_plugin_rcs:
+    name: Create RC for Changed Plugins
+    runs-on: ubuntu-latest
+    needs: test_and_promote
+    # Only run on push to master when there are plugin changes
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master' && needs.test_and_promote.outputs.plugins_changed != '[]'
+    strategy:
+      matrix:
+        plugin: ${{ fromJson(needs.test_and_promote.outputs.plugins_changed) }}
+    
     steps:
       - name: Checkout ZachiNachshon/provisioner
         uses: actions/checkout@v4
@@ -32,19 +93,27 @@ jobs:
           path: './plugins'
 
       - name: Setup Environment
-        uses: ./.github/actions/setup
+        uses: ../.github/actions/setup
         env:
-          PYTHON_VERSION: ${{ matrix.python }}
+          PYTHON_VERSION: '3.11'
           POETRY_VERSION: ${{ env.POETRY_VERSION }}
 
-      - name: Run Tests
-        uses: ./.github/actions/tests
-      
-      # Requires CODECOV_TOKEN in GitHub repository secrets
-      - name: Upload coverage
-        uses: codecov/codecov-action@v3
+      - name: Run Tests for Plugin
+        uses: ../.github/actions/tests
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}  # Only required for private repositories
-          file: ./coverage.xml
-          # file: ./provisioner/coverage.xml,./plugins/provisioner_features_lib/coverage.xml,./plugins/provisioner_examples_plugin/coverage.xml,./provisioner_installers_plugin/coverage.xml,./plugins/provisioner_single_board_plugin/coverage.xml
-          fail_ci_if_error: false
+          project_path: plugins/${{ matrix.plugin }}
+          include_e2e: false
+
+      - name: Promote Plugin to RC
+        uses: ../.github/actions/promote-rc
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          projects: |
+            [
+              {
+                "name": "${{ matrix.plugin }}",
+                "project_path": "plugins/${{ matrix.plugin }}",
+                "is_plugin": true,
+                "github_repo": "ZachiNachshon/provisioner-plugins"
+              }
+            ]
