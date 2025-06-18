@@ -21,7 +21,7 @@ jobs:
         python: [ '3.11' ]
     
     outputs:
-      plugins_changed: ${{ fromJSON(steps.detect_changes.outputs.json_response).plugins }}
+      plugins_json: ${{ steps.detect_changes.outputs.json_response }}
 
     steps:
       - name: Checkout main provisioner repository with submodules
@@ -74,10 +74,10 @@ jobs:
     runs-on: ubuntu-latest
     needs: tests
     # Only run on push to master when there are plugin changes
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master' && needs.tests.outputs.plugins_changed != '[]' && needs.tests.outputs.plugins_changed != ''
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master' && fromJSON(needs.tests.outputs.plugins_json).plugins != '[]' && needs.tests.outputs.plugins_json != ''
     strategy:
       matrix:
-        plugin: ${{ fromJson(needs.tests.outputs.plugins_changed) }}
+        plugin: ${{ fromJSON(needs.tests.outputs.plugins_json).plugins }}
     
     steps:              
       - name: Checkout main provisioner repository with submodules
