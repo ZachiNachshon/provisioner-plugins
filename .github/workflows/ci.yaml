@@ -60,7 +60,16 @@ jobs:
           echo "::group::Detecting changed plugins"
           
           echo "Checking for plugin changes in: $(pwd)"
-          echo "Changed files: $(git diff --name-only HEAD~1)"
+          echo "Git log last 2 commits:"
+          git log --oneline -2
+          echo "Changed files (HEAD~1): $(git diff --name-only HEAD~1)"
+          echo "Changed files (with origin/master): $(git diff --name-only origin/master~1..HEAD 2>/dev/null || echo 'origin/master diff failed')"
+          echo "Repository structure:"
+          ls -la
+          echo "Looking for plugin directories:"
+          find . -maxdepth 2 -name "provisioner_*_plugin" -type d
+          echo "All changed Python files:"
+          git diff --name-only HEAD~1 | grep "\.py$" || echo "No Python files changed"
           
           # Use the version manager to detect changed plugins
           # Run from main repo root to properly detect changes across submodules
@@ -74,7 +83,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: tests
     # Only run on push to master when there are plugin changes
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master' && fromJSON(needs.tests.outputs.plugins_json).plugins != '[]' && needs.tests.outputs.plugins_json != ''
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master' && needs.tests.outputs.plugins_json != '' && fromJSON(needs.tests.outputs.plugins_json).plugins[0] != null
     strategy:
       matrix:
         plugin: ${{ fromJSON(needs.tests.outputs.plugins_json).plugins }}
