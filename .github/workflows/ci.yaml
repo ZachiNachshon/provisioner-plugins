@@ -87,7 +87,7 @@ jobs:
           repository: 'ZachiNachshon/provisioner'
           token: ${{ secrets.PROVISIONER_REPO_ACCESS_TOKEN }}
 
-      - name: Checkout ZachiNachshon/provisioner-pluginsc
+      - name: Checkout ZachiNachshon/provisioner-plugins
         uses: actions/checkout@v4
         with:
           path: './plugins'
