@@ -53,7 +53,6 @@ jobs:
           projects: |
             [
               {
-                "name": "${{ github.event.inputs.plugin_name }}",
                 "project_path": "plugins/${{ github.event.inputs.plugin_name }}",
                 "is_plugin": true,
                 "github_repo": "ZachiNachshon/provisioner-plugins"
@@ -68,8 +67,7 @@ jobs:
           packages: |
             [
               {
-                "name": "${{ github.event.inputs.plugin_name }}",
-                "project_path": "${{ github.event.inputs.plugin_name }}",
+                "project_path": "plugins/${{ github.event.inputs.plugin_name }}",
                 "pypi_token": "${{
                   github.event.inputs.plugin_name == 'provisioner_examples_plugin' && env.PYPI_API_TOKEN_PROVISIONER_EXAMPLES_PLUGIN ||
                   github.event.inputs.plugin_name == 'provisioner_installers_plugin' && env.PYPI_API_TOKEN_PROVISIONER_INSTALLERS_PLUGIN ||

@@ -81,37 +81,63 @@ jobs:
         plugin: ${{ fromJson(needs.test_and_promote.outputs.plugins_changed) }}
     
     steps:
+      - name: Check for source code changes
+        id: check-changes
+        uses: dorny/paths-filter@v2
+        with:
+          filters: |
+            source:
+              - '**/*.py'
+              - '**/*.yaml'
+              - '**/*.yml'
+              - '**/*.toml'
+              - '**/*.json'
+              - '**/*.sh'
+              - 'Dockerfile*'
+              - '**/Dockerfile*'
+              - '!**/*.lock'
+              - '!**/*.md'
+              - '!**/README*'
+              - '!**/CHANGELOG*'
+              - '!**/LICENSE*'
+              - '!**/.gitignore'
+              - '!**/.cursorignore'
+              
       - name: Checkout ZachiNachshon/provisioner
+        if: steps.check-changes.outputs.source == 'true'
         uses: actions/checkout@v4
         with:
           repository: 'ZachiNachshon/provisioner'
           token: ${{ secrets.PROVISIONER_REPO_ACCESS_TOKEN }}
 
       - name: Checkout ZachiNachshon/provisioner-plugins
+        if: steps.check-changes.outputs.source == 'true'
         uses: actions/checkout@v4
         with:
           path: './plugins'
 
       - name: Setup Environment
+        if: steps.check-changes.outputs.source == 'true'
         uses: ../.github/actions/setup
         env:
           PYTHON_VERSION: '3.11'
           POETRY_VERSION: ${{ env.POETRY_VERSION }}
 
       - name: Run Tests for Plugin
+        if: steps.check-changes.outputs.source == 'true'
         uses: ../.github/actions/tests
         with:
-          project_path: plugins/${{ matrix.plugin }}
+          module_to_test: ${{ matrix.plugin }}
           include_e2e: false
 
       - name: Promote Plugin to RC
+        if: steps.check-changes.outputs.source == 'true'
         uses: ../.github/actions/promote-rc
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           projects: |
             [
               {
-                "name": "${{ matrix.plugin }}",
                 "project_path": "plugins/${{ matrix.plugin }}",
                 "is_plugin": true,
                 "github_repo": "ZachiNachshon/provisioner-plugins"
