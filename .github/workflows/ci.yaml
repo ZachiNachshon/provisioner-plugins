@@ -80,7 +80,18 @@ jobs:
       matrix:
         plugin: ${{ fromJson(needs.test_and_promote.outputs.plugins_changed) }}
     
-    steps:
+    steps:              
+      - name: Checkout ZachiNachshon/provisioner
+        uses: actions/checkout@v4
+        with:
+          repository: 'ZachiNachshon/provisioner'
+          token: ${{ secrets.PROVISIONER_REPO_ACCESS_TOKEN }}
+
+      - name: Checkout ZachiNachshon/provisioner-pluginsc
+        uses: actions/checkout@v4
+        with:
+          path: './plugins'
+
       - name: Check for source code changes
         id: check-changes
         uses: dorny/paths-filter@v2
@@ -102,19 +113,6 @@ jobs:
               - '!**/LICENSE*'
               - '!**/.gitignore'
               - '!**/.cursorignore'
-              
-      - name: Checkout ZachiNachshon/provisioner
-        if: steps.check-changes.outputs.source == 'true'
-        uses: actions/checkout@v4
-        with:
-          repository: 'ZachiNachshon/provisioner'
-          token: ${{ secrets.PROVISIONER_REPO_ACCESS_TOKEN }}
-
-      - name: Checkout ZachiNachshon/provisioner-plugins
-        if: steps.check-changes.outputs.source == 'true'
-        uses: actions/checkout@v4
-        with:
-          path: './plugins'
 
       - name: Setup Environment
         if: steps.check-changes.outputs.source == 'true'
