@@ -21,7 +21,7 @@ jobs:
         python: [ '3.11' ]
     
     outputs:
-      plugins_changed: ${{ steps.detect_changes.outputs.plugins }}
+      plugins_changed: ${{ fromJSON(steps.detect_changes.outputs.json_response).plugins }}
 
     steps:
       - name: Checkout main provisioner repository with submodules
@@ -60,7 +60,11 @@ jobs:
           echo "::group::Detecting changed plugins"
           
           cd plugins
-          # Use the enhanced version manager to detect changed plugins
+          echo "Checking for plugin changes in: $(pwd)"
+          echo "Changed files: $(git diff --name-only HEAD~1)"
+          
+          # Use the version manager to detect changed plugins
+          # The version manager automatically sets json_response in $GITHUB_OUTPUT
           python3 ../scripts/github_actions/version_manager.py detect-plugins --plugin-mode --github-repo ZachiNachshon/provisioner-plugins
           
           echo "::endgroup::"
