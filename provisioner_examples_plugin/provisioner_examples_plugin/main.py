@@ -15,7 +15,7 @@ from provisioner_shared.components.runtime.config.manager.config_manager import 
 EXAMPLES_PLUGINS_ROOT_PATH = str(pathlib.Path(__file__).parent)
 CONFIG_INTERNAL_PATH = f"{EXAMPLES_PLUGINS_ROOT_PATH}/resources/config.yaml"
 
-
+# Dummy change to trigger a new release
 def load_config():
     ConfigManager.instance().load_plugin_config(PLUGIN_NAME, CONFIG_INTERNAL_PATH, cls=ExamplesConfig)
 
