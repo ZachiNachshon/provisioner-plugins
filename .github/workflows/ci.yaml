@@ -89,14 +89,13 @@ jobs:
         with:
           filters: |
             source:
-              - '**/*.py'
-              - '**/*.yaml'
-              - '**/*.yml'
-              - '**/*.toml'
-              - '**/*.json'
-              - '**/*.sh'
-              - 'Dockerfile*'
-              - '**/Dockerfile*'
+              - 'plugins/**/*.py'
+              - 'plugins/**/*.yaml'
+              - 'plugins/**/*.yml'
+              - 'plugins/**/*.toml'
+              - 'plugins/**/*.json'
+              - 'plugins/**/*.sh'
+              - 'plugins/**/Dockerfile*'
               - '!**/*.lock'
               - '!**/*.md'
               - '!**/README*'
