@@ -32,11 +32,21 @@ jobs:
         python: [ '3.11' ]
 
     steps:
-      - name: Checkout repository code (with submodules)
+      - name: Checkout main provisioner repository
         uses: actions/checkout@v4
         with:
-          submodules: true
-          token: ${{ secrets.PROVISIONER_PLUGINS_REPO_ACCESS_TOKEN }}
+          repository: 'ZachiNachshon/provisioner'
+          token: ${{ secrets.PROVISIONER_REPO_ACCESS_TOKEN }}
+          submodules: false  # We'll handle submodules manually
+          fetch-depth: 2  # Need previous commit to detect changes on push
+
+      - name: Checkout plugins repository to get latest changes
+        uses: actions/checkout@v4
+        with:
+          repository: 'ZachiNachshon/provisioner-plugins'
+          token: ${{ secrets.PROVISIONER_REPO_ACCESS_TOKEN }}
+          path: plugins
+          fetch-depth: 2  # Need previous commit to detect changes
 
       - name: Setup Environment
         uses: ../.github/actions/setup
