@@ -49,14 +49,14 @@ jobs:
           fetch-depth: 2  # Need previous commit to detect changes
 
       - name: Setup Environment
-        uses: ../.github/actions/setup
+        uses: ./.github/actions/setup
         env:
           PYTHON_VERSION: ${{ matrix.python }}
           POETRY_VERSION: ${{ env.POETRY_VERSION }}
 
       - name: Promote Plugin RC to GA
         id: promote_ga
-        uses: ../.github/actions/promote-ga
+        uses: ./.github/actions/promote-ga
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           rc_version: ${{ github.event.inputs.rc_version }}
@@ -70,7 +70,7 @@ jobs:
             ]
 
       - name: Publish Plugin to PyPI
-        uses: ../.github/actions/publish-pypi
+        uses: ./.github/actions/publish-pypi
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           source_tag: ${{ github.event.inputs.plugin_name }}-v${{ steps.promote_ga.outputs.stable_version }}
