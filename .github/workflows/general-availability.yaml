@@ -73,7 +73,7 @@ jobs:
         uses: ./.github/actions/publish-pypi
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          source_tag: ${{ github.event.inputs.plugin_name }}-v${{ steps.promote_ga.outputs.stable_version }}
+          source_tag: v${{ steps.promote_ga.outputs.stable_version }}
           packages: |
             [
               {
