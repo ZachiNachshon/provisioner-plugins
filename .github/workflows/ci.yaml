@@ -59,32 +59,9 @@ jobs:
         run: |
           echo "::group::Detecting changed plugins"
           
-          echo "Checking for plugin changes in: $(pwd)"
-          echo "Git log last 2 commits:"
-          git log --oneline -2
-          echo "Changed files (HEAD~1): $(git diff --name-only HEAD~1)"
-          echo "Changed files (with origin/master): $(git diff --name-only origin/master~1..HEAD 2>/dev/null || echo 'origin/master diff failed')"
-          echo "Repository structure:"
-          ls -la
-          echo "Looking for plugin directories:"
-          find . -maxdepth 2 -name "provisioner_*_plugin" -type d
-          echo "All changed Python files:"
-          git diff --name-only HEAD~1 | grep "\.py$" || echo "No Python files changed"
-          echo "Checking plugins submodule status:"
-          if [ -d "plugins/.git" ]; then
-            echo "Plugins is a submodule"
-            echo "Submodule status:"
-            git submodule status plugins
-            echo "Changes in plugins submodule:"
-            (cd plugins && git diff --name-only HEAD~1) || echo "No changes in plugins submodule"
-          else
-            echo "Plugins is not a submodule"
-          fi
-          
           # Use the version manager to detect changed plugins
-          # Run from main repo root to properly detect changes across submodules
           # The version manager automatically sets json_response in $GITHUB_OUTPUT
-          python3 scripts/github_actions/version_manager.py detect-plugins --plugin-mode --github-repo ZachiNachshon/provisioner-plugins
+          python3 scripts/github_actions/version_manager.py detect-plugins plugins --plugin-mode --github-repo ZachiNachshon/provisioner-plugins
           
           echo "::endgroup::"
 
