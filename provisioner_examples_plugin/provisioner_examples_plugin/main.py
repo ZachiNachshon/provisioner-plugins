@@ -16,6 +16,7 @@ EXAMPLES_PLUGINS_ROOT_PATH = str(pathlib.Path(__file__).parent)
 CONFIG_INTERNAL_PATH = f"{EXAMPLES_PLUGINS_ROOT_PATH}/resources/config.yaml"
 
 
+# Dummy function to load config
 def load_config():
     ConfigManager.instance().load_plugin_config(PLUGIN_NAME, CONFIG_INTERNAL_PATH, cls=ExamplesConfig)
 

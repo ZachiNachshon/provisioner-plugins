@@ -24,13 +24,25 @@ jobs:
       plugins_json: ${{ steps.detect_changes.outputs.json_response }}
 
     steps:
-      - name: Checkout main provisioner repository with submodules
+      - name: Checkout main provisioner repository
         uses: actions/checkout@v4
         with:
           repository: 'ZachiNachshon/provisioner'
           token: ${{ secrets.PROVISIONER_REPO_ACCESS_TOKEN }}
-          submodules: true
+          submodules: false  # We'll handle submodules manually
           fetch-depth: 2  # Need previous commit to detect changes on push
+
+      - name: Initialize and update submodules with sufficient history
+        run: |
+          git submodule init
+          # Get the submodule commit from HEAD~1 and HEAD to ensure we have both
+          git submodule foreach '
+            CURRENT_COMMIT=$(git -C $toplevel ls-tree HEAD $sm_path | cut -d" " -f3 | cut -f1)
+            PREVIOUS_COMMIT=$(git -C $toplevel ls-tree HEAD~1 $sm_path | cut -d" " -f3 | cut -f1)
+            echo "Fetching commits: $PREVIOUS_COMMIT and $CURRENT_COMMIT for submodule $name"
+            git fetch origin $PREVIOUS_COMMIT $CURRENT_COMMIT --depth=2 || git fetch origin --depth=2
+            git checkout $CURRENT_COMMIT
+          '
 
       - name: Setup Environment
         uses: ./.github/actions/setup
@@ -76,12 +88,25 @@ jobs:
         plugin: ${{ fromJSON(needs.tests.outputs.plugins_json).plugins }}
     
     steps:              
-      - name: Checkout main provisioner repository with submodules
+      - name: Checkout main provisioner repository
         uses: actions/checkout@v4
         with:
           repository: 'ZachiNachshon/provisioner'
           token: ${{ secrets.PROVISIONER_REPO_ACCESS_TOKEN }}
-          submodules: true
+          submodules: false  # We'll handle submodules manually
+          fetch-depth: 2  # Need previous commit to detect changes
+
+      - name: Initialize and update submodules with sufficient history
+        run: |
+          git submodule init
+          # Get the submodule commit from HEAD~1 and HEAD to ensure we have both
+          git submodule foreach '
+            CURRENT_COMMIT=$(git -C $toplevel ls-tree HEAD $sm_path | cut -d" " -f3 | cut -f1)
+            PREVIOUS_COMMIT=$(git -C $toplevel ls-tree HEAD~1 $sm_path | cut -d" " -f3 | cut -f1)
+            echo "Fetching commits: $PREVIOUS_COMMIT and $CURRENT_COMMIT for submodule $name"
+            git fetch origin $PREVIOUS_COMMIT $CURRENT_COMMIT --depth=2 || git fetch origin --depth=2
+            git checkout $CURRENT_COMMIT
+          '
 
       - name: Check for source code changes
         id: check-changes
