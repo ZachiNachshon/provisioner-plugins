@@ -104,15 +104,16 @@ jobs:
         id: check-changes
         uses: dorny/paths-filter@v2
         with:
+          working-directory: plugins
           filters: |
             source:
-              - 'plugins/**/*.py'
-              - 'plugins/**/*.yaml'
-              - 'plugins/**/*.yml'
-              - 'plugins/**/*.toml'
-              - 'plugins/**/*.json'
-              - 'plugins/**/*.sh'
-              - 'plugins/**/Dockerfile*'
+              - '${{ matrix.plugin }}/**/*.py'
+              - '${{ matrix.plugin }}/**/*.yaml'
+              - '${{ matrix.plugin }}/**/*.yml'
+              - '${{ matrix.plugin }}/**/*.toml'
+              - '${{ matrix.plugin }}/**/*.json'
+              - '${{ matrix.plugin }}/**/*.sh'
+              - '${{ matrix.plugin }}/**/Dockerfile*'
               - '!**/*.lock'
               - '!**/*.md'
               - '!**/README*'
