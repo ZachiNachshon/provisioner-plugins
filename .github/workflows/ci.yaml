@@ -114,6 +114,8 @@ jobs:
               - '${{ matrix.plugin }}/**/*.json'
               - '${{ matrix.plugin }}/**/*.sh'
               - '${{ matrix.plugin }}/**/Dockerfile*'
+              - '!**/pyproject.toml'
+              - '!**/manifest.json'
               - '!**/*.lock'
               - '!**/*.md'
               - '!**/README*'
