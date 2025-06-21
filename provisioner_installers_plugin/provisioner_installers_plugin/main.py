@@ -18,6 +18,7 @@ INSTALLERS_PLUGINS_ROOT_PATH = str(pathlib.Path(__file__).parent)
 CONFIG_INTERNAL_PATH = f"{INSTALLERS_PLUGINS_ROOT_PATH}/resources/config.yaml"
 
 
+# Dummy commit
 def load_config():
     ConfigManager.instance().load_plugin_config(PLUGIN_NAME, CONFIG_INTERNAL_PATH, cls=InstallersConfig)
 
