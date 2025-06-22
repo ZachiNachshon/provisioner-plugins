@@ -1,0 +1,46 @@
+version: 2
+updates:
+  - package-ecosystem: pip
+    directory: "/provisioner_examples_plugin"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    assignees:
+      - ZachiNachshon
+    # Only update internal dependencies, ignore third-party packages
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major", "version-update:semver-minor", "version-update:semver-patch"]
+    allow:
+      - dependency-name: "provisioner-shared"
+      - dependency-name: "provisioner_shared"
+
+  - package-ecosystem: pip
+    directory: "/provisioner_installers_plugin"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    assignees:
+      - ZachiNachshon
+    # Only update internal dependencies, ignore third-party packages  
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major", "version-update:semver-minor", "version-update:semver-patch"]
+    allow:
+      - dependency-name: "provisioner-shared"
+      - dependency-name: "provisioner_shared"
+
+  - package-ecosystem: pip
+    directory: "/provisioner_single_board_plugin"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    assignees:
+      - ZachiNachshon
+    # Only update internal dependencies, ignore third-party packages
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major", "version-update:semver-minor", "version-update:semver-patch"]
+    allow:
+      - dependency-name: "provisioner-shared"
+      - dependency-name: "provisioner_shared" 
